@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 @Table(name="specialization")
-public class Specialization {
+public class SpecializationEntity {
 
     @Id
     private Long id;

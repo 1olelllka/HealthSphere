@@ -12,13 +12,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 @Table(name="prescription_medicine")
-public class PrescriptionMedicine {
+public class PrescriptionMedicineEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="prescription_id", referencedColumnName = "id")
-    private Prescription prescription;
+    private PrescriptionEntity prescription;
     @Column(nullable = false)
     private String medicineName;
     @Column(nullable = false)

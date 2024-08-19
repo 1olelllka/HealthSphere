@@ -12,27 +12,28 @@ import java.util.Date;
 
 @Entity
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Data
-@Table(name="patient")
-public class Patient {
+@Table(name="record")
+public class MedicalRecordEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @OneToOne
-    @JoinColumn(name="_user_id", referencedColumnName = "id")
-    private User user;
+    @JoinColumn(name="patient_id", referencedColumnName = "id")
+    private PatientEntity patient;
+    @OneToOne
+    @JoinColumn(name="doctor_id", referencedColumnName = "id")
+    private DoctorEntity doctor;
     @Column(nullable = false)
-    private String firstName;
+    private Date recordDate;
     @Column(nullable = false)
-    private String lastName;
-    @Column(nullable = false)
-    private Date dateOfBirth;
-    @Enumerated(EnumType.STRING)
-    private Gender gender;
-    private String address;
-    private String phoneNumber;
+    private String diagnosis;
+    @Column(columnDefinition = "TEXT")
+    private String treatment;
+    @OneToOne
+    @JoinColumn(name="prescription_id", referencedColumnName = "id")
+    private PrescriptionEntity prescription;
     @CreationTimestamp
     @Column(updatable = false, name="created_at")
     private Date createdAt;

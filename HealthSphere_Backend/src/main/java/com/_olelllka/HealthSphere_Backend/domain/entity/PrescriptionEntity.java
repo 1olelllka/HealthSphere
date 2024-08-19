@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
 
@@ -15,25 +14,18 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@Table(name="appointment")
-public class Appointment {
+@Table(name="prescription")
+public class PrescriptionEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @OneToOne
     @JoinColumn(name="patient_id", referencedColumnName = "id")
-    private Patient patient;
+    private PatientEntity patient;
     @OneToOne
     @JoinColumn(name="doctor_id", referencedColumnName = "id")
-    private Doctor doctor;
-    @Column(nullable = false)
-    private Date appointmentDate;
-    @Enumerated(EnumType.STRING)
-    private Status status;
-    private String reason;
+    private DoctorEntity doctor;
     @CreationTimestamp
-    @Column(updatable = false, name="created_at")
-    private Date createdAt;
-    @UpdateTimestamp
-    @Column(name="updated_at")
-    private Date updatedAt;
+    @Column(updatable = false, name="issued_date")
+    private Date issuedDate;
 }

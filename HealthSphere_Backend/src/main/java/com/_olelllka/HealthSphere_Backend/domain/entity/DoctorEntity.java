@@ -17,14 +17,14 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 @Table(name="doctor")
-public class Doctor {
+public class DoctorEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @OneToOne
     @JoinColumn(name = "_user_id", referencedColumnName = "id")
-    private User user;
+    private UserEntity user;
     @Column(nullable = false)
     private String firstName;
     @Column(nullable = false)
@@ -35,7 +35,7 @@ public class Doctor {
             joinColumns = @JoinColumn(name="doctor_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name="specialization_id", referencedColumnName = "id")
     )
-    private List<Specialization> specializations;
+    private List<SpecializationEntity> specializations;
     @Column(nullable = false)
     private String licenseNumber;
     private Long experienceYears;
