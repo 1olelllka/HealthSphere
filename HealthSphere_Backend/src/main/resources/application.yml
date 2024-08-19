@@ -12,4 +12,4 @@ spring:
       format_sql: true
     show-sql: true
 server:
-  host: 8000
+  port: 8000

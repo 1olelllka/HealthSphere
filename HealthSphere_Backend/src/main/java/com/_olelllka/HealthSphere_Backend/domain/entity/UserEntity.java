@@ -36,7 +36,7 @@ public class UserEntity implements UserDetails {
     private Date createdAt;
     @UpdateTimestamp
     @Column(name="updated_at")
-    private Date updatedAT;
+    private Date updatedAt;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

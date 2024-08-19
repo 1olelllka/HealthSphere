@@ -30,6 +30,7 @@ public class PatientEntity {
     @Column(nullable = false)
     private Date dateOfBirth;
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Gender gender;
     private String address;
     private String phoneNumber;
