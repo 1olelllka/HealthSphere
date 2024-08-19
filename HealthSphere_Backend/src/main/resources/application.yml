@@ -4,7 +4,15 @@ spring:
   datasource:
     driverClassName: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/healthsphere
-    username: 1olelllka
-    password: secret
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+      format_sql: true
+    show-sql: true
 server:
   host: 8000
+
+jwt:
+  secret: ${JWT_SECRET}
