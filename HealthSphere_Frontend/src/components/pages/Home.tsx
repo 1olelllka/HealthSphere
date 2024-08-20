@@ -1,6 +1,4 @@
-import "./App.css";
-
-function App() {
+export default function Home() {
   return (
     <>
       <div>
@@ -9,5 +7,3 @@ function App() {
     </>
   );
 }
-
-export default App;

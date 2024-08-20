@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.PatientRegisterLogin {
+  background: rgb(255, 216, 233);
+  background: radial-gradient(
+    circle,
+    rgba(255, 216, 233, 1) 0%,
+    rgba(164, 206, 255, 1) 100%
+  );
+}
