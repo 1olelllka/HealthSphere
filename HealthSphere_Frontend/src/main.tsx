@@ -7,6 +7,7 @@ import NotFoundPage from "./components/NotFoundPage";
 
 import PatientRegister from "./components/auth/PatientRegister";
 import Login from "./components/auth/Login";
+import DoctorRegister from "./components/auth/DoctorRegister";
 
 const router = createBrowserRouter([
   {
@@ -21,6 +22,10 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <Login />,
+  },
+  {
+    path: "/doctor-register",
+    element: <DoctorRegister />,
   },
 ]);
 

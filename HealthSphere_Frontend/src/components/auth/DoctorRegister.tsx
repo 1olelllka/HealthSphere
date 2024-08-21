@@ -12,18 +12,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { Popover } from "../ui/popover";
-import { PopoverContent, PopoverTrigger } from "@radix-ui/react-popover";
-import { CalendarIcon } from "lucide-react";
-import { Calendar } from "../ui/calendar";
-import { cn } from "@/lib/utils";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
 import "../../index.css";
 import axiosInstance from "../api/axiosInstance";
 
@@ -35,11 +23,16 @@ const formSchema = z.object({
   }),
   firstName: z.string().min(1, { message: "Please enter your first name" }),
   lastName: z.string().min(1, { message: "Please enter your last name" }),
-  dateOfBirth: z.date({ required_error: "Please enter your date of birth" }),
-  gender: z.string({ message: "Please select your gender" }),
+  licenseNumber: z
+    .string()
+    .min(1, { message: "Please enter your license number" }),
+  phoneNumber: z.string().min(8, { message: "Please enter your phone number" }),
+  clinicAddress: z
+    .string()
+    .min(1, { message: "Please enter your clinic address" }),
 });
 
-export default function PatientRegister() {
+export default function DoctorRegister() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -47,15 +40,21 @@ export default function PatientRegister() {
       password: "",
       firstName: "",
       lastName: "",
+      licenseNumber: "",
+      phoneNumber: "",
+      clinicAddress: "",
     },
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     console.log(values);
     axiosInstance
-      .post("http://localhost:8000/api/v1/register", values)
+      .post("http://localhost:8000/api/v1/doctor-register", values)
       .then(() => {
         alert("success"); // for now
+      })
+      .catch((err) => {
+        alert("You are not authorized to do this." + err);
       });
   };
 
@@ -63,7 +62,7 @@ export default function PatientRegister() {
     <>
       <div className="PatientRegisterLogin pb-7">
         <h1 className="text-4xl text-center pt-10 font-bold">
-          Patient Register
+          Doctor Register
         </h1>
         <div className="flex justify-center mt-8 mx-3">
           <Form {...form}>
@@ -94,7 +93,7 @@ export default function PatientRegister() {
                       <Input type="password" {...field} />
                     </FormControl>
                     <FormDescription className="text-xs text-slate-600">
-                      Write your password. Your password should be at least 8
+                      Write password. The password should be at least 8
                       characters including at least 1 number.
                     </FormDescription>
                     <FormMessage />
@@ -111,8 +110,8 @@ export default function PatientRegister() {
                       <Input type="string" {...field} />
                     </FormControl>
                     <FormDescription className="text-xs text-slate-600">
-                      Write your first name. Your first name should be at least
-                      1 character.
+                      Write the first name. The first name should be at least 1
+                      character.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -128,7 +127,7 @@ export default function PatientRegister() {
                       <Input type="string" {...field} />
                     </FormControl>
                     <FormDescription className="text-xs text-slate-600">
-                      Write your last name. Your last name should be at least 1
+                      Write the last name. The last name should be at least 1
                       character.
                     </FormDescription>
                     <FormMessage />
@@ -137,42 +136,15 @@ export default function PatientRegister() {
               />
               <FormField
                 control={form.control}
-                name="dateOfBirth"
+                name="licenseNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-md">Date Of Birth</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value
-                              ? field.value.toLocaleDateString()
-                              : "Select Date"}
-                            <CalendarIcon className="ml-2 h-4 w-4" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0 mb-3">
-                        <Calendar
-                          mode="single"
-                          className="bg-white dark:bg-slate-800 border border-slate-200 rounded-md"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) =>
-                            date > new Date() || date < new Date("1900-01-01")
-                          }
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <FormLabel className="text-md">License Number</FormLabel>
+                    <FormControl>
+                      <Input type="string" {...field} />
+                    </FormControl>
                     <FormDescription className="text-xs text-slate-600">
-                      Select Your Date of Birth
+                      Write the license number.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -180,26 +152,33 @@ export default function PatientRegister() {
               />
               <FormField
                 control={form.control}
-                name="gender"
+                name="phoneNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-md">Gender</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select Gender" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="MALE">Male</SelectItem>
-                        <SelectItem value="FEMALE">Female</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormLabel className="text-md">Phone Number</FormLabel>
+                    <FormControl>
+                      <Input type="string" {...field} />
+                    </FormControl>
                     <FormDescription className="text-xs text-slate-600">
-                      Select Your Gender
+                      Write the phone number (without country code). The number
+                      should contain at least 8 numbers.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="clinicAddress"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-md">Clinic Address</FormLabel>
+                    <FormControl>
+                      <Input type="string" {...field} />
+                    </FormControl>
+                    <FormDescription className="text-xs text-slate-600">
+                      Write the clinic address. The site admin will contact
+                      city's registered clinic.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

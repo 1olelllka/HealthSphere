@@ -13,7 +13,7 @@ import {
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import "../../index.css";
-import axios from "axios";
+import axiosInstance from "../api/axiosInstance";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -31,12 +31,15 @@ export default function Login() {
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     console.log(values);
-    axios
+    axiosInstance
       .post("http://localhost:8000/api/v1/login", values, {
         withCredentials: true,
       })
       .then(() => {
         alert("success"); // for now
+      })
+      .catch((err) => {
+        console.log(err);
       });
   };
 
