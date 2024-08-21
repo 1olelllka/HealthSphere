@@ -13,7 +13,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class RegisterForm {
+public class RegisterPatientForm {
     @Email(message = "Email must be a well-formed email address.")
     private String email;
     @Pattern(regexp = "^(?=.*\\d).{8,}$", message = "Your password should contain at least 8 characters including at least 1 number.")

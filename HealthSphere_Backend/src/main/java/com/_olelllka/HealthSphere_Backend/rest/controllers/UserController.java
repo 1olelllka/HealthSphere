@@ -1,7 +1,8 @@
 package com._olelllka.HealthSphere_Backend.rest.controllers;
 
 import com._olelllka.HealthSphere_Backend.domain.dto.JwtToken;
-import com._olelllka.HealthSphere_Backend.domain.dto.RegisterForm;
+import com._olelllka.HealthSphere_Backend.domain.dto.RegisterDoctorForm;
+import com._olelllka.HealthSphere_Backend.domain.dto.RegisterPatientForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.LoginForm;
 import com._olelllka.HealthSphere_Backend.domain.entity.UserEntity;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.ValidationException;
@@ -9,11 +10,13 @@ import com._olelllka.HealthSphere_Backend.service.JwtService;
 import com._olelllka.HealthSphere_Backend.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -43,21 +46,43 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<RegisterForm> registerUser(@RequestBody @Valid RegisterForm registerForm,
-                                                     BindingResult bindingResult) {
+    public ResponseEntity<RegisterPatientForm> registerUser(@RequestBody @Valid RegisterPatientForm registerPatientForm,
+                                                            BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             String msg = bindingResult.getAllErrors().stream().map(err -> err.getDefaultMessage()).collect(Collectors.joining(" "));
             throw new ValidationException(msg);
         }
-        UserEntity createdUser = userService.register(registerForm);
+        UserEntity createdUser = userService.register(registerPatientForm);
         return new ResponseEntity<>(
-                RegisterForm.builder()
+                RegisterPatientForm.builder()
                         .email(createdUser.getEmail())
                         .password(createdUser.getPassword())
-                        .firstName(registerForm.getFirstName())
-                        .lastName(registerForm.getLastName())
-                        .gender(registerForm.getGender())
-                        .dateOfBirth(registerForm.getDateOfBirth())
+                        .firstName(registerPatientForm.getFirstName())
+                        .lastName(registerPatientForm.getLastName())
+                        .gender(registerPatientForm.getGender())
+                        .dateOfBirth(registerPatientForm.getDateOfBirth())
+                        .build(), HttpStatus.CREATED
+        );
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/doctor-register")
+    public ResponseEntity<RegisterDoctorForm> registerDoctor(@RequestBody @Valid RegisterDoctorForm registerDoctorForm,
+                                                             BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            String msg = bindingResult.getAllErrors().stream().map(err -> err.getDefaultMessage()).collect(Collectors.joining(" "));
+            throw new ValidationException(msg);
+        }
+        UserEntity createdUser = userService.doctorRegister(registerDoctorForm);
+        return new ResponseEntity<>(
+                RegisterDoctorForm.builder()
+                        .email(createdUser.getEmail())
+                        .password(createdUser.getPassword())
+                        .firstName(registerDoctorForm.getFirstName())
+                        .lastName(registerDoctorForm.getLastName())
+                        .clinicAddress(registerDoctorForm.getClinicAddress())
+                        .phoneNumber(registerDoctorForm.getPhoneNumber())
+                        .licenseNumber(registerDoctorForm.getLicenseNumber())
                         .build(), HttpStatus.CREATED
         );
     }

@@ -1,9 +1,11 @@
 package com._olelllka.HealthSphere_Backend.service;
 
 import com._olelllka.HealthSphere_Backend.TestDataUtil;
-import com._olelllka.HealthSphere_Backend.domain.dto.RegisterForm;
+import com._olelllka.HealthSphere_Backend.domain.dto.RegisterDoctorForm;
+import com._olelllka.HealthSphere_Backend.domain.dto.RegisterPatientForm;
 import com._olelllka.HealthSphere_Backend.domain.entity.Role;
 import com._olelllka.HealthSphere_Backend.domain.entity.UserEntity;
+import com._olelllka.HealthSphere_Backend.repositories.DoctorRepository;
 import com._olelllka.HealthSphere_Backend.repositories.PatientRepository;
 import com._olelllka.HealthSphere_Backend.repositories.UserRepository;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.NotFoundException;
@@ -30,6 +32,8 @@ public class UserServiceImplUnitTest {
     private PatientRepository patientRepository;
     @Mock
     private PasswordEncoder passwordEncoder;
+    @Mock
+    private DoctorRepository doctorRepository;
     @InjectMocks
     private UserServiceImpl userService;
 
@@ -62,21 +66,42 @@ public class UserServiceImplUnitTest {
     @Test
     public void testThatUserRegisterWorksWell() throws ParseException {
         // given
-        RegisterForm registerForm = TestDataUtil.createRegisterForm();
+        RegisterPatientForm registerPatientForm = TestDataUtil.createRegisterForm();
         UserEntity user = UserEntity.builder()
-                .email(registerForm.getEmail())
+                .email(registerPatientForm.getEmail())
                         .role(Role.ROLE_PATIENT)
                                 .build();
         // when
         when(userRepository.save(any())).thenReturn(user);
         when(patientRepository.save(any())).thenReturn(null);
         when(passwordEncoder.encode("password123")).thenReturn("encrypted");
-        UserEntity result = userService.register(registerForm);
+        UserEntity result = userService.register(registerPatientForm);
         // then
         verify(userRepository, times(1)).save(any());
         verify(patientRepository, times(1)).save(any());
         verify(passwordEncoder, times(1)).encode(anyString());
         assertEquals(result.getEmail(), user.getEmail());
-        assertNotEquals(result.getPassword(), registerForm.getPassword());
+        assertNotEquals(result.getPassword(), registerPatientForm.getPassword());
+    }
+
+    @Test
+    public void testThatDoctorRegisterWorksWell() throws ParseException {
+        // given
+        RegisterDoctorForm registerDoctorForm = TestDataUtil.createRegisterDoctorForm();
+        UserEntity user = UserEntity.builder()
+                .email(registerDoctorForm.getEmail())
+                .role(Role.ROLE_DOCTOR)
+                .build();
+        // when
+        when(userRepository.save(any())).thenReturn(user);
+        when(doctorRepository.save(any())).thenReturn(null);
+        when(passwordEncoder.encode("password123")).thenReturn("encrypted");
+        UserEntity result = userService.doctorRegister(registerDoctorForm);
+        // then
+        verify(userRepository, times(1)).save(any());
+        verify(doctorRepository, times(1)).save(any());
+        verify(passwordEncoder, times(1)).encode(anyString());
+        assertEquals(result.getEmail(), user.getEmail());
+        assertNotEquals(result.getPassword(), registerDoctorForm.getPassword());
     }
 }

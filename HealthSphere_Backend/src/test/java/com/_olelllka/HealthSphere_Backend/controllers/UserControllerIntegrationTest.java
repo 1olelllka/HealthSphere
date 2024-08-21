@@ -2,21 +2,30 @@ package com._olelllka.HealthSphere_Backend.controllers;
 
 import com._olelllka.HealthSphere_Backend.TestDataUtil;
 import com._olelllka.HealthSphere_Backend.domain.dto.LoginForm;
-import com._olelllka.HealthSphere_Backend.domain.dto.RegisterForm;
+import com._olelllka.HealthSphere_Backend.domain.dto.RegisterDoctorForm;
+import com._olelllka.HealthSphere_Backend.domain.dto.RegisterPatientForm;
+import com._olelllka.HealthSphere_Backend.domain.entity.Role;
+import com._olelllka.HealthSphere_Backend.domain.entity.UserEntity;
+import com._olelllka.HealthSphere_Backend.repositories.UserRepository;
 import com._olelllka.HealthSphere_Backend.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
+import lombok.extern.java.Log;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
@@ -25,39 +34,137 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 public class UserControllerIntegrationTest {
 
     private UserService userService;
+    private UserRepository userRepository;
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
 
     @Autowired
-    public UserControllerIntegrationTest(UserService userService, MockMvc mockMvc) {
+    public UserControllerIntegrationTest(UserService userService, MockMvc mockMvc, UserRepository userRepository) {
         this.mockMvc = mockMvc;
         this.userService = userService;
         this.objectMapper = new ObjectMapper();
+        this.userRepository = userRepository;
+    }
+
+    @Test
+    public void testThatUserRegisterReturnsHttp403ForbiddenIfSentWithoutCSRF() throws Exception {
+        RegisterPatientForm registerPatientForm = TestDataUtil.createRegisterForm();
+        registerPatientForm.setEmail("wrongEmail");
+        String registerFromJson = objectMapper.writeValueAsString(registerPatientForm);
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(registerFromJson))
+                .andExpect(MockMvcResultMatchers.status().isForbidden());
     }
 
     @Test
     public void testThatUserRegisterReturnsHttp400BadRequestIfValidationFails() throws Exception {
-        RegisterForm registerForm = TestDataUtil.createRegisterForm();
-        registerForm.setEmail("wrongEmail");
-        String registerFromJson = objectMapper.writeValueAsString(registerForm);
+        RegisterPatientForm registerPatientForm = TestDataUtil.createRegisterForm();
+        registerPatientForm.setEmail("wrongEmail");
+        String registerFromJson = objectMapper.writeValueAsString(registerPatientForm);
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(registerFromJson))
+                .content(registerFromJson)
+                        .with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").exists());
     }
 
     @Test
     public void testThatUserRegisterReturnsHttp201CreatedAndCorrectData() throws Exception {
-        RegisterForm registerForm = TestDataUtil.createRegisterForm();
-        String registerFormJson = objectMapper.writeValueAsString(registerForm);
+        RegisterPatientForm registerPatientForm = TestDataUtil.createRegisterForm();
+        String registerFormJson = objectMapper.writeValueAsString(registerPatientForm);
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(registerFormJson))
+                .content(registerFormJson)
+                        .with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.email").value(registerForm.getEmail()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.email").value(registerPatientForm.getEmail()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.password").exists());
     }
+
+    @Test
+    public void testThatDoctorRegisterReturnsHttp403ForbiddenIfSentWithoutCsrf() throws Exception {
+        RegisterDoctorForm registerDoctorForm = TestDataUtil.createRegisterDoctorForm();
+        String registerFromJson = objectMapper.writeValueAsString(registerDoctorForm);
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/doctor-register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(registerFromJson))
+                .andExpect(MockMvcResultMatchers.status().isForbidden());
+    }
+
+    @Test
+    public void testThatDoctorRegisterReturnsHttp403ForbiddenIfUserHasWrongRole() throws Exception {
+        RegisterDoctorForm registerDoctorForm = TestDataUtil.createRegisterDoctorForm();
+        String registerFromJson = objectMapper.writeValueAsString(registerDoctorForm);
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/doctor-register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(registerFromJson)
+                        .with(csrf()))
+                .andExpect(MockMvcResultMatchers.status().isForbidden());
+    }
+
+    @Test
+    public void testThatDoctorRegisterReturnsHttp400BadRequestIfInvalidData() throws Exception {
+        UserEntity user = UserEntity.builder()
+                .email("email@email.com")
+                .password(new BCryptPasswordEncoder().encode("password123")).role(Role.ROLE_ADMIN).build();
+        userRepository.save(user);
+        LoginForm loginForm = TestDataUtil.createLoginForm();
+        String loginFormJson = objectMapper.writeValueAsString(loginForm);
+        Cookie accessToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginFormJson)
+                        .with(csrf()))
+                .andReturn().getResponse().getCookie("accessToken");
+        RegisterDoctorForm registerDoctorForm = TestDataUtil.createRegisterDoctorForm();
+        registerDoctorForm.setFirstName("");
+        String registerFromJson = objectMapper.writeValueAsString(registerDoctorForm);
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/doctor-register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(registerFromJson)
+                        .cookie(accessToken)
+                        .with(csrf()))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    public void testThatDoctorRegisterReturnsHttp201CreatedAndCorrespondingDataIfEverythingOk() throws Exception {
+        UserEntity user = UserEntity.builder()
+                .email("admin@email.com")
+                .password(new BCryptPasswordEncoder().encode("password123")).role(Role.ROLE_ADMIN).build();
+        userRepository.save(user);
+        LoginForm loginForm = TestDataUtil.createLoginForm();
+        loginForm.setEmail("admin@email.com");
+        String loginFormJson = objectMapper.writeValueAsString(loginForm);
+        Cookie accessToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginFormJson)
+                        .with(csrf()))
+                .andReturn().getResponse().getCookie("accessToken");
+        RegisterDoctorForm registerDoctorForm = TestDataUtil.createRegisterDoctorForm();
+        String registerFromJson = objectMapper.writeValueAsString(registerDoctorForm);
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/doctor-register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(registerFromJson)
+                        .cookie(accessToken)
+                        .with(csrf()))
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.email").value(registerDoctorForm.getEmail()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.password").exists());
+    }
+
+    @Test
+    public void testThatLoginUserReturnsHttp403ForbiddenIfSentWithoutCSRF() throws Exception {
+        LoginForm loginForm = TestDataUtil.createLoginForm();
+        loginForm.setEmail("");
+        String loginFormJson = objectMapper.writeValueAsString(loginForm);
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginFormJson))
+                .andExpect(MockMvcResultMatchers.status().isForbidden());
+    }
+
 
     @Test
     public void testThatLoginUserReturnsHttp400BadRequestIfValidationFails() throws Exception {
@@ -66,33 +173,36 @@ public class UserControllerIntegrationTest {
         String loginFormJson = objectMapper.writeValueAsString(loginForm);
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(loginFormJson))
+                .content(loginFormJson)
+                        .with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").exists());
     }
 
     @Test
     public void testThatLoginUserReturnsHttp403ForbiddenIfPasswordIsIncorrect() throws Exception {
-        RegisterForm registerForm = TestDataUtil.createRegisterForm();
-        userService.register(registerForm);
+        RegisterPatientForm registerPatientForm = TestDataUtil.createRegisterForm();
+        userService.register(registerPatientForm);
         LoginForm loginForm = TestDataUtil.createLoginForm();
         loginForm.setPassword("wrongPassword");
         String loginFormJson = objectMapper.writeValueAsString(loginForm);
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(loginFormJson))
+                .content(loginFormJson)
+                        .with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isForbidden());
     }
 
     @Test
     public void testThatLoginUserReturnsHttp200OkWithJwtTokenAndCookieIfCorrectCredentials() throws Exception {
-        RegisterForm registerForm = TestDataUtil.createRegisterForm();
-        userService.register(registerForm);
+        RegisterPatientForm registerPatientForm = TestDataUtil.createRegisterForm();
+        userService.register(registerPatientForm);
         LoginForm loginForm = TestDataUtil.createLoginForm();
         String loginFormJson = objectMapper.writeValueAsString(loginForm);
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(loginFormJson))
+                .content(loginFormJson)
+                        .with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.cookie().exists("accessToken"))
                 .andExpect(MockMvcResultMatchers.cookie().maxAge("accessToken", 60 * 60))
@@ -101,24 +211,33 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
-    public void testThatLogoutUserReturnsHttp200OkIfUserIsNotLoggedIn() throws Exception {
+    public void testThatLogoutUserReturnsHttp403ForbiddenIfDoneWithoutCSRF() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/logout"))
+                .andExpect(MockMvcResultMatchers.status().isForbidden());
+    }
+
+    @Test
+    public void testThatLogoutUserReturnsHttp200OkIfUserIsNotLoggedIn() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/logout")
+                        .with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isOk());
     }
 
     @Test
     public void testThatLogoutUserReturnsHttp200OkIfUserIsLoggedId() throws Exception {
-        RegisterForm registerForm = TestDataUtil.createRegisterForm();
-        userService.register(registerForm);
+        RegisterPatientForm registerPatientForm = TestDataUtil.createRegisterForm();
+        userService.register(registerPatientForm);
         LoginForm loginForm = TestDataUtil.createLoginForm();
         String loginFormJson = objectMapper.writeValueAsString(loginForm);
         Cookie accessToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginFormJson))
+                        .content(loginFormJson)
+                        .with(csrf()))
                 .andReturn().getResponse().getCookie("accessToken");
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/logout")
-                        .cookie(accessToken))
+                        .cookie(accessToken)
+                        .with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.cookie().maxAge("accessToken", 0));
     }

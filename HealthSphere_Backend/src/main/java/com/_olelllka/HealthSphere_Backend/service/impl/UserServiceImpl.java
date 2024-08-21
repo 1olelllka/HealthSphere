@@ -1,9 +1,12 @@
 package com._olelllka.HealthSphere_Backend.service.impl;
 
-import com._olelllka.HealthSphere_Backend.domain.dto.RegisterForm;
+import com._olelllka.HealthSphere_Backend.domain.dto.RegisterDoctorForm;
+import com._olelllka.HealthSphere_Backend.domain.dto.RegisterPatientForm;
+import com._olelllka.HealthSphere_Backend.domain.entity.DoctorEntity;
 import com._olelllka.HealthSphere_Backend.domain.entity.PatientEntity;
 import com._olelllka.HealthSphere_Backend.domain.entity.Role;
 import com._olelllka.HealthSphere_Backend.domain.entity.UserEntity;
+import com._olelllka.HealthSphere_Backend.repositories.DoctorRepository;
 import com._olelllka.HealthSphere_Backend.repositories.PatientRepository;
 import com._olelllka.HealthSphere_Backend.repositories.UserRepository;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.NotFoundException;
@@ -18,14 +21,17 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
     private PasswordEncoder passwordEncoder;
     private PatientRepository patientRepository;
+    private DoctorRepository doctorRepository;
 
     @Autowired
     public UserServiceImpl(UserRepository userRepository,
                            PasswordEncoder passwordEncoder,
-                           PatientRepository patientRepository) {
+                           PatientRepository patientRepository,
+                           DoctorRepository doctorRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.patientRepository = patientRepository;
+        this.doctorRepository = doctorRepository;
     }
 
     @Override
@@ -34,21 +40,39 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserEntity register(RegisterForm registerForm) {
+    public UserEntity register(RegisterPatientForm registerPatientForm) {
         UserEntity user = UserEntity.builder()
-                .email(registerForm.getEmail())
-                .password(passwordEncoder.encode(registerForm.getPassword()))
+                .email(registerPatientForm.getEmail())
+                .password(passwordEncoder.encode(registerPatientForm.getPassword()))
                 .role(Role.ROLE_PATIENT).build();
         UserEntity response = userRepository.save(user);
         PatientEntity patient = PatientEntity.builder()
                 .user(response)
-                .firstName(registerForm.getFirstName())
-                .lastName(registerForm.getLastName())
-                .dateOfBirth(registerForm.getDateOfBirth())
-                .gender(registerForm.getGender())
+                .firstName(registerPatientForm.getFirstName())
+                .lastName(registerPatientForm.getLastName())
+                .dateOfBirth(registerPatientForm.getDateOfBirth())
+                .gender(registerPatientForm.getGender())
                 .build();
         patientRepository.save(patient);
         return response;
     }
 
+    @Override
+    public UserEntity doctorRegister(RegisterDoctorForm registerDoctorForm) {
+        UserEntity user = UserEntity.builder()
+                .email(registerDoctorForm.getEmail())
+                .password(passwordEncoder.encode(registerDoctorForm.getPassword()))
+                .role(Role.ROLE_DOCTOR).build();
+        UserEntity response = userRepository.save(user);
+        DoctorEntity patient = DoctorEntity.builder()
+                .user(response)
+                .firstName(registerDoctorForm.getFirstName())
+                .lastName(registerDoctorForm.getLastName())
+                .licenseNumber(registerDoctorForm.getLicenseNumber())
+                .clinicAddress(registerDoctorForm.getClinicAddress())
+                .phoneNumber(registerDoctorForm.getPhoneNumber())
+                .build();
+        doctorRepository.save(patient);
+        return response;
+    }
 }
