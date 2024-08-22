@@ -1,7 +1,5 @@
 package com._olelllka.HealthSphere_Backend.configuration;
 
-import co.elastic.clients.elasticsearch.nodes.Http;
-import com._olelllka.HealthSphere_Backend.domain.entity.Role;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;

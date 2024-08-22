@@ -45,16 +45,15 @@ public class UserServiceImpl implements UserService {
                 .email(registerPatientForm.getEmail())
                 .password(passwordEncoder.encode(registerPatientForm.getPassword()))
                 .role(Role.ROLE_PATIENT).build();
-        UserEntity response = userRepository.save(user);
         PatientEntity patient = PatientEntity.builder()
-                .user(response)
+                .user(user)
                 .firstName(registerPatientForm.getFirstName())
                 .lastName(registerPatientForm.getLastName())
                 .dateOfBirth(registerPatientForm.getDateOfBirth())
                 .gender(registerPatientForm.getGender())
                 .build();
         patientRepository.save(patient);
-        return response;
+        return userRepository.save(user);
     }
 
     @Override
