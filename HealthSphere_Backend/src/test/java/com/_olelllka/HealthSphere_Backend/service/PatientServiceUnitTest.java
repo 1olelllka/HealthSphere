@@ -52,4 +52,39 @@ public class PatientServiceUnitTest {
                 () -> assertEquals(patient.getAddress(), result.getAddress())
         );
     }
+
+    @Test
+    public void testThatPatchPatientReturnsNotFoundException() {
+        // given
+        String jwt = "jwt-token";
+        // when
+        when(jwtService.extractUsername(jwt)).thenReturn("username");
+        when(patientRepository.findByEmail("username")).thenReturn(Optional.empty());
+        // then
+        assertThrows(NotFoundException.class, () -> patientService.patchPatient(jwt, null));
+        verify(jwtService, times(1)).extractUsername(jwt);
+        verify(patientRepository, times(1)).findByEmail("username");
+        verify(patientRepository, never()).save(any());
+    }
+
+    @Test
+    public void testThatPatchPatientWorksWell() {
+        // given
+        String jwt = "jwt-token";
+        PatientEntity originalEntity = PatientEntity.builder().firstName("First Name").build();
+        PatientEntity updatedEntity = PatientEntity.builder().firstName("Updated Name").build();
+        // when
+        when(jwtService.extractUsername(jwt)).thenReturn("username");
+        when(patientRepository.findByEmail("username")).thenReturn(Optional.of(originalEntity));
+        when(patientRepository.save(updatedEntity)).thenReturn(updatedEntity);
+        PatientEntity result = patientService.patchPatient(jwt, updatedEntity);
+        // then
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertEquals(result.getFirstName(), updatedEntity.getFirstName())
+        );
+        verify(jwtService, times(1)).extractUsername(jwt);
+        verify(patientRepository, times(1)).findByEmail("username");
+        verify(patientRepository, times(1)).save(updatedEntity);
+    }
 }

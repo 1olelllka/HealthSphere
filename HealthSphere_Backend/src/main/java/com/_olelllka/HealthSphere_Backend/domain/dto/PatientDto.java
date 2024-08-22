@@ -1,14 +1,12 @@
 package com._olelllka.HealthSphere_Backend.domain.dto;
 
 import com._olelllka.HealthSphere_Backend.domain.entity.Gender;
-import com._olelllka.HealthSphere_Backend.domain.entity.UserEntity;
-import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Past;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
 
@@ -18,9 +16,10 @@ import java.util.Date;
 @Data
 public class PatientDto {
     private Long id;
-    private UserEntity user;
+    private UserDto user;
     private String firstName;
     private String lastName;
+    @Past(message = "Date of birth must be in the past.")
     private Date dateOfBirth;
     private Gender gender;
     private String address;

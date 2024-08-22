@@ -1,9 +1,8 @@
 package com._olelllka.HealthSphere_Backend;
 
-import com._olelllka.HealthSphere_Backend.domain.dto.LoginForm;
-import com._olelllka.HealthSphere_Backend.domain.dto.RegisterDoctorForm;
-import com._olelllka.HealthSphere_Backend.domain.dto.RegisterPatientForm;
+import com._olelllka.HealthSphere_Backend.domain.dto.*;
 import com._olelllka.HealthSphere_Backend.domain.entity.Gender;
+import com._olelllka.HealthSphere_Backend.domain.entity.Role;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -39,4 +38,22 @@ public class TestDataUtil {
                 .build();
     }
 
+    public static PatientDto createPatientDto(UserDto userDto) throws ParseException{
+        return PatientDto.builder()
+                .user(userDto)
+                .firstName("First Name")
+                .lastName("Last Name")
+                .gender(Gender.MALE)
+                .address("Address Address")
+                .dateOfBirth(new SimpleDateFormat("dd-MM-yyyy").parse("12-04-2004"))
+                .phoneNumber("14123412341234")
+                .build();
+    }
+
+    public static UserDto createUserDto() {
+        return UserDto.builder()
+                .email("email@email.com")
+                .role(Role.ROLE_PATIENT)
+                .build();
+    }
 }
