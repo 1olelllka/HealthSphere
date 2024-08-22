@@ -60,7 +60,7 @@ export default function DoctorRegister() {
 
   return (
     <>
-      <div className="PatientRegisterLogin pb-7">
+      <div className="Page pb-7">
         <h1 className="text-4xl text-center pt-10 font-bold">
           Doctor Register
         </h1>

@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-.PatientRegisterLogin {
+.Page {
   background: rgb(255, 216, 233);
   background: radial-gradient(
     circle,

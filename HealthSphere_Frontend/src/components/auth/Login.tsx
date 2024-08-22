@@ -45,7 +45,7 @@ export default function Login() {
 
   return (
     <>
-      <div className="PatientRegisterLogin pb-7 h-screen">
+      <div className="Page pb-7 h-screen">
         <h1 className="text-4xl text-center pt-10 font-bold">
           Login to your account
         </h1>
