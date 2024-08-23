@@ -5,9 +5,12 @@ import com._olelllka.HealthSphere_Backend.domain.dto.RegisterDoctorForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.RegisterPatientForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.LoginForm;
 import com._olelllka.HealthSphere_Backend.domain.entity.UserEntity;
+import com._olelllka.HealthSphere_Backend.rest.exceptions.NotAuthorizedException;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.ValidationException;
 import com._olelllka.HealthSphere_Backend.service.JwtService;
 import com._olelllka.HealthSphere_Backend.service.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +23,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 @RestController
@@ -106,11 +107,19 @@ public class UserController {
                     .maxAge(60 * 60)
                     .secure(false)
                     .httpOnly(true)
+                    .sameSite("Lax")
                     .path("/")
                     .build();
             response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
             return new ResponseEntity<>(JwtToken.builder().accessToken(jwt).build(), HttpStatus.OK);
         }
         return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+    }
+    @GetMapping("/get-jwt")
+    public ResponseEntity<JwtToken> getJwtToken(HttpServletRequest request) {
+        Cookie accessToken = Arrays.stream(request.getCookies())
+                .filter(cookie -> "accessToken".equals(cookie.getName()))
+                .findFirst().orElseThrow(() -> new NotAuthorizedException("You need to log in to proceed."));
+        return new ResponseEntity<>(JwtToken.builder().accessToken(accessToken.getValue()).build(), HttpStatus.OK);
     }
 }

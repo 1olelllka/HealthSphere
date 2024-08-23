@@ -5,12 +5,15 @@ import com._olelllka.HealthSphere_Backend.domain.entity.UserEntity;
 import com._olelllka.HealthSphere_Backend.service.JwtService;
 import com._olelllka.HealthSphere_Backend.service.UserService;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,6 +27,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class JwtAuthFilterUnitTest {
 
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthFilterUnitTest.class);
     @Mock
     private JwtService jwtService;
     @Mock
@@ -33,8 +37,9 @@ public class JwtAuthFilterUnitTest {
     @InjectMocks
     private JwtAuthFilter jwtAuthFilter;
 
+
     @Test
-    public void testThatFilterDoesNotExecutesWhenThereAreNoCookies() throws Exception{
+    public void testThatFilterDoesNotExecutesWhenThereIsNoAuthorizationHeader() throws Exception {
         // given
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -46,15 +51,12 @@ public class JwtAuthFilterUnitTest {
     }
 
     @Test
-    public void testThatFilterDoesNotExecutesWhenThereIsNoCorrectCookie() throws Exception {
-        // given
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        MockHttpServletResponse response = new MockHttpServletResponse();
-        Cookie cookie = new Cookie("someCookie", "someValue");
-        request.setCookies(cookie);
+    public void testThatFilterDoesNotExecutesIfAuthorizationHeaderIsWrong() throws Exception {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpServletResponse response = mock(HttpServletResponse.class);
         // when
+        when(request.getHeader("Authorization")).thenReturn("Nothing");
         jwtAuthFilter.doFilterInternal(request, response, filterChain);
-        // then
         verify(filterChain, times(1)).doFilter(request, response);
         verify(jwtService, never()).extractUsername(anyString());
     }
@@ -62,15 +64,14 @@ public class JwtAuthFilterUnitTest {
     @Test
     public void testThatFilterDoesNotExecutesWhenTokenIsInvalid() throws Exception {
         // given
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        MockHttpServletResponse response = new MockHttpServletResponse();
-        Cookie cookie = new Cookie("accessToken", "someValue");
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpServletResponse response = mock(HttpServletResponse.class);
         UserEntity user = UserEntity.builder().email("email@email.com").password("password").role(Role.ROLE_PATIENT).build();
-        request.setCookies(cookie);
         // when
-        when(jwtService.extractUsername(cookie.getValue())).thenReturn(user.getUsername());
+        when(request.getHeader("Authorization")).thenReturn("Bearer someToken");
+        when(jwtService.extractUsername("someToken")).thenReturn(user.getUsername());
         when(userService.getUserByUsername(user.getUsername())).thenReturn(user);
-        when(jwtService.isTokenValid("someValue", user.getUsername())).thenReturn(false);
+        when(jwtService.isTokenValid("someToken", user.getUsername())).thenReturn(false);
         jwtAuthFilter.doFilterInternal(request, response, filterChain);
         // then
         verify(filterChain, times(1)).doFilter(request, response);
@@ -80,22 +81,23 @@ public class JwtAuthFilterUnitTest {
     @Test
     public void testThatFilterAuthenticatesWhenEverythingIsCorrect() throws Exception {
         // given
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        MockHttpServletResponse response = new MockHttpServletResponse();
-        Cookie cookie = new Cookie("accessToken", "someValue");
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpServletResponse response = mock(HttpServletResponse.class);
         UserEntity user = UserEntity.builder().email("email@email.com").password("password").role(Role.ROLE_PATIENT).build();
-        request.setCookies(cookie);
         // when
-        when(jwtService.extractUsername(cookie.getValue())).thenReturn(user.getUsername());
+        when(request.getHeader("Authorization")).thenReturn("Bearer someValue");
+        when(jwtService.extractUsername("someValue")).thenReturn(user.getUsername());
         when(userService.getUserByUsername(user.getUsername())).thenReturn(user);
         when(jwtService.isTokenValid("someValue", user.getUsername())).thenReturn(true);
         jwtAuthFilter.doFilterInternal(request, response, filterChain);
         // then
+        verify(jwtService, times(1)).extractUsername("someValue");
+        verify(userService, times(1)).getUserByUsername(user.getUsername());
+        verify(jwtService, times(1)).isTokenValid("someValue", user.getUsername());
         verify(filterChain, times(1)).doFilter(request, response);
         assertAll(
                 () -> assertNotNull(SecurityContextHolder.getContext().getAuthentication()),
                 () -> assertInstanceOf(UsernamePasswordAuthenticationToken.class, SecurityContextHolder.getContext().getAuthentication())
         );
     }
-
 }

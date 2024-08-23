@@ -1,10 +1,7 @@
 package com._olelllka.HealthSphere_Backend.controllers;
 
 import com._olelllka.HealthSphere_Backend.TestDataUtil;
-import com._olelllka.HealthSphere_Backend.domain.dto.LoginForm;
-import com._olelllka.HealthSphere_Backend.domain.dto.PatientDto;
-import com._olelllka.HealthSphere_Backend.domain.dto.RegisterPatientForm;
-import com._olelllka.HealthSphere_Backend.domain.dto.UserDto;
+import com._olelllka.HealthSphere_Backend.domain.dto.*;
 import com._olelllka.HealthSphere_Backend.service.PatientService;
 import com._olelllka.HealthSphere_Backend.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -48,11 +44,9 @@ public class PatientControllerIntegrationTest {
     }
 
     @Test
-    @WithMockUser
-    public void testThatGetPatientReturnsHttp401UnauthorizedIfCalledWithoutAccessCookie() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/patient/me")
-                        .cookie(new Cookie("someCookie", "value")))
-                .andExpect(MockMvcResultMatchers.status().isUnauthorized());
+    public void testThatGetPatientReturnsHttp403ForbiddenIfSentWithoutAccessToken() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/patient/me"))
+                .andExpect(MockMvcResultMatchers.status().isForbidden());
     }
 
     @Test
@@ -61,28 +55,31 @@ public class PatientControllerIntegrationTest {
         userService.register(registerPatientForm);
         LoginForm loginForm = TestDataUtil.createLoginForm();
         String loginFormJson = objectMapper.writeValueAsString(loginForm);
-        Cookie accessToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(loginFormJson)
+        Cookie cookieToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginFormJson)
                         .with(csrf()))
                 .andReturn().getResponse().getCookie("accessToken");
+        String token = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/get-jwt")
+                        .cookie(cookieToken))
+                .andReturn().getResponse().getContentAsString();
+        String accessToken = objectMapper.readValue(token, JwtToken.class).getAccessToken();
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/patient/me")
-                .cookie(accessToken))
+                        .header("Authorization", "Bearer " + accessToken))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.firstName").value(registerPatientForm.getFirstName()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.lastName").value(registerPatientForm.getLastName()));
     }
 
     @Test
-    @WithMockUser
-    public void testThatPatchPatientReturnsHttp401UnauthorizedIfCalledWithoutAccessCookie() throws Exception {
+    public void testThatPatchPatientReturnsHttp403ForbiddenIfCalledWithoutAccessToken() throws Exception {
         PatientDto patientDto = TestDataUtil.createPatientDto(null);
         String patientDtoJson = objectMapper.writeValueAsString(patientDto);
         mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patient/me")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(patientDtoJson)
                         .with(csrf()))
-                .andExpect(MockMvcResultMatchers.status().isUnauthorized());
+                .andExpect(MockMvcResultMatchers.status().isForbidden());
     }
 
     @Test
@@ -91,18 +88,22 @@ public class PatientControllerIntegrationTest {
         userService.register(register);
         LoginForm loginForm = TestDataUtil.createLoginForm();
         String loginFormJson = objectMapper.writeValueAsString(loginForm);
-        Cookie accessToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(loginFormJson)
-                .with(csrf()))
+        Cookie cookieToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginFormJson)
+                        .with(csrf()))
                 .andReturn().getResponse().getCookie("accessToken");
+        String token = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/get-jwt")
+                        .cookie(cookieToken))
+                .andReturn().getResponse().getContentAsString();
+        String accessToken = objectMapper.readValue(token, JwtToken.class).getAccessToken();
         PatientDto patientDto = TestDataUtil.createPatientDto(null);
         patientDto.setDateOfBirth(new SimpleDateFormat("dd-MM-yyyy").parse("11-11-2030"));
         String patientDtoJson = objectMapper.writeValueAsString(patientDto);
         mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patient/me")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(patientDtoJson)
-                        .cookie(accessToken)
+                        .header("Authorization", "Bearer " + accessToken)
                 .with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
@@ -113,11 +114,15 @@ public class PatientControllerIntegrationTest {
         userService.register(register);
         LoginForm loginForm = TestDataUtil.createLoginForm();
         String loginFormJson = objectMapper.writeValueAsString(loginForm);
-        Cookie accessToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
+        Cookie cookieToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginFormJson)
                         .with(csrf()))
                 .andReturn().getResponse().getCookie("accessToken");
+        String token = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/get-jwt")
+                        .cookie(cookieToken))
+                .andReturn().getResponse().getContentAsString();
+        String accessToken = objectMapper.readValue(token, JwtToken.class).getAccessToken();
         UserDto userDto = TestDataUtil.createUserDto();
         PatientDto patientDto = TestDataUtil.createPatientDto(userDto);
         patientDto.setFirstName("UPDATED");
@@ -125,7 +130,7 @@ public class PatientControllerIntegrationTest {
         mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patient/me")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(patientDtoJson)
-                        .cookie(accessToken)
+                        .header("Authorization", "Bearer " + accessToken)
                         .with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.firstName").value("UPDATED"));

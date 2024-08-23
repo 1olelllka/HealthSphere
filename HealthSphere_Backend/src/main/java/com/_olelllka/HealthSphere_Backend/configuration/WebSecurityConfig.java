@@ -32,7 +32,7 @@ public class WebSecurityConfig {
                             .requestMatchers(HttpMethod.POST, "/api/v1/login", "/api/v1/register")
                             .permitAll()
                             .requestMatchers(HttpMethod.POST, "/api/v1/doctor-register").hasRole("ADMIN")
-                            .requestMatchers(HttpMethod.GET, "/api/v1/csrf-cookie").permitAll()
+                            .requestMatchers(HttpMethod.GET, "/api/v1/csrf-cookie", "/api/v1/get-jwt").permitAll()
                             .anyRequest()
                             .authenticated();
                 })

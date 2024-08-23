@@ -1,6 +1,7 @@
 package com._olelllka.HealthSphere_Backend.controllers;
 
 import com._olelllka.HealthSphere_Backend.TestDataUtil;
+import com._olelllka.HealthSphere_Backend.domain.dto.JwtToken;
 import com._olelllka.HealthSphere_Backend.domain.dto.LoginForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.RegisterDoctorForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.RegisterPatientForm;
@@ -112,18 +113,22 @@ public class UserControllerIntegrationTest {
         userRepository.save(user);
         LoginForm loginForm = TestDataUtil.createLoginForm();
         String loginFormJson = objectMapper.writeValueAsString(loginForm);
-        Cookie accessToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
+        Cookie cookieToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginFormJson)
                         .with(csrf()))
                 .andReturn().getResponse().getCookie("accessToken");
+        String token = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/get-jwt")
+                .cookie(cookieToken))
+                .andReturn().getResponse().getContentAsString();
+        String accessToken = objectMapper.readValue(token, JwtToken.class).getAccessToken();
         RegisterDoctorForm registerDoctorForm = TestDataUtil.createRegisterDoctorForm();
         registerDoctorForm.setFirstName("");
         String registerFromJson = objectMapper.writeValueAsString(registerDoctorForm);
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/doctor-register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(registerFromJson)
-                        .cookie(accessToken)
+                        .header("Authorization", "Bearer " + accessToken)
                         .with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
@@ -137,17 +142,21 @@ public class UserControllerIntegrationTest {
         LoginForm loginForm = TestDataUtil.createLoginForm();
         loginForm.setEmail("admin@email.com");
         String loginFormJson = objectMapper.writeValueAsString(loginForm);
-        Cookie accessToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
+        Cookie cookieToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginFormJson)
                         .with(csrf()))
                 .andReturn().getResponse().getCookie("accessToken");
+        String token = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/get-jwt")
+                        .cookie(cookieToken))
+                .andReturn().getResponse().getContentAsString();
+        String accessToken = objectMapper.readValue(token, JwtToken.class).getAccessToken();
         RegisterDoctorForm registerDoctorForm = TestDataUtil.createRegisterDoctorForm();
         String registerFromJson = objectMapper.writeValueAsString(registerDoctorForm);
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/doctor-register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(registerFromJson)
-                        .cookie(accessToken)
+                        .header("Authorization", "Bearer " + accessToken)
                         .with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.email").value(registerDoctorForm.getEmail()))
@@ -224,21 +233,49 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
-    public void testThatLogoutUserReturnsHttp200OkIfUserIsLoggedId() throws Exception {
+    public void testThatLogoutUserReturnsHttp200OkIfUserIsLoggedIn() throws Exception {
         RegisterPatientForm registerPatientForm = TestDataUtil.createRegisterForm();
         userService.register(registerPatientForm);
         LoginForm loginForm = TestDataUtil.createLoginForm();
         String loginFormJson = objectMapper.writeValueAsString(loginForm);
-        Cookie accessToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
+        Cookie cookieToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginFormJson)
                         .with(csrf()))
                 .andReturn().getResponse().getCookie("accessToken");
+        String token = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/get-jwt")
+                        .cookie(cookieToken))
+                .andReturn().getResponse().getContentAsString();
+        String accessToken = objectMapper.readValue(token, JwtToken.class).getAccessToken();
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/logout")
-                        .cookie(accessToken)
+                        .header("Authorization", "Bearer " + accessToken)
                         .with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.cookie().maxAge("accessToken", 0));
+    }
+
+    @Test
+    public void testThatGetJwtReturnsHttp401UnauthorizedIfAccessTokenWasNotFound() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/get-jwt")
+                .cookie(new Cookie("someName", "someValue")))
+                .andExpect(MockMvcResultMatchers.status().isUnauthorized());
+    }
+
+    @Test
+    public void testThatGetJwtReturnHttp200OkAndAccessToken() throws Exception {
+        RegisterPatientForm registerPatientForm = TestDataUtil.createRegisterForm();
+        userService.register(registerPatientForm);
+        LoginForm loginForm = TestDataUtil.createLoginForm();
+        String loginFormJson = objectMapper.writeValueAsString(loginForm);
+        Cookie cookieToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginFormJson)
+                        .with(csrf()))
+                .andReturn().getResponse().getCookie("accessToken");
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/get-jwt")
+                        .cookie(cookieToken))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.accessToken").exists());
     }
 }
