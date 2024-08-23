@@ -135,4 +135,36 @@ public class PatientControllerIntegrationTest {
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.firstName").value("UPDATED"));
     }
+
+    @Test
+    public void testThatDeleteByEmailReturnsHttp403IfNotAuthorized() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/patient/me"))
+                .andExpect(MockMvcResultMatchers.status().isForbidden());
+    }
+
+    @Test
+    public void testThatDeleteByEmailReturnsHttp202Accepted() throws Exception {
+        String accessToken = getAccessToken();
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/patient/me")
+                .header("Authorization", "Bearer " +accessToken)
+                        .with(csrf()))
+                .andExpect(MockMvcResultMatchers.status().isAccepted());
+    }
+
+    private String getAccessToken() throws Exception {
+        RegisterPatientForm register = TestDataUtil.createRegisterForm();
+        userService.register(register);
+        LoginForm loginForm = TestDataUtil.createLoginForm();
+        String loginFormJson = objectMapper.writeValueAsString(loginForm);
+        Cookie cookieToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginFormJson)
+                        .with(csrf()))
+                .andReturn().getResponse().getCookie("accessToken");
+        String token = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/get-jwt")
+                        .cookie(cookieToken))
+                .andReturn().getResponse().getContentAsString();
+        String accessToken = objectMapper.readValue(token, JwtToken.class).getAccessToken();
+        return accessToken;
+    }
 }

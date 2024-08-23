@@ -5,6 +5,7 @@ import com._olelllka.HealthSphere_Backend.domain.entity.PatientEntity;
 import com._olelllka.HealthSphere_Backend.mapper.impl.PatientMapper;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.ValidationException;
 import com._olelllka.HealthSphere_Backend.service.PatientService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -46,5 +47,13 @@ public class PatientController {
         PatientEntity updatedPatientEntity = mapper.toEntity(updated);
         PatientEntity patient = patientService.patchPatient(header.substring(7), updatedPatientEntity);
         return new ResponseEntity<>(mapper.toDto(patient), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/patient/me")
+    public ResponseEntity deletePatient(@RequestHeader(name="Authorization") String header,
+                                        HttpServletRequest request) throws Exception{
+        patientService.deleteByEmail(header.substring(7));
+        request.logout();
+        return new ResponseEntity(null, HttpStatus.ACCEPTED);
     }
 }

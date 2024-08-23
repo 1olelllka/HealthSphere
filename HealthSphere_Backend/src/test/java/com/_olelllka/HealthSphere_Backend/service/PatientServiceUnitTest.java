@@ -87,4 +87,31 @@ public class PatientServiceUnitTest {
         verify(patientRepository, times(1)).findByEmail("username");
         verify(patientRepository, times(1)).save(updatedEntity);
     }
+
+    @Test
+    public void testThatDeletePatientThrowsErrorIfEmailIsIncorrect() {
+        // given
+        String jwt = "jwt-token";
+        // when
+        when(jwtService.extractUsername(jwt)).thenReturn("incorrectEmail@email.com");
+        when(patientRepository.findByEmail("incorrectEmail@email.com")).thenReturn(Optional.empty());
+        // then
+        assertThrows(NotFoundException.class, () -> patientService.deleteByEmail(jwt));
+        verify(patientRepository, never()).deleteById(anyLong());
+    }
+
+    @Test
+    public void testThatDeletePatientWorksWell() {
+        // given
+        String jwt = "jwt-token";
+        PatientEntity patient = PatientEntity.builder().id(1L).firstName("something").build();
+        // when
+        when(jwtService.extractUsername(jwt)).thenReturn("incorrectEmail@email.com");
+        when(patientRepository.findByEmail("incorrectEmail@email.com")).thenReturn(Optional.of(patient));
+        patientService.deleteByEmail(jwt);
+        // then
+        verify(jwtService, times(1)).extractUsername(jwt);
+        verify(patientRepository, times(1)).findByEmail("incorrectEmail@email.com");
+        verify(patientRepository, times(1)).deleteById(1L);
+    }
 }

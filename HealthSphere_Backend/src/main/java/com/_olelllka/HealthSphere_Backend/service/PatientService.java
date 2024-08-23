@@ -6,4 +6,6 @@ public interface PatientService {
     PatientEntity getPatient(String jwt);
 
     PatientEntity patchPatient(String accessToken, PatientEntity updatedPatientEntity);
+
+    void deleteByEmail(String substring);
 }

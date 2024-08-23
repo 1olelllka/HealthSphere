@@ -42,4 +42,11 @@ public class PatientServiceImpl implements PatientService {
                     return patientRepository.save(patient);
                 }).orElseThrow(() -> new NotFoundException("Patient with such email was not found."));
     }
+
+    @Override
+    public void deleteByEmail(String jwt) {
+        String username = jwtService.extractUsername(jwt);
+        PatientEntity patient = patientRepository.findByEmail(username).orElseThrow(() -> new NotFoundException("Patient with such email was not found."));
+        patientRepository.deleteById(patient.getId());
+    }
 }
