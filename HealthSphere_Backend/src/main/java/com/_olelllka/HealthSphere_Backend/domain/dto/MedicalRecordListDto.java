@@ -1,6 +1,5 @@
 package com._olelllka.HealthSphere_Backend.domain.dto;
 
-import com._olelllka.HealthSphere_Backend.domain.entity.DoctorEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,8 +13,18 @@ import java.util.Date;
 @Data
 public class MedicalRecordListDto {
     private Long id;
-    private DoctorEntity doctor;
+    private DoctorRecordList doctor;
     private Date recordDate;
     private String diagnosis;
     private String treatment;
+}
+
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+class DoctorRecordList {
+    private String id;
+    private String firstName;
+    private String lastName;
 }

@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface MedicalRecordService {
     List<MedicalRecordEntity> getAllRecordsForPatient(String patientJwt);
+
+    MedicalRecordEntity getDetailedMedicalRecordForPatient(Long id);
 }

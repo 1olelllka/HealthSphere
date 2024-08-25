@@ -56,6 +56,26 @@ public class MedicalRecordControllerIntegrationTest {
                 .andExpect(MockMvcResultMatchers.status().isOk());
     } // it'll return empty list for now. But when I implement creation of records, I'll override this.
 
+    @Test
+    public void testThatGetMedicalRecordsReturnsHttp403ForbiddenIfUnauthorized() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/patient/medical-records/1"))
+                .andExpect(MockMvcResultMatchers.status().isForbidden());
+    }
+
+    @Test
+    public void testThatGetMedicalRecordsReturnsHttp404NotFoundIfCorrespondingRecordsDoesNotExist() throws Exception {
+        String accessToken = getAccessToken();
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/patient/medical-records/1")
+                .header("Authorization", "Bearer " + accessToken))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
+
+    // the test will be created when medical-record creation will be created;
+//    @Test
+//    public void testThatGetMedicalRecordsReturnsHttp200OkIfEverythingGood() throws Exception {
+//        String accessToken = getAccessToken();
+//    }
+
     private String getAccessToken() throws Exception {
         RegisterPatientForm register = TestDataUtil.createRegisterForm();
         userService.register(register);

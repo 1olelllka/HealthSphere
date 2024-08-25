@@ -8,12 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class MedicalRecordMapper implements Mapper<MedicalRecordEntity, MedicalRecordListDto> {
+public class MedicalRecordListMapper implements Mapper<MedicalRecordEntity, MedicalRecordListDto> {
 
     private ModelMapper modelMapper;
 
     @Autowired
-    public MedicalRecordMapper(ModelMapper modelMapper) {
+    public MedicalRecordListMapper(ModelMapper modelMapper) {
         this.modelMapper = modelMapper;
     }
 
