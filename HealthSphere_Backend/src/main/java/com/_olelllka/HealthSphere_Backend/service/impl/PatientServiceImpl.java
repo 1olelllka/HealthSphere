@@ -5,12 +5,14 @@ import com._olelllka.HealthSphere_Backend.repositories.PatientRepository;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.NotFoundException;
 import com._olelllka.HealthSphere_Backend.service.JwtService;
 import com._olelllka.HealthSphere_Backend.service.PatientService;
+import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
+@Log
 public class PatientServiceImpl implements PatientService {
 
     private PatientRepository patientRepository;

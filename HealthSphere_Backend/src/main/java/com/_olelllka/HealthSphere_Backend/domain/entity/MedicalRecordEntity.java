@@ -18,6 +18,7 @@ import java.util.Date;
 @Table(name="record")
 public class MedicalRecordEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @OneToOne
     @JoinColumn(name="patient_id", referencedColumnName = "id")
