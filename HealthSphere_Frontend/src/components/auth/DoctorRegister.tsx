@@ -14,6 +14,7 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import "../../index.css";
 import axiosInstance from "../api/axiosInstance";
+import getJwtToken from "../api/axiosJwt";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -46,15 +47,21 @@ export default function DoctorRegister() {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     console.log(values);
+    const jwtToken = await getJwtToken();
     axiosInstance
-      .post("http://localhost:8000/api/v1/doctor-register", values)
+      .post("http://localhost:8000/api/v1/doctor-register", values, {
+        headers: {
+          Authorization: `Bearer ${jwtToken}`,
+        },
+      })
       .then(() => {
         alert("success"); // for now
       })
       .catch((err) => {
         alert("You are not authorized to do this." + err);
+        console.log(err);
       });
   };
 
