@@ -8,7 +8,6 @@ export default async function getJwtToken(): Promise<string> {
         withCredentials: true,
       }
     );
-    console.log(response);
     return response.data.accessToken;
   } catch (err) {
     console.error("Failed to fetch jwt token", err);

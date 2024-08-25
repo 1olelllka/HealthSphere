@@ -56,6 +56,7 @@ export default function PatientInfo() {
             },
           }
         );
+        console.log("server call");
         setPatient(response.data);
         setInterval(() => setLoading(false), 1500);
       } catch (err) {
@@ -71,12 +72,12 @@ export default function PatientInfo() {
         <h2 className="text-2xl pt-5">Personal Information</h2>
         {loading ? (
           <div className="loading space-y-2 p-7">
-            <Skeleton className="h-6 w-80 bg-gradient-to-r from-purple-300 via-pink-400 to-red-300 animate-pulse" />
-            <Skeleton className="h-6 w-80 bg-gradient-to-r from-purple-300 via-pink-400 to-red-300 animate-pulse" />
-            <Skeleton className="h-6 w-80 bg-gradient-to-r from-purple-300 via-pink-400 to-red-300 animate-pulse" />
-            <Skeleton className="h-6 w-80 bg-gradient-to-r from-purple-300 via-pink-400 to-red-300 animate-pulse" />
-            <Skeleton className="h-6 w-80 bg-gradient-to-r from-purple-300 via-pink-400 to-red-300 animate-pulse" />
-            <Skeleton className="h-6 w-80 bg-gradient-to-r from-purple-300 via-pink-400 to-red-300 animate-pulse" />
+            <Skeleton className="h-6 w-100 bg-gradient-to-r from-purple-300 via-pink-400 to-red-300 animate-pulse" />
+            <Skeleton className="h-6 w-100 bg-gradient-to-r from-purple-300 via-pink-400 to-red-300 animate-pulse" />
+            <Skeleton className="h-6 w-100 bg-gradient-to-r from-purple-300 via-pink-400 to-red-300 animate-pulse" />
+            <Skeleton className="h-6 w-100 bg-gradient-to-r from-purple-300 via-pink-400 to-red-300 animate-pulse" />
+            <Skeleton className="h-6 w-100 bg-gradient-to-r from-purple-300 via-pink-400 to-red-300 animate-pulse" />
+            <Skeleton className="h-6 w-100 bg-gradient-to-r from-purple-300 via-pink-400 to-red-300 animate-pulse" />
           </div>
         ) : (
           <Card className="mt-5 pt-5">

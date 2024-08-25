@@ -10,6 +10,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import MedicalRecordsDetail from "./MedicalRecordsDetail";
 
 type Record = {
   id: number;
@@ -24,7 +26,6 @@ type Record = {
 
 export default function MedicalRecords() {
   const [records, setRecords] = useState<Record[] | null>([]);
-  console.log(records);
 
   useEffect(() => {
     const fetchRecords = async () => {
@@ -37,8 +38,8 @@ export default function MedicalRecords() {
           },
         }
       );
-
       setRecords(response.data);
+      console.log("server call");
     };
     fetchRecords();
   }, []);
@@ -49,24 +50,32 @@ export default function MedicalRecords() {
         <h2 className="text-2xl pt-5">Medical Records</h2>
         <div>
           {records?.map((record: Record) => (
-            <Card className="mt-5" key={record.id}>
-              <CardHeader>
-                <CardTitle>
-                  {record?.doctor.firstName} {record?.doctor.lastName}
-                </CardTitle>
-                <CardDescription>
-                  {record?.recordDate
-                    ? new Date(record?.recordDate).toLocaleDateString()
-                    : "N/A"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Label className="text-lg">{record?.diagnosis}</Label>
-              </CardContent>
-              <CardFooter>
-                <p>Treatment: {record?.treatment}</p>
-              </CardFooter>
-            </Card>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Card
+                  className="mt-5 hover:bg-slate-200 transition duration-300 ease-in-out"
+                  key={record.id}
+                >
+                  <CardHeader>
+                    <CardTitle>
+                      {record?.doctor.firstName} {record?.doctor.lastName}
+                    </CardTitle>
+                    <CardDescription>
+                      {record?.recordDate
+                        ? new Date(record?.recordDate).toLocaleDateString()
+                        : "N/A"}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Label className="text-lg">{record?.diagnosis}</Label>
+                  </CardContent>
+                  <CardFooter>
+                    <p>Treatment: {record?.treatment}</p>
+                  </CardFooter>
+                </Card>
+              </DialogTrigger>
+              <MedicalRecordsDetail id={record?.id} />
+            </Dialog>
           ))}
         </div>
       </div>
