@@ -8,7 +8,7 @@ import NotFoundPage from "./components/NotFoundPage";
 import PatientRegister from "./components/auth/PatientRegister";
 import Login from "./components/auth/Login";
 import DoctorRegister from "./components/auth/DoctorRegister";
-import PatientMainpage from "./components/pages/PatientMainPage";
+import PatientMainpage from "./components/pages/PatientMainPage/PatientMainPage";
 
 const router = createBrowserRouter([
   {
