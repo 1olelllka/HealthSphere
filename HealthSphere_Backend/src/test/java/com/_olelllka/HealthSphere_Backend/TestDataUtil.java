@@ -6,6 +6,7 @@ import com._olelllka.HealthSphere_Backend.domain.entity.Role;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.List;
 
 public class TestDataUtil {
 
@@ -47,6 +48,19 @@ public class TestDataUtil {
                 .address("Address Address")
                 .dateOfBirth(new SimpleDateFormat("dd-MM-yyyy").parse("12-04-2004"))
                 .phoneNumber("14123412341234")
+                .build();
+    }
+
+    public static DoctorDetailDto createDoctorDetailDto(UserDto userDto) {
+        return DoctorDetailDto.builder()
+                .user(userDto)
+                .firstName("Doctor First")
+                .lastName("Doctor Last")
+                .clinicAddress("Address")
+                .experienceYears(2L)
+                .specializations(List.of())
+                .licenseNumber("12390123123")
+                .phoneNumber("13422341234")
                 .build();
     }
 

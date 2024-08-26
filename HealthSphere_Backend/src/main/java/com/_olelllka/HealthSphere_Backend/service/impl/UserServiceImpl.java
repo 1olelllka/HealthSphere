@@ -62,9 +62,8 @@ public class UserServiceImpl implements UserService {
                 .email(registerDoctorForm.getEmail())
                 .password(passwordEncoder.encode(registerDoctorForm.getPassword()))
                 .role(Role.ROLE_DOCTOR).build();
-        UserEntity response = userRepository.save(user);
         DoctorEntity patient = DoctorEntity.builder()
-                .user(response)
+                .user(user)
                 .firstName(registerDoctorForm.getFirstName())
                 .lastName(registerDoctorForm.getLastName())
                 .licenseNumber(registerDoctorForm.getLicenseNumber())
@@ -72,6 +71,6 @@ public class UserServiceImpl implements UserService {
                 .phoneNumber(registerDoctorForm.getPhoneNumber())
                 .build();
         doctorRepository.save(patient);
-        return response;
+        return userRepository.save(user);
     }
 }

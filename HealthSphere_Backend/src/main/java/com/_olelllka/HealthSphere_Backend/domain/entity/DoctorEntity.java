@@ -22,7 +22,7 @@ public class DoctorEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "_user_id", referencedColumnName = "id")
     private UserEntity user;
     @Column(nullable = false)

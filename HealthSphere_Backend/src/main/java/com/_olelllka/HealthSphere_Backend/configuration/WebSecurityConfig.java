@@ -1,5 +1,6 @@
 package com._olelllka.HealthSphere_Backend.configuration;
 
+import com._olelllka.HealthSphere_Backend.domain.entity.Role;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
@@ -9,6 +10,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -26,12 +28,16 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.
+                csrf(AbstractHttpConfigurer::disable)
 //                csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
-                authorizeHttpRequests((authorize) -> {
+                .authorizeHttpRequests((authorize) -> {
                     authorize
                             .requestMatchers(HttpMethod.POST, "/api/v1/login", "/api/v1/register")
                             .permitAll()
                             .requestMatchers(HttpMethod.POST, "/api/v1/doctor-register").hasRole("ADMIN")
+                            .requestMatchers(HttpMethod.DELETE, "/api/v1/doctors/me").hasRole("DOCTOR")
+                            .requestMatchers(HttpMethod.PATCH, "/api/v1/doctors/me").hasRole("DOCTOR")
+                            .requestMatchers(HttpMethod.GET, "/api/v1/doctors/me").hasRole("DOCTOR")
                             .requestMatchers(HttpMethod.GET, "/api/v1/csrf-cookie", "/api/v1/get-jwt").permitAll()
                             .anyRequest()
                             .authenticated();

@@ -20,8 +20,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.text.SimpleDateFormat;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
@@ -57,8 +55,7 @@ public class PatientControllerIntegrationTest {
         String loginFormJson = objectMapper.writeValueAsString(loginForm);
         Cookie cookieToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginFormJson)
-                        .with(csrf()))
+                        .content(loginFormJson))
                 .andReturn().getResponse().getCookie("accessToken");
         String token = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/get-jwt")
                         .cookie(cookieToken))
@@ -77,52 +74,26 @@ public class PatientControllerIntegrationTest {
         String patientDtoJson = objectMapper.writeValueAsString(patientDto);
         mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patient/me")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(patientDtoJson)
-                        .with(csrf()))
+                        .content(patientDtoJson))
                 .andExpect(MockMvcResultMatchers.status().isForbidden());
     }
 
     @Test
     public void testThatPatchPatientReturnsHttp400BadRequestIfDateOfBirthIsWrong() throws Exception {
-        RegisterPatientForm register = TestDataUtil.createRegisterForm();
-        userService.register(register);
-        LoginForm loginForm = TestDataUtil.createLoginForm();
-        String loginFormJson = objectMapper.writeValueAsString(loginForm);
-        Cookie cookieToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginFormJson)
-                        .with(csrf()))
-                .andReturn().getResponse().getCookie("accessToken");
-        String token = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/get-jwt")
-                        .cookie(cookieToken))
-                .andReturn().getResponse().getContentAsString();
-        String accessToken = objectMapper.readValue(token, JwtToken.class).getAccessToken();
+        String accessToken = getAccessToken();
         PatientDto patientDto = TestDataUtil.createPatientDto(null);
         patientDto.setDateOfBirth(new SimpleDateFormat("dd-MM-yyyy").parse("11-11-2030"));
         String patientDtoJson = objectMapper.writeValueAsString(patientDto);
         mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patient/me")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(patientDtoJson)
-                        .header("Authorization", "Bearer " + accessToken)
-                .with(csrf()))
+                        .header("Authorization", "Bearer " + accessToken))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
     @Test
     public void testThatPatchPatientReturnsHttp200OkIfEverythingIsOk() throws Exception {
-        RegisterPatientForm register = TestDataUtil.createRegisterForm();
-        userService.register(register);
-        LoginForm loginForm = TestDataUtil.createLoginForm();
-        String loginFormJson = objectMapper.writeValueAsString(loginForm);
-        Cookie cookieToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginFormJson)
-                        .with(csrf()))
-                .andReturn().getResponse().getCookie("accessToken");
-        String token = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/get-jwt")
-                        .cookie(cookieToken))
-                .andReturn().getResponse().getContentAsString();
-        String accessToken = objectMapper.readValue(token, JwtToken.class).getAccessToken();
+        String accessToken = getAccessToken();
         UserDto userDto = TestDataUtil.createUserDto();
         PatientDto patientDto = TestDataUtil.createPatientDto(userDto);
         patientDto.setFirstName("UPDATED");
@@ -130,8 +101,7 @@ public class PatientControllerIntegrationTest {
         mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patient/me")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(patientDtoJson)
-                        .header("Authorization", "Bearer " + accessToken)
-                        .with(csrf()))
+                        .header("Authorization", "Bearer " + accessToken))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.firstName").value("UPDATED"));
     }
@@ -146,8 +116,7 @@ public class PatientControllerIntegrationTest {
     public void testThatDeleteByEmailReturnsHttp202Accepted() throws Exception {
         String accessToken = getAccessToken();
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/patient/me")
-                .header("Authorization", "Bearer " +accessToken)
-                        .with(csrf()))
+                .header("Authorization", "Bearer " +accessToken))
                 .andExpect(MockMvcResultMatchers.status().isAccepted());
     }
 
@@ -158,8 +127,7 @@ public class PatientControllerIntegrationTest {
         String loginFormJson = objectMapper.writeValueAsString(loginForm);
         Cookie cookieToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginFormJson)
-                        .with(csrf()))
+                        .content(loginFormJson))
                 .andReturn().getResponse().getCookie("accessToken");
         String token = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/get-jwt")
                         .cookie(cookieToken))
