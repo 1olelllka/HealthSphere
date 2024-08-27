@@ -1,6 +1,6 @@
 package com._olelllka.HealthSphere_Backend.mapper.impl;
 
-import com._olelllka.HealthSphere_Backend.domain.dto.DoctorListDto;
+import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorListDto;
 import com._olelllka.HealthSphere_Backend.domain.entity.DoctorEntity;
 import com._olelllka.HealthSphere_Backend.mapper.Mapper;
 import org.modelmapper.ModelMapper;

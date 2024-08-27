@@ -2,31 +2,44 @@ package com._olelllka.HealthSphere_Backend.controllers;
 
 import com._olelllka.HealthSphere_Backend.TestDataUtil;
 import com._olelllka.HealthSphere_Backend.domain.dto.JwtToken;
-import com._olelllka.HealthSphere_Backend.domain.dto.LoginForm;
-import com._olelllka.HealthSphere_Backend.domain.dto.RegisterDoctorForm;
-import com._olelllka.HealthSphere_Backend.domain.dto.RegisterPatientForm;
+import com._olelllka.HealthSphere_Backend.domain.dto.auth.LoginForm;
+import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterDoctorForm;
+import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterPatientForm;
 import com._olelllka.HealthSphere_Backend.domain.entity.Role;
 import com._olelllka.HealthSphere_Backend.domain.entity.UserEntity;
+import com._olelllka.HealthSphere_Backend.repositories.DoctorElasticRepository;
 import com._olelllka.HealthSphere_Backend.repositories.UserRepository;
 import com._olelllka.HealthSphere_Backend.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
-import lombok.extern.java.Log;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
+import org.springframework.amqp.rabbit.listener.RabbitListenerEndpointRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.testcontainers.containers.RabbitMQContainer;
+import org.testcontainers.elasticsearch.ElasticsearchContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.utility.DockerImageName;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import java.util.Objects;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
@@ -34,25 +47,68 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 @AutoConfigureMockMvc
 public class UserControllerIntegrationTest {
 
+    private static final Logger log = LoggerFactory.getLogger(UserControllerIntegrationTest.class);
+    @Container
+    static ElasticsearchContainer elasticsearchContainer =
+            new ElasticsearchContainer(DockerImageName.parse("elasticsearch").withTag("7.17.23"));
+
+    @Container
+    static RabbitMQContainer container = new RabbitMQContainer(
+            DockerImageName.parse("rabbitmq").withTag("3.13-management")
+    );
+
+    @DynamicPropertySource
+    static void configure(DynamicPropertyRegistry registry) {
+        registry.add("spring.rabbitmq.host", container::getHost);
+        registry.add("spring.rabbitmq.port", container::getAmqpPort);
+        registry.add("spring.rabbitmq.username", container::getAdminUsername);
+        registry.add("spring.rabbitmq.password", container::getAdminPassword);
+        registry.add("spring.elasticsearch.uris", elasticsearchContainer::getHttpHostAddress);
+    }
+
+    @Autowired
+    private RabbitListenerEndpointRegistry listenerRegistry;
+
+    @Autowired
+    private RabbitAdmin admin;
+
+    @BeforeAll
+    static void setUp() {
+        container.start();
+        elasticsearchContainer.start();
+    }
+
+    @AfterAll
+    static void tearDown() {
+        container.stop();
+        elasticsearchContainer.stop();
+    }
+
     private UserService userService;
     private UserRepository userRepository;
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
+    private DoctorElasticRepository elasticRepository;
 
     @Autowired
-    public UserControllerIntegrationTest(UserService userService, MockMvc mockMvc, UserRepository userRepository) {
+    public UserControllerIntegrationTest(UserService userService,
+                                         MockMvc mockMvc,
+                                         UserRepository userRepository,
+                                         DoctorElasticRepository elasticRepository) {
         this.mockMvc = mockMvc;
         this.userService = userService;
         this.objectMapper = new ObjectMapper();
         this.userRepository = userRepository;
+        this.elasticRepository = elasticRepository;
     }
+
 
     @Test
     public void testThatUserRegisterReturnsHttp400BadRequestIfValidationFails() throws Exception {
         RegisterPatientForm registerPatientForm = TestDataUtil.createRegisterForm();
         registerPatientForm.setEmail("wrongEmail");
         String registerFromJson = objectMapper.writeValueAsString(registerPatientForm);
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/register")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/register/patient")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(registerFromJson))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
@@ -63,7 +119,7 @@ public class UserControllerIntegrationTest {
     public void testThatUserRegisterReturnsHttp201CreatedAndCorrectData() throws Exception {
         RegisterPatientForm registerPatientForm = TestDataUtil.createRegisterForm();
         String registerFormJson = objectMapper.writeValueAsString(registerPatientForm);
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/register")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/register/patient")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(registerFormJson))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
@@ -75,7 +131,7 @@ public class UserControllerIntegrationTest {
     public void testThatDoctorRegisterReturnsHttp403ForbiddenIfUserHasWrongRole() throws Exception {
         RegisterDoctorForm registerDoctorForm = TestDataUtil.createRegisterDoctorForm();
         String registerFromJson = objectMapper.writeValueAsString(registerDoctorForm);
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/doctor-register")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/register/doctor")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(registerFromJson))
                 .andExpect(MockMvcResultMatchers.status().isForbidden());
@@ -100,7 +156,7 @@ public class UserControllerIntegrationTest {
         RegisterDoctorForm registerDoctorForm = TestDataUtil.createRegisterDoctorForm();
         registerDoctorForm.setFirstName("");
         String registerFromJson = objectMapper.writeValueAsString(registerDoctorForm);
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/doctor-register")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/register/doctor")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(registerFromJson)
                         .header("Authorization", "Bearer " + accessToken))
@@ -109,6 +165,8 @@ public class UserControllerIntegrationTest {
 
     @Test
     public void testThatDoctorRegisterReturnsHttp201CreatedAndCorrespondingDataIfEverythingOk() throws Exception {
+        listenerRegistry.stop();
+        assertEquals(0, Objects.requireNonNull(admin.getQueueInfo("doctors_index_queue")).getMessageCount());
         UserEntity user = UserEntity.builder()
                 .email("admin@email.com")
                 .password(new BCryptPasswordEncoder().encode("password123")).role(Role.ROLE_ADMIN).build();
@@ -126,7 +184,8 @@ public class UserControllerIntegrationTest {
         String accessToken = objectMapper.readValue(token, JwtToken.class).getAccessToken();
         RegisterDoctorForm registerDoctorForm = TestDataUtil.createRegisterDoctorForm();
         String registerFromJson = objectMapper.writeValueAsString(registerDoctorForm);
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/doctor-register")
+        listenerRegistry.getListenerContainer("doctor.post").start();
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/register/doctor")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(registerFromJson)
                         .header("Authorization", "Bearer " + accessToken))
@@ -226,4 +285,6 @@ public class UserControllerIntegrationTest {
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.accessToken").exists());
     }
+
+
 }

@@ -1,6 +1,11 @@
 package com._olelllka.HealthSphere_Backend;
 
-import com._olelllka.HealthSphere_Backend.domain.dto.*;
+import com._olelllka.HealthSphere_Backend.domain.dto.auth.LoginForm;
+import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterDoctorForm;
+import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterPatientForm;
+import com._olelllka.HealthSphere_Backend.domain.dto.auth.UserDto;
+import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDetailDto;
+import com._olelllka.HealthSphere_Backend.domain.dto.patients.PatientDto;
 import com._olelllka.HealthSphere_Backend.domain.entity.Gender;
 import com._olelllka.HealthSphere_Backend.domain.entity.Role;
 

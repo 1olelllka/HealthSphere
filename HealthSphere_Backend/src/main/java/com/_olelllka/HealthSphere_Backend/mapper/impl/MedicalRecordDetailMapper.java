@@ -1,6 +1,6 @@
 package com._olelllka.HealthSphere_Backend.mapper.impl;
 
-import com._olelllka.HealthSphere_Backend.domain.dto.MedicalRecordDetailDto;
+import com._olelllka.HealthSphere_Backend.domain.dto.records.MedicalRecordDetailDto;
 import com._olelllka.HealthSphere_Backend.domain.entity.MedicalRecordEntity;
 import com._olelllka.HealthSphere_Backend.mapper.Mapper;
 import org.modelmapper.ModelMapper;

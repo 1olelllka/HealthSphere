@@ -2,11 +2,8 @@ package com._olelllka.HealthSphere_Backend.controllers;
 
 import com._olelllka.HealthSphere_Backend.TestDataUtil;
 import com._olelllka.HealthSphere_Backend.domain.dto.JwtToken;
-import com._olelllka.HealthSphere_Backend.domain.dto.LoginForm;
-import com._olelllka.HealthSphere_Backend.domain.dto.RegisterDoctorForm;
-import com._olelllka.HealthSphere_Backend.domain.dto.RegisterPatientForm;
-import com._olelllka.HealthSphere_Backend.domain.entity.UserEntity;
-import com._olelllka.HealthSphere_Backend.service.PatientService;
+import com._olelllka.HealthSphere_Backend.domain.dto.auth.LoginForm;
+import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterPatientForm;
 import com._olelllka.HealthSphere_Backend.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;

@@ -1,4 +1,4 @@
-package com._olelllka.HealthSphere_Backend.domain.dto;
+package com._olelllka.HealthSphere_Backend.domain.dto.records;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

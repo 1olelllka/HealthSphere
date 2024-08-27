@@ -1,6 +1,6 @@
 package com._olelllka.HealthSphere_Backend.rest.controllers;
 
-import com._olelllka.HealthSphere_Backend.domain.dto.PatientDto;
+import com._olelllka.HealthSphere_Backend.domain.dto.patients.PatientDto;
 import com._olelllka.HealthSphere_Backend.domain.entity.PatientEntity;
 import com._olelllka.HealthSphere_Backend.mapper.impl.PatientMapper;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.ValidationException;
@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
 import java.util.stream.Collectors;
 
 @RestController

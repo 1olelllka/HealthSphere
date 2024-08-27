@@ -1,9 +1,11 @@
 package com._olelllka.HealthSphere_Backend.rest.controllers;
 
-import com._olelllka.HealthSphere_Backend.domain.dto.DoctorDetailDto;
-import com._olelllka.HealthSphere_Backend.domain.dto.DoctorListDto;
+import com._olelllka.HealthSphere_Backend.domain.documents.DoctorDocument;
+import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDetailDto;
+import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorListDto;
 import com._olelllka.HealthSphere_Backend.domain.entity.DoctorEntity;
 import com._olelllka.HealthSphere_Backend.mapper.impl.DoctorDetailMapper;
+import com._olelllka.HealthSphere_Backend.mapper.impl.DoctorDocumentMapper;
 import com._olelllka.HealthSphere_Backend.mapper.impl.DoctorListMapper;
 import com._olelllka.HealthSphere_Backend.service.DoctorService;
 import jakarta.servlet.ServletException;
@@ -23,21 +25,32 @@ public class DoctorController {
     private DoctorService doctorService;
     private DoctorListMapper listMapper;
     private DoctorDetailMapper detailMapper;
+    private DoctorDocumentMapper documentMapper;
 
     @Autowired
     public DoctorController(DoctorService doctorService,
                             DoctorListMapper listMapper,
-                            DoctorDetailMapper detailMapper) {
+                            DoctorDetailMapper detailMapper,
+                            DoctorDocumentMapper documentMapper) {
         this.doctorService = doctorService;
         this.listMapper = listMapper;
         this.detailMapper = detailMapper;
+        this.documentMapper = documentMapper;
     }
 
     @GetMapping("/doctors")
-    public ResponseEntity<Page<DoctorListDto>> getListOfDoctors(Pageable pageable) {
-        Page<DoctorEntity> doctors = doctorService.getAllDoctors(pageable);
-        Page<DoctorListDto> result = doctors.map(listMapper::toDto);
-        return new ResponseEntity<>(result, HttpStatus.OK);
+    public ResponseEntity<Page<DoctorListDto>> getListOfDoctors(Pageable pageable,
+                                                                @RequestParam(name="search", required = false) String params) {
+
+        if (params == null) {
+            Page<DoctorEntity> doctors = doctorService.getAllDoctors(pageable);
+            Page<DoctorListDto> result = doctors.map(listMapper::toDto);
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        } else {
+            Page<DoctorDocument> doctors = doctorService.getAllDoctorsByParam(params, pageable);
+            Page<DoctorListDto> result = doctors.map(documentMapper::toDto);
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        }
     }
 
     @GetMapping("/doctors/{id}")

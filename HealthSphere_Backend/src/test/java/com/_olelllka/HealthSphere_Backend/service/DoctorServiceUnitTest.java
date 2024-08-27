@@ -1,9 +1,13 @@
 package com._olelllka.HealthSphere_Backend.service;
 
+import com._olelllka.HealthSphere_Backend.domain.documents.DoctorDocument;
+import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDocumentDto;
 import com._olelllka.HealthSphere_Backend.domain.entity.DoctorEntity;
+import com._olelllka.HealthSphere_Backend.repositories.DoctorElasticRepository;
 import com._olelllka.HealthSphere_Backend.repositories.DoctorRepository;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.NotFoundException;
 import com._olelllka.HealthSphere_Backend.service.impl.DoctorServiceImpl;
+import com._olelllka.HealthSphere_Backend.service.rabbitmq.DoctorMessageProducer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,6 +32,10 @@ public class DoctorServiceUnitTest {
     private DoctorRepository repository;
     @Mock
     private JwtService jwtService;
+    @Mock
+    private DoctorMessageProducer messageProducer;
+    @Mock
+    private DoctorElasticRepository elasticRepository;
     @InjectMocks
     private DoctorServiceImpl doctorService;
 
@@ -114,6 +122,7 @@ public class DoctorServiceUnitTest {
         // then
         assertThrows(NotFoundException.class, () -> doctorService.deleteDoctorByEmail(jwt));
         verify(repository, never()).deleteById(anyLong());
+        verify(messageProducer, never()).deleteDoctorFromIndex(anyLong());
     }
 
     @Test
@@ -127,6 +136,7 @@ public class DoctorServiceUnitTest {
         // then
         assertThrows(NotFoundException.class, () -> doctorService.patchDoctor(jwt, null));
         verify(repository, never()).save(any(DoctorEntity.class));
+        verify(messageProducer, never()).sendDoctorToIndex(any(DoctorDocumentDto.class));
     }
 
     @Test
@@ -147,6 +157,7 @@ public class DoctorServiceUnitTest {
                 () -> assertEquals(result.getFirstName(), updated.getFirstName())
         );
         verify(repository, times(1)).save(updated);
+        verify(messageProducer, times(1)).sendDoctorToIndex(any(DoctorDocumentDto.class));
     }
 
     @Test
@@ -161,6 +172,30 @@ public class DoctorServiceUnitTest {
         doctorService.deleteDoctorByEmail(jwt);
         // then
         verify(repository, times(1)).deleteById(1L);
+        verify(messageProducer, times(1)).deleteDoctorFromIndex(1L);
+    }
+
+    @Test
+    public void testThatGetDoctorsByParamReturnsDoctorDocument() {
+        // given
+        String params = "First Last";
+        Pageable pageable = PageRequest.of(1, 1);
+        DoctorDocument doctorDocument = DoctorDocument.builder()
+                .id(1L)
+                .firstName("First Name")
+                .lastName("Last Name")
+                .experienceYears(5L)
+                .clinicAddress("Clinic").build();
+        Page<DoctorDocument> expected = new PageImpl<>(List.of(doctorDocument));
+        // when
+        when(elasticRepository.findByFirstAndLastnames(params, pageable)).thenReturn(expected);
+        Page<DoctorDocument> result = doctorService.getAllDoctorsByParam(params, pageable);
+        // then
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertEquals(result, expected)
+        );
+        verify(elasticRepository, times(1)).findByFirstAndLastnames(params, pageable);
     }
 
 }

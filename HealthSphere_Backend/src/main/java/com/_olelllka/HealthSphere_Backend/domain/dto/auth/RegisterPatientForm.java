@@ -1,4 +1,4 @@
-package com._olelllka.HealthSphere_Backend.domain.dto;
+package com._olelllka.HealthSphere_Backend.domain.dto.auth;
 
 import com._olelllka.HealthSphere_Backend.domain.entity.Gender;
 import jakarta.validation.constraints.*;

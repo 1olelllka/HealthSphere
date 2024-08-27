@@ -1,29 +1,28 @@
-package com._olelllka.HealthSphere_Backend.domain.dto;
+package com._olelllka.HealthSphere_Backend.domain.dto.doctors;
 
-import com._olelllka.HealthSphere_Backend.domain.entity.Gender;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Past;
+import com._olelllka.HealthSphere_Backend.domain.dto.auth.UserDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
+import java.util.List;
 
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class PatientDto {
+public class DoctorDetailDto {
     private Long id;
     private UserDto user;
     private String firstName;
     private String lastName;
-    @Past(message = "Date of birth must be in the past.")
-    private Date dateOfBirth;
-    private Gender gender;
-    private String address;
+    private List<SpecializationDto> specializations;
+    private String licenseNumber;
+    private Long experienceYears;
     private String phoneNumber;
+    private String clinicAddress;
     private Date createdAt;
     private Date updatedAt;
 }

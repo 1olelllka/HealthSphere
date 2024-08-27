@@ -2,6 +2,10 @@ package com._olelllka.HealthSphere_Backend.controllers;
 
 import com._olelllka.HealthSphere_Backend.TestDataUtil;
 import com._olelllka.HealthSphere_Backend.domain.dto.*;
+import com._olelllka.HealthSphere_Backend.domain.dto.auth.LoginForm;
+import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterPatientForm;
+import com._olelllka.HealthSphere_Backend.domain.dto.auth.UserDto;
+import com._olelllka.HealthSphere_Backend.domain.dto.patients.PatientDto;
 import com._olelllka.HealthSphere_Backend.service.PatientService;
 import com._olelllka.HealthSphere_Backend.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;

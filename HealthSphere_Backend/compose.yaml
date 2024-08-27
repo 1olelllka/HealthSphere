@@ -7,10 +7,14 @@ services:
       - 'ELASTIC_PASSWORD=secret'
       - 'discovery.type=single-node'
       - 'xpack.security.enabled=false'
-      - 'ES_JAVA_OPTS=-Xms2g -Xmx2g'
+      - 'http.cors.enabled=true'
+      - 'http.cors.allow-origin=http://localhost:8080'
+      - 'http.cors.allow-headers=X-Requested-With,Content-Type,Content-Length,Authorization'
     ports:
       - '9200:9200'
       - '9300:9300'
+    volumes:
+      - '~/apps/elasticsearch:/var/lib/elasticsearch/'
   postgres:
     image: 'postgres:16.4'
     environment:
@@ -29,8 +33,6 @@ services:
     ports:
       - '5672:5672'
       - '15672:15672'
-    volumes:
-      - '~/apps/rabbitmq-data:/var/lib/rabbitmq'
 
   redis:
     image: 'redis/redis-stack:latest'

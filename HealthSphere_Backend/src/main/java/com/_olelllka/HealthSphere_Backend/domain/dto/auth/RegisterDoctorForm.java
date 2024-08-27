@@ -1,4 +1,4 @@
-package com._olelllka.HealthSphere_Backend.domain.dto;
+package com._olelllka.HealthSphere_Backend.domain.dto.auth;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

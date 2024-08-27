@@ -1,8 +1,10 @@
 package com._olelllka.HealthSphere_Backend.service;
 
 import com._olelllka.HealthSphere_Backend.TestDataUtil;
-import com._olelllka.HealthSphere_Backend.domain.dto.RegisterDoctorForm;
-import com._olelllka.HealthSphere_Backend.domain.dto.RegisterPatientForm;
+import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterDoctorForm;
+import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterPatientForm;
+import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDocumentDto;
+import com._olelllka.HealthSphere_Backend.domain.entity.DoctorEntity;
 import com._olelllka.HealthSphere_Backend.domain.entity.Role;
 import com._olelllka.HealthSphere_Backend.domain.entity.UserEntity;
 import com._olelllka.HealthSphere_Backend.repositories.DoctorRepository;
@@ -10,6 +12,7 @@ import com._olelllka.HealthSphere_Backend.repositories.PatientRepository;
 import com._olelllka.HealthSphere_Backend.repositories.UserRepository;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.NotFoundException;
 import com._olelllka.HealthSphere_Backend.service.impl.UserServiceImpl;
+import com._olelllka.HealthSphere_Backend.service.rabbitmq.DoctorMessageProducer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -34,6 +37,8 @@ public class UserServiceImplUnitTest {
     private PasswordEncoder passwordEncoder;
     @Mock
     private DoctorRepository doctorRepository;
+    @Mock
+    private DoctorMessageProducer messageProducer;
     @InjectMocks
     private UserServiceImpl userService;
 
@@ -64,7 +69,7 @@ public class UserServiceImplUnitTest {
     }
 
     @Test
-    public void testThatUserRegisterWorksWell() throws ParseException {
+    public void testThatPatientRegisterWorksWell() throws ParseException {
         // given
         RegisterPatientForm registerPatientForm = TestDataUtil.createRegisterForm();
         UserEntity user = UserEntity.builder()
@@ -92,15 +97,22 @@ public class UserServiceImplUnitTest {
                 .email(registerDoctorForm.getEmail())
                 .role(Role.ROLE_DOCTOR)
                 .build();
+        DoctorEntity doctor = DoctorEntity.builder()
+                .firstName("First Name")
+                .lastName("Last Name")
+                .licenseNumber("123415")
+                .clinicAddress("4313241")
+                .phoneNumber("412341234").build();
         // when
         when(userRepository.save(any())).thenReturn(user);
-        when(doctorRepository.save(any())).thenReturn(null);
+        when(doctorRepository.save(any())).thenReturn(doctor);
         when(passwordEncoder.encode("password123")).thenReturn("encrypted");
         UserEntity result = userService.doctorRegister(registerDoctorForm);
         // then
         verify(userRepository, times(1)).save(any());
         verify(doctorRepository, times(1)).save(any());
         verify(passwordEncoder, times(1)).encode(anyString());
+        verify(messageProducer, times(1)).sendDoctorToIndex(any(DoctorDocumentDto.class));
         assertEquals(result.getEmail(), user.getEmail());
         assertNotEquals(result.getPassword(), registerDoctorForm.getPassword());
     }

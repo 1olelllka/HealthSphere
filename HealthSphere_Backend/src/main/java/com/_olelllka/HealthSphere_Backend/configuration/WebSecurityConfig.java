@@ -1,6 +1,5 @@
 package com._olelllka.HealthSphere_Backend.configuration;
 
-import com._olelllka.HealthSphere_Backend.domain.entity.Role;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
@@ -32,9 +31,9 @@ public class WebSecurityConfig {
 //                csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
                 .authorizeHttpRequests((authorize) -> {
                     authorize
-                            .requestMatchers(HttpMethod.POST, "/api/v1/login", "/api/v1/register")
+                            .requestMatchers(HttpMethod.POST, "/api/v1/login", "/api/v1/register/patient")
                             .permitAll()
-                            .requestMatchers(HttpMethod.POST, "/api/v1/doctor-register").hasRole("ADMIN")
+                            .requestMatchers(HttpMethod.POST, "/api/v1/register/doctor").hasRole("ADMIN")
                             .requestMatchers(HttpMethod.DELETE, "/api/v1/doctors/me").hasRole("DOCTOR")
                             .requestMatchers(HttpMethod.PATCH, "/api/v1/doctors/me").hasRole("DOCTOR")
                             .requestMatchers(HttpMethod.GET, "/api/v1/doctors/me").hasRole("DOCTOR")

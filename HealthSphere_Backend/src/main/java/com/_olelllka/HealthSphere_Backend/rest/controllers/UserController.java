@@ -1,9 +1,9 @@
 package com._olelllka.HealthSphere_Backend.rest.controllers;
 
 import com._olelllka.HealthSphere_Backend.domain.dto.JwtToken;
-import com._olelllka.HealthSphere_Backend.domain.dto.RegisterDoctorForm;
-import com._olelllka.HealthSphere_Backend.domain.dto.RegisterPatientForm;
-import com._olelllka.HealthSphere_Backend.domain.dto.LoginForm;
+import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterDoctorForm;
+import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterPatientForm;
+import com._olelllka.HealthSphere_Backend.domain.dto.auth.LoginForm;
 import com._olelllka.HealthSphere_Backend.domain.entity.UserEntity;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.NotAuthorizedException;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.ValidationException;
@@ -45,7 +45,7 @@ public class UserController {
         this.jwtService = jwtService;
     }
 
-    @PostMapping("/register")
+    @PostMapping("/register/patient")
     public ResponseEntity<RegisterPatientForm> registerUser(@RequestBody @Valid RegisterPatientForm registerPatientForm,
                                                             BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -66,7 +66,7 @@ public class UserController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/doctor-register")
+    @PostMapping("/register/doctor")
     public ResponseEntity<RegisterDoctorForm> registerDoctor(@RequestBody @Valid RegisterDoctorForm registerDoctorForm,
                                                              BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {

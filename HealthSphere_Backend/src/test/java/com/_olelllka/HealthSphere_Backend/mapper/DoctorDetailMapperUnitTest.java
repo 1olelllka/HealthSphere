@@ -1,6 +1,6 @@
 package com._olelllka.HealthSphere_Backend.mapper;
 
-import com._olelllka.HealthSphere_Backend.domain.dto.DoctorDetailDto;
+import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDetailDto;
 import com._olelllka.HealthSphere_Backend.domain.entity.DoctorEntity;
 import com._olelllka.HealthSphere_Backend.mapper.impl.DoctorDetailMapper;
 import org.junit.jupiter.api.Test;
