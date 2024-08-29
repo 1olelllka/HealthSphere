@@ -1,8 +1,11 @@
 package com._olelllka.HealthSphere_Backend.service.rabbitmq;
 
 import com._olelllka.HealthSphere_Backend.domain.documents.DoctorDocument;
+import com._olelllka.HealthSphere_Backend.domain.documents.MedicalRecordDocument;
 import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDocumentDto;
+import com._olelllka.HealthSphere_Backend.domain.dto.records.MedicalRecordDocumentDto;
 import com._olelllka.HealthSphere_Backend.repositories.DoctorElasticRepository;
+import com._olelllka.HealthSphere_Backend.repositories.MedicalRecordElasticRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -14,6 +17,9 @@ public class RabbitMessageConsumer {
 
     @Autowired
     private DoctorElasticRepository repository;
+
+    @Autowired
+    private MedicalRecordElasticRepository recordRepository;
 
 
     @RabbitListener(id = "doctor.post", queues = "doctors_index_queue")
@@ -32,5 +38,23 @@ public class RabbitMessageConsumer {
     @RabbitListener(id = "doctor.delete", queues = "doctor_index_delete_queue")
     public void consumeDoctorDelete(Long id) {
         repository.deleteById(id);
+    }
+
+    @RabbitListener(id="medical-record.post", queues = "medical_record_create_update")
+    public void consumeMedicalRecordCreateUpdate(MedicalRecordDocumentDto dto) {
+        MedicalRecordDocument document = MedicalRecordDocument.builder()
+                .id(dto.getId())
+                .user_id(dto.getUser_id())
+                .diagnosis(dto.getDiagnosis())
+                .recordDate(dto.getRecordDate())
+                .treatment(dto.getTreatment())
+                .doctor(dto.getDoctor())
+                .build();
+        recordRepository.save(document);
+    }
+
+    @RabbitListener(id="medical-record.delete", queues = "medical_record_delete")
+    public void consumeMedicalRecordDelete(Long id) {
+        recordRepository.deleteById(id);
     }
 }

@@ -1,14 +1,16 @@
 package com._olelllka.HealthSphere_Backend.repositories;
 
 import com._olelllka.HealthSphere_Backend.domain.entity.*;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.Date;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -33,7 +35,7 @@ public class MedicalRecordRepositoryDataJpaTest {
 
     @BeforeEach
     public void setUp() {
-        UserEntity user = UserEntity.builder().email("someEmail@email.com").role(Role.ROLE_PATIENT).build();
+        UserEntity user = UserEntity.builder().email("someEmail1@email.com").role(Role.ROLE_PATIENT).build();
         PatientEntity patient = PatientEntity.builder().user(user)
                 .firstName("Patient")
                 .lastName("Last Name")
@@ -50,7 +52,7 @@ public class MedicalRecordRepositoryDataJpaTest {
                 .patient(patient)
                 .doctor(doctor)
                 .diagnosis("Some diagnosis")
-                .recordDate(new Date())
+                .recordDate(LocalDate.of(2020, Month.APRIL, 1))
                 .treatment("Some treatment")
                 .build();
         patientRepository.save(patient);
@@ -68,25 +70,26 @@ public class MedicalRecordRepositoryDataJpaTest {
     }
 
     @Test
-    public void testThatMedicalRecordRepositoryFindsRecordsByPatientEmail() {
-        String email = "someEmail@email.com";
-        List<MedicalRecordEntity> result = medicalRecordRepository.findByPatientEmail(email);
-
+    public void testThatMedicalRecordRepositoryFindsRecordsByPatientId() {
+        Pageable pageable = PageRequest.of(0, 1);
+        Long id = 3L;
+        Page<MedicalRecordEntity> result = medicalRecordRepository.findByPatientId(id, pageable);
         assertAll(
                 () -> assertNotNull(result),
-                () -> assertEquals(result.size(), 1),
-                () -> assertEquals(result.get(0).getPatient().getFirstName(), "Patient")
+                () -> assertEquals(result.getContent().size(), 1),
+                () -> assertEquals(result.getContent().get(0).getPatient().getFirstName(), "Patient")
         );
     }
 
     @Test
     public void testThatMedicalRecordRepositoryReturnsEmptyListOfRecords() {
-        String email = "notCorrectEmail@email.com";
-        List<MedicalRecordEntity> result = medicalRecordRepository.findByPatientEmail(email);
+        Long id = 18L;
+        Pageable pageable = PageRequest.of(0, 1);
+        Page<MedicalRecordEntity> result = medicalRecordRepository.findByPatientId(id, pageable);
 
         assertAll(
                 () -> assertNotNull(result),
-                () -> assertEquals(result.size(), 0)
+                () -> assertEquals(result.getContent().size(), 0)
         );
     }
 

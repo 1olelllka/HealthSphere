@@ -123,6 +123,19 @@ public class DoctorControllerIntegrationTest {
     }
 
     @Test
+    public void testThatGetAllDoctorsByParamsReturnsHttp200OkAndData() throws Exception {
+        RegisterDoctorForm doctor = TestDataUtil.createRegisterDoctorForm();
+        doctor.setEmail("doctor@doctor.com");
+        String accessToken = getAccessToken();
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/doctors?search=First Last")
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.pageable").exists());
+        assertTrue(elasticRepository.findById(1L).isPresent());
+    }
+
+    @Test
     @WithMockUser(roles = {"PATIENT"})
     public void testThatGetDoctorByEmailReturnsHttp403ForbiddenIfCalledUnauthorizedOrWrongRole() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/doctors/me"))

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Entity
@@ -27,7 +28,7 @@ public class MedicalRecordEntity {
     @JoinColumn(name="doctor_id", referencedColumnName = "id")
     private DoctorEntity doctor;
     @Column(nullable = false)
-    private Date recordDate;
+    private LocalDate recordDate;
     @Column(nullable = false)
     private String diagnosis;
     @Column(columnDefinition = "TEXT")

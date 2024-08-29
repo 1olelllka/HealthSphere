@@ -47,7 +47,7 @@ public class PatientRepositoryDataJpaTest {
 
     @AfterEach
     public void tearDown() {
-        patientRepository.deleteById(1L);
+        patientRepository.deleteAll();
     }
 
     @Test
