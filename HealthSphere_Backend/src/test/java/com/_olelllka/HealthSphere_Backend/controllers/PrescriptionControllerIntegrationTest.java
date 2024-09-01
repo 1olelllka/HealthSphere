@@ -1,0 +1,240 @@
+package com._olelllka.HealthSphere_Backend.controllers;
+
+import com._olelllka.HealthSphere_Backend.TestDataUtil;
+import com._olelllka.HealthSphere_Backend.domain.dto.JwtToken;
+import com._olelllka.HealthSphere_Backend.domain.dto.auth.LoginForm;
+import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterDoctorForm;
+import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterPatientForm;
+import com._olelllka.HealthSphere_Backend.domain.dto.prescriptions.PrescriptionDto;
+import com._olelllka.HealthSphere_Backend.domain.dto.prescriptions.PrescriptionMedicineDto;
+import com._olelllka.HealthSphere_Backend.domain.entity.PatientEntity;
+import com._olelllka.HealthSphere_Backend.domain.entity.PrescriptionEntity;
+import com._olelllka.HealthSphere_Backend.domain.entity.PrescriptionMedicineEntity;
+import com._olelllka.HealthSphere_Backend.service.PrescriptionService;
+import com._olelllka.HealthSphere_Backend.service.UserService;
+import jakarta.servlet.http.Cookie;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
+import org.springframework.amqp.rabbit.listener.RabbitListenerEndpointRegistry;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.testcontainers.containers.RabbitMQContainer;
+import org.testcontainers.elasticsearch.ElasticsearchContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
+import org.testcontainers.utility.DockerImageName;
+
+import java.text.ParseException;
+import java.util.List;
+
+@SpringBootTest
+@ExtendWith(SpringExtension.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@AutoConfigureMockMvc
+@Testcontainers
+public class PrescriptionControllerIntegrationTest {
+
+    @Container
+    static ElasticsearchContainer elasticsearchContainer =
+            new ElasticsearchContainer(DockerImageName.parse("elasticsearch").withTag("7.17.23"));
+
+    @Container
+    static RabbitMQContainer container = new RabbitMQContainer(
+            DockerImageName.parse("rabbitmq").withTag("3.13-management")
+    );
+
+    @DynamicPropertySource
+    static void configure(DynamicPropertyRegistry registry) {
+        registry.add("spring.rabbitmq.host", container::getHost);
+        registry.add("spring.rabbitmq.port", container::getAmqpPort);
+        registry.add("spring.rabbitmq.username", container::getAdminUsername);
+        registry.add("spring.rabbitmq.password", container::getAdminPassword);
+        registry.add("spring.elasticsearch.uris", elasticsearchContainer::getHttpHostAddress);
+    }
+
+    @Autowired
+    private RabbitListenerEndpointRegistry listenerRegistry;
+    @Autowired
+    private RabbitAdmin admin;
+
+
+    private MockMvc mockMvc;
+    private ObjectMapper objectMapper;
+    private PrescriptionService service;
+    private UserService userService;
+
+    @Autowired
+    public PrescriptionControllerIntegrationTest(MockMvc mockMvc,
+                                                 PrescriptionService service,
+                                                 UserService userService) {
+        this.mockMvc = mockMvc;
+        this.service = service;
+        this.userService = userService;
+        this.objectMapper = new ObjectMapper();
+    }
+
+    @BeforeAll
+    static void setUp() {
+        container.start();
+        elasticsearchContainer.start();
+    }
+
+    @AfterAll
+    static void tearDown() {
+        container.stop();
+        elasticsearchContainer.stop();
+    }
+
+
+    @BeforeEach
+    void initEach() throws ParseException {
+        RegisterDoctorForm register = TestDataUtil.createRegisterDoctorForm();
+        register.setEmail("doctor@email.com");
+        register.setSpecializations(List.of());
+        listenerRegistry.getListenerContainer("doctor.post").start();
+        userService.doctorRegister(register);
+    }
+
+    @Test
+    public void testThatCreateNewPrescriptionReturnsHttp403ForbiddenIfUnauthorized() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/prescriptions"))
+                .andExpect(MockMvcResultMatchers.status().isForbidden());
+    }
+
+    @Test
+    public void testThatCreateNewPrescriptionReturnsHttp400BadRequestIfDataIsInvalid() throws Exception {
+        String jwt = getAccessToken();
+        PrescriptionDto dto = TestDataUtil.createPrescriptionDto(null, null);
+        String json = objectMapper.writeValueAsString(dto);
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/prescriptions")
+                .header("Authorization", "Bearer " + jwt)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    public void testThatCreateNewPrescriptionReturnsHttp201CreatedAndCorrespondingData() throws Exception {
+        String jwt = getAccessToken();
+        RegisterPatientForm patientForm = TestDataUtil.createRegisterForm();
+        patientForm.setEmail("patient@email.com");
+        userService.register(patientForm);
+        PatientEntity patient = PatientEntity.builder().id(1L).build();
+        PrescriptionDto dto = TestDataUtil.createPrescriptionDto(patient, null);
+        String json = objectMapper.writeValueAsString(dto);
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/prescriptions")
+                .header("Authorization", "Bearer " + jwt)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.doctor.firstName").exists());
+
+    }
+
+    @Test
+    public void testThatAddMedicineToPrescriptionReturnsHttp403ForbiddenWhenUnauthorized() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/prescriptions/1/medicine"))
+                .andExpect(MockMvcResultMatchers.status().isForbidden());
+    }
+
+    @Test
+    public void testThatAddMedicineToPrescriptionReturnsHttp400BadRequestWhenInvalidData() throws Exception {
+        String jwt = getAccessToken();
+        PrescriptionMedicineDto dto = TestDataUtil.createPrescriptionMedicineDto(null);
+        dto.setDosage(null);
+        String json = objectMapper.writeValueAsString(dto);
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/prescriptions/1/medicine")
+                        .header("Authorization", "Bearer " + jwt)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    public void testThatAddMedicineToPrescriptionReturnsHttp404NotFoundWhenPrescriptionDoesNotExist() throws Exception {
+        String jwt = getAccessToken();
+        PrescriptionMedicineDto dto = TestDataUtil.createPrescriptionMedicineDto(null);
+        String json = objectMapper.writeValueAsString(dto);
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/prescriptions/1/medicine")
+                        .header("Authorization", "Bearer " + jwt)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
+
+    @Test
+    public void testThatAddMedicineToPrescriptionReturnsHttp201CreatedAndCorrespondingData() throws Exception {
+        String jwt = getAccessToken();
+        PrescriptionMedicineDto dto = TestDataUtil.createPrescriptionMedicineDto(null);
+        PrescriptionEntity prescription = service.createPrescription(PrescriptionEntity.builder().build(), jwt);
+        String json = objectMapper.writeValueAsString(dto);
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/prescriptions/1/medicine")
+                        .header("Authorization", "Bearer " + jwt)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(MockMvcResultMatchers.status().isCreated());
+    }
+
+    @Test
+    public void testThatGetAllMedicineToPrescriptionReturnsHttp403ForbiddenIfUnauthorized() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/prescriptions/1/medicine"))
+                .andExpect(MockMvcResultMatchers.status().isForbidden());
+    }
+
+    @Test
+    public void testThatGetAllMedicineToPrescriptionReturnsHttp200OkAndCorrespondingData() throws Exception {
+        String jwt = getAccessToken();
+        PrescriptionEntity prescription = service.createPrescription(PrescriptionEntity.builder().build(), jwt);
+        PrescriptionMedicineEntity medicineEntity = service.addMedicineToPrescription(prescription.getId(),
+                PrescriptionMedicineEntity.builder()
+                        .dosage("DOSAGE")
+                        .medicineName("NAME")
+                        .build());
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/prescriptions/1/medicine")
+                        .header("Authorization", "Bearer " + jwt)
+                )
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].id").value(medicineEntity.getId()));
+    }
+
+    @Test
+    public void testThatRemoveMedicineFromPrescriptionByIdReturnsHttp403ForbiddenIfUnauthorized() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/prescriptions/medicine/1"))
+                .andExpect(MockMvcResultMatchers.status().isForbidden());
+    }
+
+    @Test
+    public void testThatRemoveMedicineFromPrescriptionByIdReturnsHttp202Accepted() throws Exception {
+        String jwt = getAccessToken();
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/prescriptions/medicine/1")
+                        .header("Authorization", "Bearer " + jwt)
+                )
+                .andExpect(MockMvcResultMatchers.status().isAccepted());
+    }
+
+    private String getAccessToken() throws Exception {
+        LoginForm loginForm = TestDataUtil.createLoginForm();
+        loginForm.setEmail("doctor@email.com");
+        String loginFormJson = objectMapper.writeValueAsString(loginForm);
+        Cookie cookieToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginFormJson))
+                .andReturn().getResponse().getCookie("accessToken");
+        String token = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/get-jwt")
+                        .cookie(cookieToken))
+                .andReturn().getResponse().getContentAsString();
+        return objectMapper.readValue(token, JwtToken.class).getAccessToken();
+    }
+
+}

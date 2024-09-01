@@ -25,5 +25,4 @@ public class PrescriptionMedicineEntity {
     private String dosage;
     @Column(columnDefinition = "TEXT")
     private String instructions;
-
 }

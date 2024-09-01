@@ -6,8 +6,9 @@ import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterPatientForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.UserDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDetailDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.patients.PatientDto;
-import com._olelllka.HealthSphere_Backend.domain.entity.Gender;
-import com._olelllka.HealthSphere_Backend.domain.entity.Role;
+import com._olelllka.HealthSphere_Backend.domain.dto.prescriptions.PrescriptionDto;
+import com._olelllka.HealthSphere_Backend.domain.dto.prescriptions.PrescriptionMedicineDto;
+import com._olelllka.HealthSphere_Backend.domain.entity.*;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -73,6 +74,24 @@ public class TestDataUtil {
         return UserDto.builder()
                 .email("email@email.com")
                 .role(Role.ROLE_PATIENT)
+                .build();
+    }
+
+    public static PrescriptionDto createPrescriptionDto(PatientEntity patient, DoctorEntity doctor) {
+        return PrescriptionDto.builder()
+                .id(1L)
+                .patient(patient)
+                .doctor(doctor)
+                .build();
+    }
+
+    public static PrescriptionMedicineDto createPrescriptionMedicineDto(PrescriptionEntity entity) {
+        return PrescriptionMedicineDto.builder()
+                .id(1L)
+                .prescription(entity)
+                .instructions("INSTRUCTIONS")
+                .medicineName("NAME")
+                .dosage("DOSAGE")
                 .build();
     }
 }
