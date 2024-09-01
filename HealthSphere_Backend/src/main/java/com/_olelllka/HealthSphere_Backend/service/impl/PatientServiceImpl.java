@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 @Service
-@Log
 public class PatientServiceImpl implements PatientService {
 
     private PatientRepository patientRepository;
@@ -32,9 +31,8 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
-    public PatientEntity patchPatient(String jwt, PatientEntity updatedPatientEntity) {
-        String username = jwtService.extractUsername(jwt);
-        return patientRepository.findByEmail(username)
+    public PatientEntity patchPatient(Long id, PatientEntity updatedPatientEntity) {
+        return patientRepository.findById(id)
                 .map(patient -> {
                     Optional.ofNullable(updatedPatientEntity.getAddress()).ifPresent(patient::setAddress);
                     Optional.ofNullable(updatedPatientEntity.getFirstName()).ifPresent(patient::setFirstName);
@@ -46,9 +44,12 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
-    public void deleteByEmail(String jwt) {
-        String username = jwtService.extractUsername(jwt);
-        PatientEntity patient = patientRepository.findByEmail(username).orElseThrow(() -> new NotFoundException("Patient with such email was not found."));
-        patientRepository.deleteById(patient.getId());
+    public void deleteByEmail(Long id) {
+        patientRepository.deleteById(id);
+    }
+
+    @Override
+    public PatientEntity getPatientById(Long id) {
+        return patientRepository.findById(id).orElseThrow(() -> new NotFoundException("User with such id was not found."));
     }
 }

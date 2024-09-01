@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,14 +30,22 @@ public class PatientController {
     }
 
 
+    @PreAuthorize("hasRole('PATIENT')")
     @GetMapping("/patient/me")
     public ResponseEntity<PatientDto> getPatientInfo(@RequestHeader(name="Authorization") String header) {
         PatientEntity patient = patientService.getPatient(header.substring(7));
         return new ResponseEntity<>(mapper.toDto(patient), HttpStatus.OK);
     }
 
-    @PatchMapping("/patient/me")
-    public ResponseEntity<PatientDto> patchPatient(@RequestHeader(name="Authorization") String header,
+    @GetMapping("/patient/{id}")
+    public ResponseEntity<PatientDto> getDetailedPatientInfoById(@PathVariable Long id) {
+        PatientEntity patient = patientService.getPatientById(id);
+        return new ResponseEntity<>(mapper.toDto(patient), HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('PATIENT')")
+    @PatchMapping("/patient/{id}")
+    public ResponseEntity<PatientDto> patchPatient(@PathVariable Long id,
                                                    @Valid @RequestBody PatientDto updated,
                                                    BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -44,14 +53,15 @@ public class PatientController {
             throw new ValidationException(msg);
         }
         PatientEntity updatedPatientEntity = mapper.toEntity(updated);
-        PatientEntity patient = patientService.patchPatient(header.substring(7), updatedPatientEntity);
+        PatientEntity patient = patientService.patchPatient(id, updatedPatientEntity);
         return new ResponseEntity<>(mapper.toDto(patient), HttpStatus.OK);
     }
 
-    @DeleteMapping("/patient/me")
-    public ResponseEntity deletePatient(@RequestHeader(name="Authorization") String header,
+    @PreAuthorize("hasRole('PATIENT')")
+    @DeleteMapping("/patient/{id}")
+    public ResponseEntity deletePatient(@PathVariable Long id,
                                         HttpServletRequest request) throws Exception{
-        patientService.deleteByEmail(header.substring(7));
+        patientService.deleteByEmail(id);
         request.logout();
         return new ResponseEntity(null, HttpStatus.ACCEPTED);
     }

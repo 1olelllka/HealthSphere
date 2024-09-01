@@ -12,7 +12,7 @@ public interface DoctorService {
 
     DoctorEntity getDoctorById(Long id);
 
-    DoctorEntity patchDoctor(String jwt, DoctorEntity doctor);
+    DoctorEntity patchDoctor(Long jwt, DoctorEntity doctor);
 
     Page<DoctorDocument> getAllDoctorsByParam(String params, Pageable pageable);
 

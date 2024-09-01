@@ -73,10 +73,34 @@ public class PatientControllerIntegrationTest {
     }
 
     @Test
+    public void testThatGetDetailedPatientInfoReturnsHttp403ForbiddenIfCalledWithoutAccessToken() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/patient/1"))
+                .andExpect(MockMvcResultMatchers.status().isForbidden());
+    }
+
+    @Test
+    public void testThatGetDetailedPatientInfoReturnsHttp404NotFoundIfUserWithSuchIdWasNotFound() throws Exception {
+        String accessToken = getAccessToken();
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/patient/4512")
+                .header("Authorization", "Bearer " + accessToken))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
+
+    @Test
+    public void testThatGetDetailedPatientInfoReturnsHttp200OkAndCorrespondingInfo() throws Exception {
+        String accessToken = getAccessToken();
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/patient/1")
+                .header("Authorization", "Bearer " + accessToken))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.firstName").value("First Name"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.lastName").value("Last Name"));
+    }
+
+    @Test
     public void testThatPatchPatientReturnsHttp403ForbiddenIfCalledWithoutAccessToken() throws Exception {
         PatientDto patientDto = TestDataUtil.createPatientDto(null);
         String patientDtoJson = objectMapper.writeValueAsString(patientDto);
-        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patient/me")
+        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patient/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(patientDtoJson))
                 .andExpect(MockMvcResultMatchers.status().isForbidden());
@@ -88,7 +112,7 @@ public class PatientControllerIntegrationTest {
         PatientDto patientDto = TestDataUtil.createPatientDto(null);
         patientDto.setDateOfBirth(new SimpleDateFormat("dd-MM-yyyy").parse("11-11-2030"));
         String patientDtoJson = objectMapper.writeValueAsString(patientDto);
-        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patient/me")
+        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patient/1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(patientDtoJson)
                         .header("Authorization", "Bearer " + accessToken))
@@ -102,7 +126,7 @@ public class PatientControllerIntegrationTest {
         PatientDto patientDto = TestDataUtil.createPatientDto(userDto);
         patientDto.setFirstName("UPDATED");
         String patientDtoJson = objectMapper.writeValueAsString(patientDto);
-        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patient/me")
+        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patient/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(patientDtoJson)
                         .header("Authorization", "Bearer " + accessToken))
@@ -111,15 +135,15 @@ public class PatientControllerIntegrationTest {
     }
 
     @Test
-    public void testThatDeleteByEmailReturnsHttp403IfNotAuthorized() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/patient/me"))
+    public void testThatDeleteByIdReturnsHttp403IfNotAuthorized() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/patient/1"))
                 .andExpect(MockMvcResultMatchers.status().isForbidden());
     }
 
     @Test
-    public void testThatDeleteByEmailReturnsHttp202Accepted() throws Exception {
+    public void testThatDeleteByIdReturnsHttp202Accepted() throws Exception {
         String accessToken = getAccessToken();
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/patient/me")
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/patient/1")
                 .header("Authorization", "Bearer " +accessToken))
                 .andExpect(MockMvcResultMatchers.status().isAccepted());
     }

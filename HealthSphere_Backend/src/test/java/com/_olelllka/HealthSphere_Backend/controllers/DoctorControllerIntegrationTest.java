@@ -33,12 +33,14 @@ import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.shaded.org.awaitility.Awaitility;
 import org.testcontainers.utility.DockerImageName;
 
 import java.text.ParseException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.random.RandomGenerator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -186,9 +188,12 @@ public class DoctorControllerIntegrationTest {
     }
 
     @Test
-    @WithMockUser(roles = {"PATIENT"})
     public void testThatPatchDoctorByEmailReturnsHttp403ForbiddenIfCalledUnauthorizedOrWrongRole() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/doctors/me"))
+        DoctorDetailDto doctorDetailDto = TestDataUtil.createDoctorDetailDto(null);
+        String doctorJson = objectMapper.writeValueAsString(doctorDetailDto);
+        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/doctors/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(doctorJson))
                 .andExpect(MockMvcResultMatchers.status().isForbidden());
     }
 
@@ -197,7 +202,7 @@ public class DoctorControllerIntegrationTest {
         String accessToken = getAccessToken();
         DoctorDetailDto doctorDetailDto = TestDataUtil.createDoctorDetailDto(null);
         String json = objectMapper.writeValueAsString(doctorDetailDto);
-        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/doctors/me")
+        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/doctors/1")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
@@ -207,9 +212,8 @@ public class DoctorControllerIntegrationTest {
     }
 
     @Test
-    @WithMockUser(roles = {"PATIENT"})
     public void testThatDeleteDoctorByIdReturnsHttp403ForbiddenIfCalledUnauthorizedOrWrongRole() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/doctors/me"))
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/doctors/1"))
                 .andExpect(MockMvcResultMatchers.status().isForbidden());
     }
 
@@ -222,6 +226,10 @@ public class DoctorControllerIntegrationTest {
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/doctors/1")
                 .header("Authorization", "Bearer " + accessToken))
                 .andExpect(MockMvcResultMatchers.status().isAccepted());
+        Awaitility.await().atMost(10, TimeUnit.SECONDS)
+                .until(
+                () -> Objects.requireNonNull(admin.getQueueInfo("doctor_index_delete_queue")).getMessageCount() == 0
+        );
         assertTrue(elasticRepository.findById(1L).isEmpty());
     }
 

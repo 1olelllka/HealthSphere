@@ -5,7 +5,9 @@ import com._olelllka.HealthSphere_Backend.domain.entity.PatientEntity;
 public interface PatientService {
     PatientEntity getPatient(String jwt);
 
-    PatientEntity patchPatient(String accessToken, PatientEntity updatedPatientEntity);
+    PatientEntity patchPatient(Long accessToken, PatientEntity updatedPatientEntity);
 
-    void deleteByEmail(String substring);
+    void deleteByEmail(Long id);
+
+    PatientEntity getPatientById(Long id);
 }

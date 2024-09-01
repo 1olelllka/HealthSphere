@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.List;
 
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -38,6 +39,7 @@ public class RabbitMessageConsumerUnitTest {
                 .lastName("Last Name")
                 .clinicAddress("Clinic Address")
                 .experienceYears(5L)
+                .specializations(List.of())
                 .build();
         DoctorDocument expected = DoctorDocument.builder()
                 .id(1L)
@@ -45,6 +47,7 @@ public class RabbitMessageConsumerUnitTest {
                 .lastName("Last Name")
                 .clinicAddress("Clinic Address")
                 .experienceYears(5L)
+                .specializations(List.of())
                 .build();
         // when
         messageConsumer.consumeDoctorForIndexing(dto);

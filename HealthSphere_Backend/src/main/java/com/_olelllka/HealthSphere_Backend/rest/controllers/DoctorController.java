@@ -69,12 +69,12 @@ public class DoctorController {
         return new ResponseEntity<>(detailMapper.toDto(doctor), HttpStatus.OK);
     }
 
-    @PatchMapping("/doctors/me")
+    @PatchMapping("/doctors/{id}")
     @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<DoctorDetailDto> patchDoctorByMyEmail(@RequestBody DoctorDetailDto doctor,
-                                                                @RequestHeader(name="Authorization") String header) {
+                                                                @PathVariable Long id) {
         DoctorEntity doctorEntity = detailMapper.toEntity(doctor);
-        DoctorEntity patchedDoctor = doctorService.patchDoctor(header.substring(7), doctorEntity);
+        DoctorEntity patchedDoctor = doctorService.patchDoctor(id, doctorEntity);
         return new ResponseEntity<>(detailMapper.toDto(patchedDoctor), HttpStatus.OK);
     }
 

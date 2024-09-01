@@ -115,23 +115,22 @@ public class DoctorServiceUnitTest {
     }
 
     @Test
-    public void testThatPatchDoctorByEmailThrowsException() {
+    public void testThatPatchDoctorByIdThrowsException() {
         // given
-        String jwt = "jwt";
+        Long id = 1L;
         String email = "email";
         // when
-        when(jwtService.extractUsername(jwt)).thenReturn(email);
-        when(repository.findByUserEmail(email)).thenReturn(Optional.empty());
+        when(repository.findById(id)).thenReturn(Optional.empty());
         // then
-        assertThrows(NotFoundException.class, () -> doctorService.patchDoctor(jwt, null));
+        assertThrows(NotFoundException.class, () -> doctorService.patchDoctor(id, null));
         verify(repository, never()).save(any(DoctorEntity.class));
         verify(messageProducer, never()).sendDoctorToIndex(any(DoctorDocumentDto.class));
     }
 
     @Test
-    public void testThatPatchDoctorByEmailWorks() {
+    public void testThatPatchDoctorByIdWorks() {
         // given
-        String jwt = "jwt";
+        Long id = 1L;
         String email = "email";
         DoctorEntity doctor = DoctorEntity
                 .builder()
@@ -143,10 +142,9 @@ public class DoctorServiceUnitTest {
                 .specializations(List.of())
                 .build();
         // when
-        when(jwtService.extractUsername(jwt)).thenReturn(email);
-        when(repository.findByUserEmail(email)).thenReturn(Optional.of(doctor));
+        when(repository.findById(id)).thenReturn(Optional.of(doctor));
         when(repository.save(updated)).thenReturn(updated);
-        DoctorEntity result = doctorService.patchDoctor(jwt, updated);
+        DoctorEntity result = doctorService.patchDoctor(id, updated);
         // then
         assertAll(
                 () -> assertNotNull(result),

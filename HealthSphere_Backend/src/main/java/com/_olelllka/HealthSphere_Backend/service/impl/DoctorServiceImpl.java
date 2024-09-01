@@ -58,9 +58,8 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Transactional
     @Override
-    public DoctorEntity patchDoctor(String jwt, DoctorEntity updatedDoctor) {
-        String email = jwtService.extractUsername(jwt);
-        return repository.findByUserEmail(email).map(doctor -> {
+    public DoctorEntity patchDoctor(Long id, DoctorEntity updatedDoctor) {
+        return repository.findById(id).map(doctor -> {
             Optional.ofNullable(updatedDoctor.getFirstName()).ifPresent(doctor::setFirstName);
             Optional.ofNullable(updatedDoctor.getLastName()).ifPresent(doctor::setLastName);
             Optional.ofNullable(updatedDoctor.getExperienceYears()).ifPresent(doctor::setExperienceYears);
