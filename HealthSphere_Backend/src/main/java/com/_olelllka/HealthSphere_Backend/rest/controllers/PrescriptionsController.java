@@ -39,7 +39,7 @@ public class PrescriptionsController {
 
     @PreAuthorize("hasRole('DOCTOR')")
     @PostMapping("/prescriptions")
-    public ResponseEntity<PrescriptionDto> createPrescription(@RequestBody @Valid  PrescriptionDto dto,
+    public ResponseEntity<PrescriptionDto> createPrescription(@RequestBody @Valid PrescriptionDto dto,
                                                               @RequestHeader(name="Authorization") String header,
                                                               BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -70,6 +70,20 @@ public class PrescriptionsController {
         List<PrescriptionMedicineEntity> entities = service.getAllMedicineToPrescription(id);
         List<PrescriptionMedicineDto> result = entities.stream().map(medicineMapper::toDto).toList();
         return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('DOCTOR')")
+    @PatchMapping("/prescriptions/medicine/{id}")
+    public ResponseEntity<PrescriptionMedicineDto> updateTheMedicineById(@PathVariable Long id,
+                                                                         @RequestBody @Valid PrescriptionMedicineDto dto,
+                                                                         BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            String msg = bindingResult.getAllErrors().stream().map(err -> err.getDefaultMessage()).collect(Collectors.joining(" "));
+            throw new ValidationException(msg);
+        }
+        PrescriptionMedicineEntity entity = medicineMapper.toEntity(dto);
+        PrescriptionMedicineEntity updated = service.updateTheMedicineById(id, entity);
+        return new ResponseEntity<>(medicineMapper.toDto(updated), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('DOCTOR')")

@@ -12,7 +12,9 @@ import com._olelllka.HealthSphere_Backend.service.PrescriptionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.html.Option;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PrescriptionServiceImpl implements PrescriptionService {
@@ -58,5 +60,15 @@ public class PrescriptionServiceImpl implements PrescriptionService {
     @Override
     public void removeMedicineById(Long id) {
         medicineRepository.deleteById(id);
+    }
+
+    @Override
+    public PrescriptionMedicineEntity updateTheMedicineById(Long id, PrescriptionMedicineEntity entity) {
+        return medicineRepository.findById(id).map(med -> {
+            Optional.ofNullable(entity.getMedicineName()).ifPresent(med::setMedicineName);
+            Optional.ofNullable(entity.getDosage()).ifPresent(med::setDosage);
+            Optional.ofNullable(entity.getInstructions()).ifPresent(med::setInstructions);
+            return medicineRepository.save(med);
+        }).orElseThrow(() -> new NotFoundException("Medicine with such id was not found."));
     }
 }

@@ -209,6 +209,37 @@ public class PrescriptionControllerIntegrationTest {
     }
 
     @Test
+    public void testThatUpdateMedicineInstructionsByIdReturnsHttp403ForbiddenIfUnauthorized() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/prescriptions/medicine/1"))
+                .andExpect(MockMvcResultMatchers.status().isForbidden());
+    }
+
+    @Test
+    public void testThatUpdateMedicineInstructionsReturnsHttp200OkAndCorrespondingData() throws Exception {
+        String jwt = getAccessToken();
+        PrescriptionEntity prescription = service.createPrescription(PrescriptionEntity.builder().build(), jwt);
+        PrescriptionMedicineEntity medicineEntity = service.addMedicineToPrescription(prescription.getId(),
+                PrescriptionMedicineEntity.builder()
+                        .dosage("DOSAGE")
+                        .medicineName("NAME")
+                        .build());
+        PrescriptionMedicineDto update = PrescriptionMedicineDto.builder()
+                .medicineName("NAME")
+                        .instructions("INSTRUCTIONS")
+                        .dosage("UPDATED").build();
+        String json = objectMapper.writeValueAsString(update);
+        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/prescriptions/medicine/1")
+                        .header("Authorization", "Bearer " + jwt)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+                )
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.dosage").value(update.getDosage()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.instructions").value(update.getInstructions()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.medicineName").value(medicineEntity.getMedicineName()));
+    }
+
+    @Test
     public void testThatRemoveMedicineFromPrescriptionByIdReturnsHttp403ForbiddenIfUnauthorized() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/prescriptions/medicine/1"))
                 .andExpect(MockMvcResultMatchers.status().isForbidden());

@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 
@@ -105,6 +106,47 @@ public class PrescriptionServiceUnitTest {
         List<PrescriptionMedicineEntity> result = service.getAllMedicineToPrescription(id);
         // then
         assertEquals(result, expected);
+    }
+
+    @Test
+    public void testThatUpdateMedicineByIdThrowsException() {
+        // given
+        Long id = 1L;
+        PrescriptionMedicineEntity entity = PrescriptionMedicineEntity.builder().build();
+        // when
+        when(medicineRepository.findById(id)).thenReturn(Optional.empty());
+        // then
+        assertThrows(NotFoundException.class, () -> service.updateTheMedicineById(id, entity));
+        verify(medicineRepository, never()).save(any(PrescriptionMedicineEntity.class));
+    }
+
+    @Test
+    public void testThatUpdateMedicineByIdReturnsUpdatedMedicine() {
+        // given
+        Long id = 1L;
+        PrescriptionMedicineEntity entity = PrescriptionMedicineEntity.builder()
+                .dosage("DOSAGE")
+                .instructions("INSTRUCTIONS")
+                .medicineName("MEDICINE")
+                .build();
+        PrescriptionMedicineEntity updated = PrescriptionMedicineEntity.builder()
+                .medicineName("UPDATED")
+                .build();
+        PrescriptionMedicineEntity expected = PrescriptionMedicineEntity.builder()
+                .dosage("DOSAGE")
+                .instructions("INSTRUCTIONS")
+                .medicineName("UPDATED")
+                .build();
+        // when
+        when(medicineRepository.findById(id)).thenReturn(Optional.of(entity));
+        when(medicineRepository.save(expected)).thenReturn(expected);
+        PrescriptionMedicineEntity result = service.updateTheMedicineById(id, updated);
+        // then
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertEquals(result, expected),
+                () -> assertEquals(result.getMedicineName(), expected.getMedicineName())
+        );
     }
 
     @Test
