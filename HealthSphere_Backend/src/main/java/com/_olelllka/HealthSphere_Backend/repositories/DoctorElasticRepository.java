@@ -15,11 +15,11 @@ public interface DoctorElasticRepository extends ElasticsearchRepository<DoctorD
             {
             "multi_match":{
                     "query": "#{#params}",
-                    "fields": ["firstName", "lastName"],
+                    "fields": ["firstName", "lastName", "specializations"],
                     "type": "best_fields"
                 }
             }
             """)
-    Page<DoctorDocument> findByFirstAndLastnames(String params, Pageable pageable);
+    Page<DoctorDocument> findByParams(String params, Pageable pageable);
 
 }

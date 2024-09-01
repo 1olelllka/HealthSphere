@@ -5,6 +5,7 @@ import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDetailDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.JwtToken;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.LoginForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterDoctorForm;
+import com._olelllka.HealthSphere_Backend.domain.dto.doctors.SpecializationDto;
 import com._olelllka.HealthSphere_Backend.repositories.DoctorElasticRepository;
 import com._olelllka.HealthSphere_Backend.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,7 +35,11 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
+import java.text.ParseException;
+import java.util.List;
 import java.util.Objects;
+import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -84,8 +89,12 @@ public class DoctorControllerIntegrationTest {
     }
 
     @BeforeEach
-    void initEach() {
-        elasticRepository.deleteById(1L);
+    void initEach() throws ParseException {
+        elasticRepository.deleteAll();
+        RegisterDoctorForm register = TestDataUtil.createRegisterDoctorForm();
+        register.setSpecializations(List.of());
+        listenerRegistry.getListenerContainer("doctor.post").start();
+        userService.doctorRegister(register);
     }
 
     private MockMvc mockMvc;
@@ -199,28 +208,24 @@ public class DoctorControllerIntegrationTest {
 
     @Test
     @WithMockUser(roles = {"PATIENT"})
-    public void testThatDeleteDoctorByEmailReturnsHttp403ForbiddenIfCalledUnauthorizedOrWrongRole() throws Exception {
+    public void testThatDeleteDoctorByIdReturnsHttp403ForbiddenIfCalledUnauthorizedOrWrongRole() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/doctors/me"))
                 .andExpect(MockMvcResultMatchers.status().isForbidden());
     }
 
     @Test
-    public void testThatDeleteDoctorByEmailReturnHttp203Accepted() throws Exception {
+    public void testThatDeleteDoctorByIdReturnHttp203Accepted() throws Exception {
         listenerRegistry.stop();
         assertEquals(0, Objects.requireNonNull(admin.getQueueInfo("doctor_index_delete_queue")).getMessageCount());
         String accessToken = getAccessToken();
-        assertTrue(elasticRepository.findById(1L).isPresent());
         listenerRegistry.getListenerContainer("doctor.delete").start();
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/doctors/me")
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/doctors/1")
                 .header("Authorization", "Bearer " + accessToken))
                 .andExpect(MockMvcResultMatchers.status().isAccepted());
         assertTrue(elasticRepository.findById(1L).isEmpty());
     }
 
     private String getAccessToken() throws Exception {
-        RegisterDoctorForm register = TestDataUtil.createRegisterDoctorForm();
-        listenerRegistry.getListenerContainer("doctor.post").start();
-        userService.doctorRegister(register);
         LoginForm loginForm = TestDataUtil.createLoginForm();
         String loginFormJson = objectMapper.writeValueAsString(loginForm);
         Cookie cookieToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
@@ -230,8 +235,7 @@ public class DoctorControllerIntegrationTest {
         String token = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/get-jwt")
                         .cookie(cookieToken))
                 .andReturn().getResponse().getContentAsString();
-        String accessToken = objectMapper.readValue(token, JwtToken.class).getAccessToken();
-        return accessToken;
+        return objectMapper.readValue(token, JwtToken.class).getAccessToken();
     }
 
 }

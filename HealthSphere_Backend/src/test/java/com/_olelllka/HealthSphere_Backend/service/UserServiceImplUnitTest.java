@@ -4,9 +4,12 @@ import com._olelllka.HealthSphere_Backend.TestDataUtil;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterDoctorForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterPatientForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDocumentDto;
+import com._olelllka.HealthSphere_Backend.domain.dto.doctors.SpecializationDto;
 import com._olelllka.HealthSphere_Backend.domain.entity.DoctorEntity;
 import com._olelllka.HealthSphere_Backend.domain.entity.Role;
+import com._olelllka.HealthSphere_Backend.domain.entity.SpecializationEntity;
 import com._olelllka.HealthSphere_Backend.domain.entity.UserEntity;
+import com._olelllka.HealthSphere_Backend.mapper.impl.SpecializationMapper;
 import com._olelllka.HealthSphere_Backend.repositories.DoctorRepository;
 import com._olelllka.HealthSphere_Backend.repositories.PatientRepository;
 import com._olelllka.HealthSphere_Backend.repositories.UserRepository;
@@ -21,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.text.ParseException;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -39,6 +43,8 @@ public class UserServiceImplUnitTest {
     private DoctorRepository doctorRepository;
     @Mock
     private DoctorMessageProducer messageProducer;
+    @Mock
+    private SpecializationMapper mapper;
     @InjectMocks
     private UserServiceImpl userService;
 
@@ -92,7 +98,10 @@ public class UserServiceImplUnitTest {
     @Test
     public void testThatDoctorRegisterWorksWell() throws ParseException {
         // given
+        SpecializationDto specializationDto = SpecializationDto.builder().id(1L).specializationName("NAME").build();
+        SpecializationEntity specializationEntity = SpecializationEntity.builder().id(1L).specializationName("NAME").build();
         RegisterDoctorForm registerDoctorForm = TestDataUtil.createRegisterDoctorForm();
+        registerDoctorForm.setSpecializations(List.of(specializationDto));
         UserEntity user = UserEntity.builder()
                 .email(registerDoctorForm.getEmail())
                 .role(Role.ROLE_DOCTOR)
@@ -102,10 +111,12 @@ public class UserServiceImplUnitTest {
                 .lastName("Last Name")
                 .licenseNumber("123415")
                 .clinicAddress("4313241")
+                .specializations(List.of(specializationEntity))
                 .phoneNumber("412341234").build();
         // when
         when(userRepository.save(any())).thenReturn(user);
         when(doctorRepository.save(any())).thenReturn(doctor);
+        when(mapper.toEntity(specializationDto)).thenReturn(specializationEntity);
         when(passwordEncoder.encode("password123")).thenReturn("encrypted");
         UserEntity result = userService.doctorRegister(registerDoctorForm);
         // then

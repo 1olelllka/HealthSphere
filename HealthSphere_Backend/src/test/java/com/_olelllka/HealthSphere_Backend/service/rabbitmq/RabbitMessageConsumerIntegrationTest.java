@@ -3,6 +3,7 @@ package com._olelllka.HealthSphere_Backend.service.rabbitmq;
 import com._olelllka.HealthSphere_Backend.domain.documents.DoctorDocument;
 import com._olelllka.HealthSphere_Backend.domain.documents.MedicalRecordDocument;
 import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDocumentDto;
+import com._olelllka.HealthSphere_Backend.domain.dto.doctors.SpecializationDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.records.MedicalRecordDocumentDto;
 import com._olelllka.HealthSphere_Backend.repositories.DoctorElasticRepository;
 import com._olelllka.HealthSphere_Backend.repositories.MedicalRecordElasticRepository;
@@ -24,6 +25,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -87,6 +89,7 @@ public class RabbitMessageConsumerIntegrationTest {
     public void testThatConsumeDoctorAddPerformsAddToElasticSearchDb() {
         listenerRegistry.stop();
         assertEquals(0, Objects.requireNonNull(admin.getQueueInfo("doctors_index_queue")).getMessageCount());
+        SpecializationDto dto = SpecializationDto.builder().id(1L).specializationName("NAME").build();
         DoctorDocumentDto doctorDocument = DoctorDocumentDto
                 .builder()
                 .id(1L)
@@ -94,6 +97,7 @@ public class RabbitMessageConsumerIntegrationTest {
                 .lastName("Last Name")
                 .clinicAddress("Clinic")
                 .experienceYears(5L)
+                .specializations(List.of(dto))
                 .build();
         listenerRegistry.getListenerContainer("doctor.post").start();
         doctorMessageProducer.sendDoctorToIndex(doctorDocument);

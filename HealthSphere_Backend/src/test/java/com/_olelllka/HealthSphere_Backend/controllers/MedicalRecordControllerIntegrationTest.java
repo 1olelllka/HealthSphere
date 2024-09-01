@@ -7,6 +7,7 @@ import com._olelllka.HealthSphere_Backend.domain.dto.auth.LoginForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterDoctorForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterPatientForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDetailDto;
+import com._olelllka.HealthSphere_Backend.domain.dto.doctors.SpecializationDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.patients.PatientDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.records.MedicalRecordDetailDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.records.MedicalRecordDocumentDto;
@@ -41,6 +42,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 import org.testcontainers.utility.DockerImageName;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.Month;
@@ -92,8 +94,13 @@ public class MedicalRecordControllerIntegrationTest {
     }
 
     @BeforeEach
-    void initEach() throws InterruptedException {
+    void initEach() throws ParseException {
         elasticRepository.deleteAll();
+        RegisterDoctorForm doctorForm = TestDataUtil.createRegisterDoctorForm();
+        doctorForm.setEmail("doctor@email.com");
+        doctorForm.setSpecializations(List.of());
+        listenerRegistry.getListenerContainer("doctor.post").start();
+        userService.doctorRegister(doctorForm);
     }
 
 
@@ -347,9 +354,7 @@ public class MedicalRecordControllerIntegrationTest {
     }
 
     private String getAccessTokenForDoctor() throws Exception {
-        RegisterDoctorForm doctorForm = TestDataUtil.createRegisterDoctorForm();
-        doctorForm.setEmail("doctor@email.com");
-        userService.doctorRegister(doctorForm);
+
         LoginForm loginForm = TestDataUtil.createLoginForm();
         loginForm.setEmail("doctor@email.com");
         String loginFormJson = objectMapper.writeValueAsString(loginForm);

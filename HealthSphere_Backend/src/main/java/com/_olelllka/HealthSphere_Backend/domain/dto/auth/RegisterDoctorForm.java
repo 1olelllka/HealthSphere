@@ -1,5 +1,6 @@
 package com._olelllka.HealthSphere_Backend.domain.dto.auth;
 
+import com._olelllka.HealthSphere_Backend.domain.dto.doctors.SpecializationDto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -7,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 
 @Builder
@@ -28,4 +31,6 @@ public class RegisterDoctorForm {
     private String phoneNumber;
     @NotBlank(message = "Your clinic address must not be empty.")
     private String clinicAddress;
+    private List<SpecializationDto> specializations;
+
 }

@@ -3,6 +3,7 @@ package com._olelllka.HealthSphere_Backend.service;
 import com._olelllka.HealthSphere_Backend.domain.documents.DoctorDocument;
 import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDocumentDto;
 import com._olelllka.HealthSphere_Backend.domain.entity.DoctorEntity;
+import com._olelllka.HealthSphere_Backend.mapper.impl.SpecializationMapper;
 import com._olelllka.HealthSphere_Backend.repositories.DoctorElasticRepository;
 import com._olelllka.HealthSphere_Backend.repositories.DoctorRepository;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.NotFoundException;
@@ -36,6 +37,8 @@ public class DoctorServiceUnitTest {
     private DoctorMessageProducer messageProducer;
     @Mock
     private DoctorElasticRepository elasticRepository;
+    @Mock
+    private SpecializationMapper mapper;
     @InjectMocks
     private DoctorServiceImpl doctorService;
 
@@ -112,20 +115,6 @@ public class DoctorServiceUnitTest {
     }
 
     @Test
-    public void testThatDeleteDoctorByEmailThrowsException() {
-        // given
-        String jwt = "jwt";
-        String email = "email";
-        // when
-        when(jwtService.extractUsername(jwt)).thenReturn(email);
-        when(repository.findByUserEmail(email)).thenReturn(Optional.empty());
-        // then
-        assertThrows(NotFoundException.class, () -> doctorService.deleteDoctorByEmail(jwt));
-        verify(repository, never()).deleteById(anyLong());
-        verify(messageProducer, never()).deleteDoctorFromIndex(anyLong());
-    }
-
-    @Test
     public void testThatPatchDoctorByEmailThrowsException() {
         // given
         String jwt = "jwt";
@@ -144,8 +133,15 @@ public class DoctorServiceUnitTest {
         // given
         String jwt = "jwt";
         String email = "email";
-        DoctorEntity doctor = DoctorEntity.builder().firstName("First Name").build();
-        DoctorEntity updated = DoctorEntity.builder().firstName("UPDATED").build();
+        DoctorEntity doctor = DoctorEntity
+                .builder()
+                .firstName("First Name")
+                .specializations(List.of())
+                .build();
+        DoctorEntity updated = DoctorEntity.builder()
+                .firstName("UPDATED")
+                .specializations(List.of())
+                .build();
         // when
         when(jwtService.extractUsername(jwt)).thenReturn(email);
         when(repository.findByUserEmail(email)).thenReturn(Optional.of(doctor));
@@ -161,18 +157,13 @@ public class DoctorServiceUnitTest {
     }
 
     @Test
-    public void testThatDeleteDoctorByEmailWorks() {
+    public void testThatDeleteDoctorByIdWorks() {
         // given
-        String jwt = "jwt";
-        String email = "email";
-        DoctorEntity doctor = DoctorEntity.builder().id(1L).firstName("First Name").build();
+        Long id = 1L;
         // when
-        when(jwtService.extractUsername(jwt)).thenReturn(email);
-        when(repository.findByUserEmail(email)).thenReturn(Optional.of(doctor));
-        doctorService.deleteDoctorByEmail(jwt);
+        doctorService.deleteDoctorById(id);
         // then
         verify(repository, times(1)).deleteById(1L);
-        verify(messageProducer, times(1)).deleteDoctorFromIndex(1L);
     }
 
     @Test
@@ -188,14 +179,14 @@ public class DoctorServiceUnitTest {
                 .clinicAddress("Clinic").build();
         Page<DoctorDocument> expected = new PageImpl<>(List.of(doctorDocument));
         // when
-        when(elasticRepository.findByFirstAndLastnames(params, pageable)).thenReturn(expected);
+        when(elasticRepository.findByParams(params, pageable)).thenReturn(expected);
         Page<DoctorDocument> result = doctorService.getAllDoctorsByParam(params, pageable);
         // then
         assertAll(
                 () -> assertNotNull(result),
                 () -> assertEquals(result, expected)
         );
-        verify(elasticRepository, times(1)).findByFirstAndLastnames(params, pageable);
+        verify(elasticRepository, times(1)).findByParams(params, pageable);
     }
 
 }

@@ -3,6 +3,7 @@ package com._olelllka.HealthSphere_Backend.service.impl;
 import com._olelllka.HealthSphere_Backend.domain.documents.DoctorDocument;
 import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDocumentDto;
 import com._olelllka.HealthSphere_Backend.domain.entity.DoctorEntity;
+import com._olelllka.HealthSphere_Backend.mapper.impl.SpecializationMapper;
 import com._olelllka.HealthSphere_Backend.repositories.DoctorElasticRepository;
 import com._olelllka.HealthSphere_Backend.repositories.DoctorRepository;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.NotFoundException;
@@ -24,16 +25,19 @@ public class DoctorServiceImpl implements DoctorService {
     private DoctorElasticRepository elasticRepository;
     private JwtService jwtService;
     private DoctorMessageProducer messageProducer;
+    private SpecializationMapper specializationMapper;
 
     @Autowired
     public DoctorServiceImpl(DoctorRepository repository,
                              JwtService jwtService,
                              DoctorMessageProducer messageProducer,
-                             DoctorElasticRepository elasticRepository) {
+                             DoctorElasticRepository elasticRepository,
+                             SpecializationMapper specializationMapper) {
         this.repository = repository;
         this.jwtService = jwtService;
         this.messageProducer = messageProducer;
         this.elasticRepository = elasticRepository;
+        this.specializationMapper = specializationMapper;
     }
 
     @Override
@@ -63,6 +67,7 @@ public class DoctorServiceImpl implements DoctorService {
             Optional.ofNullable(updatedDoctor.getPhoneNumber()).ifPresent(doctor::setPhoneNumber);
             Optional.ofNullable(updatedDoctor.getClinicAddress()).ifPresent(doctor::setClinicAddress);
             Optional.ofNullable(updatedDoctor.getLicenseNumber()).ifPresent(doctor::setLicenseNumber);
+            Optional.ofNullable(updatedDoctor.getSpecializations()).ifPresent(doctor::setSpecializations);
             DoctorEntity result = repository.save(doctor);
             DoctorDocumentDto dto = DoctorDocumentDto.builder()
                             .id(result.getId())
@@ -70,6 +75,8 @@ public class DoctorServiceImpl implements DoctorService {
                             .lastName(result.getLastName())
                             .clinicAddress(doctor.getClinicAddress())
                             .experienceYears(doctor.getExperienceYears())
+                    .specializations(doctor.getSpecializations()
+                            .stream().map(specializationMapper::toDto).toList())
                             .build();
             messageProducer.sendDoctorToIndex(dto);
             return result;
@@ -78,15 +85,13 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     public Page<DoctorDocument> getAllDoctorsByParam(String params, Pageable pageable) {
-        return elasticRepository.findByFirstAndLastnames(params, pageable);
+        return elasticRepository.findByParams(params, pageable);
     }
 
-    @Transactional
     @Override
-    public void deleteDoctorByEmail(String jwt) {
-        String email = jwtService.extractUsername(jwt);
-        DoctorEntity doctor = repository.findByUserEmail(email).orElseThrow(() -> new NotFoundException("Doctor with such email was not found."));
-        repository.deleteById(doctor.getId());
-        messageProducer.deleteDoctorFromIndex(doctor.getId());
+    @Transactional
+    public void deleteDoctorById(Long id) {
+        repository.deleteById(id);
+        messageProducer.deleteDoctorFromIndex(id);
     }
 }

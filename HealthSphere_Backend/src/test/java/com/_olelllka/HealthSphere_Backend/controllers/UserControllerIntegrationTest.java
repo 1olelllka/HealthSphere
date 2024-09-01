@@ -16,8 +16,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.listener.RabbitListenerEndpointRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +35,7 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.utility.DockerImageName;
 
+import java.util.List;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -47,7 +46,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @AutoConfigureMockMvc
 public class UserControllerIntegrationTest {
 
-    private static final Logger log = LoggerFactory.getLogger(UserControllerIntegrationTest.class);
     @Container
     static ElasticsearchContainer elasticsearchContainer =
             new ElasticsearchContainer(DockerImageName.parse("elasticsearch").withTag("7.17.23"));
@@ -183,6 +181,7 @@ public class UserControllerIntegrationTest {
                 .andReturn().getResponse().getContentAsString();
         String accessToken = objectMapper.readValue(token, JwtToken.class).getAccessToken();
         RegisterDoctorForm registerDoctorForm = TestDataUtil.createRegisterDoctorForm();
+        registerDoctorForm.setSpecializations(List.of());
         String registerFromJson = objectMapper.writeValueAsString(registerDoctorForm);
         listenerRegistry.getListenerContainer("doctor.post").start();
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/register/doctor")

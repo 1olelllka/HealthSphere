@@ -10,6 +10,8 @@ import com._olelllka.HealthSphere_Backend.mapper.impl.DoctorListMapper;
 import com._olelllka.HealthSphere_Backend.service.DoctorService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(path="/api/v1")
 public class DoctorController {
 
+    private static final Logger log = LoggerFactory.getLogger(DoctorController.class);
     private DoctorService doctorService;
     private DoctorListMapper listMapper;
     private DoctorDetailMapper detailMapper;
@@ -42,7 +45,7 @@ public class DoctorController {
     public ResponseEntity<Page<DoctorListDto>> getListOfDoctors(Pageable pageable,
                                                                 @RequestParam(name="search", required = false) String params) {
 
-        if (params == null) {
+        if (params == null || params.isEmpty()) {
             Page<DoctorEntity> doctors = doctorService.getAllDoctors(pageable);
             Page<DoctorListDto> result = doctors.map(listMapper::toDto);
             return new ResponseEntity<>(result, HttpStatus.OK);
@@ -75,11 +78,11 @@ public class DoctorController {
         return new ResponseEntity<>(detailMapper.toDto(patchedDoctor), HttpStatus.OK);
     }
 
-    @DeleteMapping("/doctors/me")
+    @DeleteMapping("/doctors/{id}")
     @PreAuthorize("hasRole('DOCTOR')")
-    public ResponseEntity deleteDoctorByMyEmail(@RequestHeader(name="Authorization") String header,
+    public ResponseEntity deleteDoctorByMyEmail(@PathVariable Long id,
                                                 HttpServletRequest request) throws ServletException {
-        doctorService.deleteDoctorByEmail(header.substring(7));
+        doctorService.deleteDoctorById(id);
         request.logout();
         return new ResponseEntity(HttpStatus.ACCEPTED);
     }

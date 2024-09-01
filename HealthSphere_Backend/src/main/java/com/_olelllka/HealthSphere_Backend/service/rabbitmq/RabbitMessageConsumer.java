@@ -3,6 +3,7 @@ package com._olelllka.HealthSphere_Backend.service.rabbitmq;
 import com._olelllka.HealthSphere_Backend.domain.documents.DoctorDocument;
 import com._olelllka.HealthSphere_Backend.domain.documents.MedicalRecordDocument;
 import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDocumentDto;
+import com._olelllka.HealthSphere_Backend.domain.dto.doctors.SpecializationDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.records.MedicalRecordDocumentDto;
 import com._olelllka.HealthSphere_Backend.repositories.DoctorElasticRepository;
 import com._olelllka.HealthSphere_Backend.repositories.MedicalRecordElasticRepository;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class RabbitMessageConsumer {
 
+    private static final Logger log = LoggerFactory.getLogger(RabbitMessageConsumer.class);
     @Autowired
     private DoctorElasticRepository repository;
 
@@ -30,6 +32,7 @@ public class RabbitMessageConsumer {
                 .lastName(doctor.getLastName())
                 .clinicAddress(doctor.getClinicAddress())
                 .experienceYears(doctor.getExperienceYears())
+                .specializations(doctor.getSpecializations().stream().map(SpecializationDto::getSpecializationName).toList())
                 .build();
 
         repository.save(doctorDocument);
