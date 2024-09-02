@@ -24,7 +24,7 @@ import static org.mockito.Mockito.verify;
 public class RabbitMessageConsumerUnitTest {
 
     @Mock
-    private DoctorElasticRepository repository;
+    private DoctorElasticRepository doctorElasticRepository;
     @Mock
     private MedicalRecordElasticRepository medicalRecordRepository;
     @InjectMocks
@@ -52,7 +52,7 @@ public class RabbitMessageConsumerUnitTest {
         // when
         messageConsumer.consumeDoctorForIndexing(dto);
         // then
-        verify(repository, times(1)).save(expected);
+        verify(doctorElasticRepository, times(1)).save(expected);
     }
 
     @Test
@@ -62,7 +62,7 @@ public class RabbitMessageConsumerUnitTest {
         // when
         messageConsumer.consumeDoctorDelete(id);
         // then
-        verify(repository, times(1)).deleteById(id);
+        verify(doctorElasticRepository, times(1)).deleteById(id);
     }
 
     @Test
@@ -88,6 +88,16 @@ public class RabbitMessageConsumerUnitTest {
         messageConsumer.consumeMedicalRecordCreateUpdate(dto);
         // then
         verify(medicalRecordRepository, times(1)).save(expected);
+    }
+
+    @Test
+    public void testThatConsumeMedicalRecordDeleteGetsCorrectArgs() {
+        // given
+        Long id = 1L;
+        // when
+        messageConsumer.consumeMedicalRecordDelete(id);
+        // then
+        verify(medicalRecordRepository, times(1)).deleteById(id);
     }
 
 }

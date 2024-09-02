@@ -2,8 +2,6 @@ package com._olelllka.HealthSphere_Backend.domain.dto.records;
 
 import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDetailDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.patients.PatientDto;
-import com._olelllka.HealthSphere_Backend.domain.entity.DoctorEntity;
-import com._olelllka.HealthSphere_Backend.domain.entity.PatientEntity;
 import com._olelllka.HealthSphere_Backend.domain.entity.PrescriptionEntity;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

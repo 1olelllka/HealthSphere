@@ -1,5 +1,6 @@
 package com._olelllka.HealthSphere_Backend.controllers;
 
+import com._olelllka.HealthSphere_Backend.TestContainers;
 import com._olelllka.HealthSphere_Backend.TestDataUtil;
 import com._olelllka.HealthSphere_Backend.domain.dto.JwtToken;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.LoginForm;
@@ -15,7 +16,6 @@ import com._olelllka.HealthSphere_Backend.service.UserService;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.listener.RabbitListenerEndpointRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -33,9 +33,7 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
-import org.testcontainers.utility.DockerImageName;
 
-import java.text.ParseException;
 import java.util.List;
 
 @SpringBootTest
@@ -46,13 +44,10 @@ import java.util.List;
 public class PrescriptionControllerIntegrationTest {
 
     @Container
-    static ElasticsearchContainer elasticsearchContainer =
-            new ElasticsearchContainer(DockerImageName.parse("elasticsearch").withTag("7.17.23"));
+    static ElasticsearchContainer elasticsearchContainer = TestContainers.elasticsearchContainer;
 
     @Container
-    static RabbitMQContainer container = new RabbitMQContainer(
-            DockerImageName.parse("rabbitmq").withTag("3.13-management")
-    );
+    static RabbitMQContainer container = TestContainers.rabbitMQContainer;
 
     @DynamicPropertySource
     static void configure(DynamicPropertyRegistry registry) {
@@ -63,25 +58,24 @@ public class PrescriptionControllerIntegrationTest {
         registry.add("spring.elasticsearch.uris", elasticsearchContainer::getHttpHostAddress);
     }
 
-    @Autowired
-    private RabbitListenerEndpointRegistry listenerRegistry;
-    @Autowired
-    private RabbitAdmin admin;
 
 
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
     private PrescriptionService service;
     private UserService userService;
+    private RabbitListenerEndpointRegistry listenerRegistry;
 
     @Autowired
     public PrescriptionControllerIntegrationTest(MockMvc mockMvc,
                                                  PrescriptionService service,
-                                                 UserService userService) {
+                                                 UserService userService,
+                                                 RabbitListenerEndpointRegistry listenerRegistry) {
         this.mockMvc = mockMvc;
         this.service = service;
         this.userService = userService;
         this.objectMapper = new ObjectMapper();
+        this.listenerRegistry = listenerRegistry;
     }
 
     @BeforeAll
@@ -98,7 +92,7 @@ public class PrescriptionControllerIntegrationTest {
 
 
     @BeforeEach
-    void initEach() throws ParseException {
+    void initEach() {
         RegisterDoctorForm register = TestDataUtil.createRegisterDoctorForm();
         register.setEmail("doctor@email.com");
         register.setSpecializations(List.of());
@@ -128,7 +122,6 @@ public class PrescriptionControllerIntegrationTest {
     public void testThatCreateNewPrescriptionReturnsHttp201CreatedAndCorrespondingData() throws Exception {
         String jwt = getAccessToken();
         RegisterPatientForm patientForm = TestDataUtil.createRegisterForm();
-        patientForm.setEmail("patient@email.com");
         userService.register(patientForm);
         PatientEntity patient = PatientEntity.builder().id(1L).build();
         PrescriptionDto dto = TestDataUtil.createPrescriptionDto(patient, null);
@@ -177,7 +170,7 @@ public class PrescriptionControllerIntegrationTest {
     public void testThatAddMedicineToPrescriptionReturnsHttp201CreatedAndCorrespondingData() throws Exception {
         String jwt = getAccessToken();
         PrescriptionMedicineDto dto = TestDataUtil.createPrescriptionMedicineDto(null);
-        PrescriptionEntity prescription = service.createPrescription(PrescriptionEntity.builder().build(), jwt);
+        service.createPrescription(PrescriptionEntity.builder().build(), jwt);
         String json = objectMapper.writeValueAsString(dto);
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/prescriptions/1/medicine")
                         .header("Authorization", "Bearer " + jwt)

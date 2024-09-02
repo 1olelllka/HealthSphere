@@ -5,7 +5,6 @@ import com._olelllka.HealthSphere_Backend.domain.dto.records.MedicalRecordDocume
 import com._olelllka.HealthSphere_Backend.domain.entity.DoctorEntity;
 import com._olelllka.HealthSphere_Backend.domain.entity.MedicalRecordEntity;
 import com._olelllka.HealthSphere_Backend.domain.entity.PatientEntity;
-import com._olelllka.HealthSphere_Backend.domain.entity.UserEntity;
 import com._olelllka.HealthSphere_Backend.repositories.MedicalRecordElasticRepository;
 import com._olelllka.HealthSphere_Backend.repositories.MedicalRecordRepository;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.NotFoundException;
@@ -47,7 +46,7 @@ public class MedicalRecordServiceUnitTest {
         // given
         Long id = 1L;
         Pageable pageable = PageRequest.of(0, 1);
-        MedicalRecordEntity entity = MedicalRecordEntity.builder().diagnosis("Some Diagnosis").build();
+        MedicalRecordEntity entity = createMedicalRecordEntity(null, null);
         // when
         when(medicalRecordRepository.findByPatientId(id, pageable)).thenReturn(new PageImpl<>(List.of(entity)));
         Page<MedicalRecordEntity> result = medicalRecordService.getAllRecordsByPatientId(id, pageable);
@@ -55,7 +54,7 @@ public class MedicalRecordServiceUnitTest {
         assertAll(
                 () -> assertNotNull(result),
                 () -> assertEquals(result.getContent().size(), 1),
-                () -> assertEquals(result.getContent().get(0).getDiagnosis(), "Some Diagnosis")
+                () -> assertEquals(result.getContent().get(0).getDiagnosis(), "Diagnosis")
         );
     }
 
@@ -94,8 +93,7 @@ public class MedicalRecordServiceUnitTest {
     public void testThatGetMedicalRecordForPatientByIdReturnsMedicalRecord() {
         // given
         Long id = 1L;
-        MedicalRecordEntity medicalRecordEntity = MedicalRecordEntity.builder()
-                .diagnosis("Some diagnosis").build();
+        MedicalRecordEntity medicalRecordEntity = createMedicalRecordEntity(null, null);
         // when
         when(medicalRecordRepository.findById(id)).thenReturn(Optional.of(medicalRecordEntity));
         MedicalRecordEntity result = medicalRecordService.getDetailedMedicalRecordForPatient(id);
@@ -110,7 +108,7 @@ public class MedicalRecordServiceUnitTest {
     public void testThatPatchMedicalForPatientThrowsNotFoundException() {
         // given
         Long id = 1L;
-        MedicalRecordEntity entity = MedicalRecordEntity.builder().build();
+        MedicalRecordEntity entity = createMedicalRecordEntity(null, null);
         // when
         when(medicalRecordRepository.findById(id)).thenReturn(Optional.empty());
         // then
@@ -121,21 +119,12 @@ public class MedicalRecordServiceUnitTest {
     public void testThatPatchMedicalForPatientUpdatesTheRecord() throws ParseException {
         // given
         Long id = 1L;
-        MedicalRecordEntity entity = MedicalRecordEntity.builder()
-                .id(1L)
-                .recordDate(LocalDate.of(2020, Month.APRIL, 1))
-                .diagnosis("Diagnosis")
-                .treatment("Treatment")
-                .build();
+        MedicalRecordEntity entity = createMedicalRecordEntity(null, null);
         MedicalRecordEntity updated = MedicalRecordEntity.builder().
             treatment("UPDATED")
         .build();
-        MedicalRecordEntity expected = MedicalRecordEntity.builder()
-                .id(1L)
-                .recordDate(LocalDate.of(2020, Month.APRIL, 1))
-                .diagnosis("Diagnosis")
-                .treatment("UPDATED")
-                .build();
+        MedicalRecordEntity expected = createMedicalRecordEntity(null, null);
+        expected.setTreatment("UPDATED");
         // when
         when(medicalRecordRepository.findById(id)).thenReturn(Optional.of(entity));
         when(medicalRecordRepository.save(expected)).thenReturn(expected);
@@ -156,14 +145,7 @@ public class MedicalRecordServiceUnitTest {
                 .firstName("First Name")
                 .lastName("Last Name")
                 .build();
-        MedicalRecordEntity entity = MedicalRecordEntity.builder()
-                .id(1L)
-                .patient(patient)
-                .doctor(doctor)
-                .recordDate(LocalDate.of(2020, Month.APRIL, 1))
-                .diagnosis("Diagnosis")
-                .treatment("Treatment")
-                .build();
+        MedicalRecordEntity entity = createMedicalRecordEntity(patient, doctor);
         // when
         when(medicalRecordRepository.save(entity)).thenReturn(entity);
         MedicalRecordEntity result = medicalRecordService.createMedicalRecord(entity);
@@ -185,6 +167,17 @@ public class MedicalRecordServiceUnitTest {
         // then
         verify(medicalRecordRepository, times(1)).deleteById(id);
         verify(messageProducer, times(1)).sendMedicalRecordDelete(id);
+    }
+
+    private MedicalRecordEntity createMedicalRecordEntity(PatientEntity patient, DoctorEntity doctor) {
+        return MedicalRecordEntity.builder()
+                .id(1L)
+                .patient(patient)
+                .doctor(doctor)
+                .recordDate(LocalDate.of(2020, Month.APRIL, 1))
+                .diagnosis("Diagnosis")
+                .treatment("Treatment")
+                .build();
     }
 
 }

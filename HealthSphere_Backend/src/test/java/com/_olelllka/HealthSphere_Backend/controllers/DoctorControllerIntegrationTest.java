@@ -1,11 +1,11 @@
 package com._olelllka.HealthSphere_Backend.controllers;
 
+import com._olelllka.HealthSphere_Backend.TestContainers;
 import com._olelllka.HealthSphere_Backend.TestDataUtil;
 import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDetailDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.JwtToken;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.LoginForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterDoctorForm;
-import com._olelllka.HealthSphere_Backend.domain.dto.doctors.SpecializationDto;
 import com._olelllka.HealthSphere_Backend.repositories.DoctorElasticRepository;
 import com._olelllka.HealthSphere_Backend.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,14 +34,11 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
-import org.testcontainers.utility.DockerImageName;
 
 import java.text.ParseException;
 import java.util.List;
 import java.util.Objects;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
-import java.util.random.RandomGenerator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -55,13 +52,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class DoctorControllerIntegrationTest {
 
     @Container
-    static ElasticsearchContainer elasticsearchContainer =
-            new ElasticsearchContainer(DockerImageName.parse("elasticsearch").withTag("7.17.23"));
+    static ElasticsearchContainer elasticsearchContainer = TestContainers.elasticsearchContainer;
 
     @Container
-    static RabbitMQContainer container = new RabbitMQContainer(
-            DockerImageName.parse("rabbitmq").withTag("3.13-management")
-    );
+    static RabbitMQContainer container = TestContainers.rabbitMQContainer;
 
     @DynamicPropertySource
     static void configure(DynamicPropertyRegistry registry) {
@@ -71,12 +65,6 @@ public class DoctorControllerIntegrationTest {
         registry.add("spring.rabbitmq.password", container::getAdminPassword);
         registry.add("spring.elasticsearch.uris", elasticsearchContainer::getHttpHostAddress);
     }
-
-    @Autowired
-    private RabbitListenerEndpointRegistry listenerRegistry;
-    @Autowired
-    private RabbitAdmin admin;
-
 
     @BeforeAll
     static void setUp() {
@@ -94,7 +82,6 @@ public class DoctorControllerIntegrationTest {
     void initEach() throws ParseException {
         elasticRepository.deleteAll();
         RegisterDoctorForm register = TestDataUtil.createRegisterDoctorForm();
-        register.setSpecializations(List.of());
         listenerRegistry.getListenerContainer("doctor.post").start();
         userService.doctorRegister(register);
     }
@@ -103,15 +90,21 @@ public class DoctorControllerIntegrationTest {
     private UserService userService;
     private ObjectMapper objectMapper;
     private DoctorElasticRepository elasticRepository;
+    private RabbitListenerEndpointRegistry listenerRegistry;
+    private RabbitAdmin admin;
 
     @Autowired
     public DoctorControllerIntegrationTest(MockMvc mockMvc,
                                            UserService userService,
-                                           DoctorElasticRepository elasticRepository) {
+                                           DoctorElasticRepository elasticRepository,
+                                           RabbitListenerEndpointRegistry listenerRegistry,
+                                           RabbitAdmin admin) {
         this.mockMvc = mockMvc;
         this.userService = userService;
         this.objectMapper = new ObjectMapper();
         this.elasticRepository = elasticRepository;
+        this.listenerRegistry = listenerRegistry;
+        this.admin = admin;
     }
 
     @Test
@@ -122,8 +115,6 @@ public class DoctorControllerIntegrationTest {
 
     @Test
     public void testThatGetAllDoctorsReturnsHttp200OkAndCorrespondingData() throws Exception {
-        RegisterDoctorForm doctor = TestDataUtil.createRegisterDoctorForm();
-        doctor.setEmail("doctor@doctor.com");
         String accessToken = getAccessToken();
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/doctors")
                 .header("Authorization", "Bearer " + accessToken))
@@ -135,8 +126,6 @@ public class DoctorControllerIntegrationTest {
 
     @Test
     public void testThatGetAllDoctorsByParamsReturnsHttp200OkAndData() throws Exception {
-        RegisterDoctorForm doctor = TestDataUtil.createRegisterDoctorForm();
-        doctor.setEmail("doctor@doctor.com");
         String accessToken = getAccessToken();
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/doctors?search=First Last")
                         .header("Authorization", "Bearer " + accessToken))
@@ -188,7 +177,7 @@ public class DoctorControllerIntegrationTest {
     }
 
     @Test
-    public void testThatPatchDoctorByEmailReturnsHttp403ForbiddenIfCalledUnauthorizedOrWrongRole() throws Exception {
+    public void testThatPatchDoctorByIdReturnsHttp403ForbiddenIfCalledUnauthorizedOrWrongRole() throws Exception {
         DoctorDetailDto doctorDetailDto = TestDataUtil.createDoctorDetailDto(null);
         String doctorJson = objectMapper.writeValueAsString(doctorDetailDto);
         mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/doctors/1")
@@ -198,7 +187,7 @@ public class DoctorControllerIntegrationTest {
     }
 
     @Test
-    public void testThatPatchDoctorByEmailReturnsHttp200OkAndCorrespondingData() throws Exception {
+    public void testThatPatchDoctorByIdReturnsHttp200OkAndCorrespondingData() throws Exception {
         String accessToken = getAccessToken();
         DoctorDetailDto doctorDetailDto = TestDataUtil.createDoctorDetailDto(null);
         String json = objectMapper.writeValueAsString(doctorDetailDto);
@@ -235,6 +224,7 @@ public class DoctorControllerIntegrationTest {
 
     private String getAccessToken() throws Exception {
         LoginForm loginForm = TestDataUtil.createLoginForm();
+        loginForm.setEmail("doctor@email.com");
         String loginFormJson = objectMapper.writeValueAsString(loginForm);
         Cookie cookieToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
                         .contentType(MediaType.APPLICATION_JSON)

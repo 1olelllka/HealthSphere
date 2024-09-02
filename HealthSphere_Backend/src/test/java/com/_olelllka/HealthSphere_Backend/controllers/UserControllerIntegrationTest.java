@@ -1,5 +1,6 @@
 package com._olelllka.HealthSphere_Backend.controllers;
 
+import com._olelllka.HealthSphere_Backend.TestContainers;
 import com._olelllka.HealthSphere_Backend.TestDataUtil;
 import com._olelllka.HealthSphere_Backend.domain.dto.JwtToken;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.LoginForm;
@@ -7,7 +8,6 @@ import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterDoctorForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterPatientForm;
 import com._olelllka.HealthSphere_Backend.domain.entity.Role;
 import com._olelllka.HealthSphere_Backend.domain.entity.UserEntity;
-import com._olelllka.HealthSphere_Backend.repositories.DoctorElasticRepository;
 import com._olelllka.HealthSphere_Backend.repositories.UserRepository;
 import com._olelllka.HealthSphere_Backend.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,7 +33,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.utility.DockerImageName;
 
 import java.util.List;
 import java.util.Objects;
@@ -47,13 +46,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class UserControllerIntegrationTest {
 
     @Container
-    static ElasticsearchContainer elasticsearchContainer =
-            new ElasticsearchContainer(DockerImageName.parse("elasticsearch").withTag("7.17.23"));
+    static ElasticsearchContainer elasticsearchContainer = TestContainers.elasticsearchContainer;
 
     @Container
-    static RabbitMQContainer container = new RabbitMQContainer(
-            DockerImageName.parse("rabbitmq").withTag("3.13-management")
-    );
+    static RabbitMQContainer container = TestContainers.rabbitMQContainer;
 
     @DynamicPropertySource
     static void configure(DynamicPropertyRegistry registry) {
@@ -64,11 +60,6 @@ public class UserControllerIntegrationTest {
         registry.add("spring.elasticsearch.uris", elasticsearchContainer::getHttpHostAddress);
     }
 
-    @Autowired
-    private RabbitListenerEndpointRegistry listenerRegistry;
-
-    @Autowired
-    private RabbitAdmin admin;
 
     @BeforeAll
     static void setUp() {
@@ -86,18 +77,21 @@ public class UserControllerIntegrationTest {
     private UserRepository userRepository;
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
-    private DoctorElasticRepository elasticRepository;
+    private RabbitListenerEndpointRegistry listenerRegistry;
+    private RabbitAdmin admin;
 
     @Autowired
     public UserControllerIntegrationTest(UserService userService,
                                          MockMvc mockMvc,
                                          UserRepository userRepository,
-                                         DoctorElasticRepository elasticRepository) {
+                                         RabbitListenerEndpointRegistry listenerRegistry,
+                                         RabbitAdmin admin) {
         this.mockMvc = mockMvc;
         this.userService = userService;
         this.objectMapper = new ObjectMapper();
         this.userRepository = userRepository;
-        this.elasticRepository = elasticRepository;
+        this.admin = admin;
+        this.listenerRegistry = listenerRegistry;
     }
 
 
@@ -137,20 +131,7 @@ public class UserControllerIntegrationTest {
 
     @Test
     public void testThatDoctorRegisterReturnsHttp400BadRequestIfInvalidData() throws Exception {
-        UserEntity user = UserEntity.builder()
-                .email("email@email.com")
-                .password(new BCryptPasswordEncoder().encode("password123")).role(Role.ROLE_ADMIN).build();
-        userRepository.save(user);
-        LoginForm loginForm = TestDataUtil.createLoginForm();
-        String loginFormJson = objectMapper.writeValueAsString(loginForm);
-        Cookie cookieToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginFormJson))
-                .andReturn().getResponse().getCookie("accessToken");
-        String token = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/get-jwt")
-                .cookie(cookieToken))
-                .andReturn().getResponse().getContentAsString();
-        String accessToken = objectMapper.readValue(token, JwtToken.class).getAccessToken();
+        String accessToken = getAccessTokenForAdmin();
         RegisterDoctorForm registerDoctorForm = TestDataUtil.createRegisterDoctorForm();
         registerDoctorForm.setFirstName("");
         String registerFromJson = objectMapper.writeValueAsString(registerDoctorForm);
@@ -165,21 +146,7 @@ public class UserControllerIntegrationTest {
     public void testThatDoctorRegisterReturnsHttp201CreatedAndCorrespondingDataIfEverythingOk() throws Exception {
         listenerRegistry.stop();
         assertEquals(0, Objects.requireNonNull(admin.getQueueInfo("doctors_index_queue")).getMessageCount());
-        UserEntity user = UserEntity.builder()
-                .email("admin@email.com")
-                .password(new BCryptPasswordEncoder().encode("password123")).role(Role.ROLE_ADMIN).build();
-        userRepository.save(user);
-        LoginForm loginForm = TestDataUtil.createLoginForm();
-        loginForm.setEmail("admin@email.com");
-        String loginFormJson = objectMapper.writeValueAsString(loginForm);
-        Cookie cookieToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginFormJson))
-                .andReturn().getResponse().getCookie("accessToken");
-        String token = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/get-jwt")
-                        .cookie(cookieToken))
-                .andReturn().getResponse().getContentAsString();
-        String accessToken = objectMapper.readValue(token, JwtToken.class).getAccessToken();
+        String accessToken = getAccessTokenForAdmin();
         RegisterDoctorForm registerDoctorForm = TestDataUtil.createRegisterDoctorForm();
         registerDoctorForm.setSpecializations(List.of());
         String registerFromJson = objectMapper.writeValueAsString(registerDoctorForm);
@@ -210,6 +177,7 @@ public class UserControllerIntegrationTest {
         RegisterPatientForm registerPatientForm = TestDataUtil.createRegisterForm();
         userService.register(registerPatientForm);
         LoginForm loginForm = TestDataUtil.createLoginForm();
+        loginForm.setEmail("patient@email.com");
         loginForm.setPassword("wrongPassword");
         String loginFormJson = objectMapper.writeValueAsString(loginForm);
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
@@ -223,6 +191,7 @@ public class UserControllerIntegrationTest {
         RegisterPatientForm registerPatientForm = TestDataUtil.createRegisterForm();
         userService.register(registerPatientForm);
         LoginForm loginForm = TestDataUtil.createLoginForm();
+        loginForm.setEmail("patient@email.com");
         String loginFormJson = objectMapper.writeValueAsString(loginForm);
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -245,6 +214,7 @@ public class UserControllerIntegrationTest {
         RegisterPatientForm registerPatientForm = TestDataUtil.createRegisterForm();
         userService.register(registerPatientForm);
         LoginForm loginForm = TestDataUtil.createLoginForm();
+        loginForm.setEmail("patient@email.com");
         String loginFormJson = objectMapper.writeValueAsString(loginForm);
         Cookie cookieToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -274,6 +244,7 @@ public class UserControllerIntegrationTest {
         RegisterPatientForm registerPatientForm = TestDataUtil.createRegisterForm();
         userService.register(registerPatientForm);
         LoginForm loginForm = TestDataUtil.createLoginForm();
+        loginForm.setEmail("patient@email.com");
         String loginFormJson = objectMapper.writeValueAsString(loginForm);
         Cookie cookieToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -285,5 +256,20 @@ public class UserControllerIntegrationTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.accessToken").exists());
     }
 
-
+    private String getAccessTokenForAdmin() throws Exception {
+        UserEntity user = UserEntity.builder()
+                .email("email@email.com")
+                .password(new BCryptPasswordEncoder().encode("password123")).role(Role.ROLE_ADMIN).build();
+        userRepository.save(user);
+        LoginForm loginForm = TestDataUtil.createLoginForm();
+        String loginFormJson = objectMapper.writeValueAsString(loginForm);
+        Cookie cookieToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginFormJson))
+                .andReturn().getResponse().getCookie("accessToken");
+        String token = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/get-jwt")
+                        .cookie(cookieToken))
+                .andReturn().getResponse().getContentAsString();
+        return objectMapper.readValue(token, JwtToken.class).getAccessToken();
+    }
 }

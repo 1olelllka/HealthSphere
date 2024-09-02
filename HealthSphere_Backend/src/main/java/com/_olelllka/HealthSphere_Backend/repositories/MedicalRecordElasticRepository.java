@@ -7,8 +7,6 @@ import org.springframework.data.elasticsearch.annotations.Query;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
-
 @Repository
 public interface MedicalRecordElasticRepository extends ElasticsearchRepository<MedicalRecordDocument, Long> {
 

@@ -23,7 +23,7 @@ public class AdviceController {
     }
 
     @ExceptionHandler(NotAuthorizedException.class)
-    public ResponseEntity<ErrorMessage> notAutorizedException(NotAuthorizedException ex) {
+    public ResponseEntity<ErrorMessage> notAuthorizedException(NotAuthorizedException ex) {
         return new ResponseEntity<>(ErrorMessage.builder().message(ex.getMessage()).build(), HttpStatus.UNAUTHORIZED);
     }
 

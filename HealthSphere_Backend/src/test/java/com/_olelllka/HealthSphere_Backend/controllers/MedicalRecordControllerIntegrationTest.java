@@ -1,5 +1,6 @@
 package com._olelllka.HealthSphere_Backend.controllers;
 
+import com._olelllka.HealthSphere_Backend.TestContainers;
 import com._olelllka.HealthSphere_Backend.TestDataUtil;
 import com._olelllka.HealthSphere_Backend.domain.documents.MedicalRecordDocument;
 import com._olelllka.HealthSphere_Backend.domain.dto.JwtToken;
@@ -7,10 +8,8 @@ import com._olelllka.HealthSphere_Backend.domain.dto.auth.LoginForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterDoctorForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterPatientForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDetailDto;
-import com._olelllka.HealthSphere_Backend.domain.dto.doctors.SpecializationDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.patients.PatientDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.records.MedicalRecordDetailDto;
-import com._olelllka.HealthSphere_Backend.domain.dto.records.MedicalRecordDocumentDto;
 import com._olelllka.HealthSphere_Backend.domain.entity.*;
 import com._olelllka.HealthSphere_Backend.repositories.MedicalRecordElasticRepository;
 import com._olelllka.HealthSphere_Backend.service.MedicalRecordService;
@@ -20,8 +19,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.listener.RabbitListenerEndpointRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,17 +40,13 @@ import org.testcontainers.shaded.org.awaitility.Awaitility;
 import org.testcontainers.utility.DockerImageName;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.StreamSupport;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
@@ -62,15 +55,11 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 @AutoConfigureMockMvc
 public class MedicalRecordControllerIntegrationTest {
 
-    private static final Logger log = LoggerFactory.getLogger(MedicalRecordControllerIntegrationTest.class);
     @Container
-    static RabbitMQContainer rabbitMQContainer =
-            new RabbitMQContainer(DockerImageName.parse("rabbitmq").withTag("3.13-management"));
+    static RabbitMQContainer rabbitMQContainer = TestContainers.rabbitMQContainer;
 
     @Container
-    static ElasticsearchContainer elasticsearchContainer =
-            new ElasticsearchContainer(DockerImageName.parse("elasticsearch").withTag("7.17.23"))
-            ;
+    static ElasticsearchContainer elasticsearchContainer = TestContainers.elasticsearchContainer;
 
     @DynamicPropertySource
     static void configure(DynamicPropertyRegistry registry) {
@@ -240,13 +229,7 @@ public class MedicalRecordControllerIntegrationTest {
                 .id(doctor.getId())
                 .firstName(doctor.getFirstName())
                 .lastName(doctor.getLastName()).build();
-        MedicalRecordDetailDto record = MedicalRecordDetailDto.builder()
-                .id(30L)
-                .patient(patientDto)
-                .doctor(doctorDto)
-                .diagnosis("Diagnosis")
-                .treatment("Treatment")
-                .recordDate(LocalDate.of(2020, Month.APRIL, 1)).build();
+        MedicalRecordDetailDto record = TestDataUtil.createMedicalRecordDetailDto(patientDto, doctorDto);
         String recordJson = objectMapper.writeValueAsString(record);
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/patient/medical-records")
                 .header("Authorization", "Bearer " + doctorAccessToken)
@@ -268,7 +251,8 @@ public class MedicalRecordControllerIntegrationTest {
 
     @Test
     public void testThatPatchDetailedMedicalRecordReturnsHttp400BadRequestIfDataIsInvalid() throws Exception {
-        MedicalRecordDetailDto dto = MedicalRecordDetailDto.builder().build();
+        MedicalRecordDetailDto dto = TestDataUtil.createMedicalRecordDetailDto(null, null);
+        dto.setDiagnosis("");
         String dtoJson = objectMapper.writeValueAsString(dto);
         String accessToken = getAccessTokenForDoctor();
         mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patient/medical-records/1")
@@ -280,9 +264,7 @@ public class MedicalRecordControllerIntegrationTest {
 
     @Test
     public void testThatPatchDetailedMedicalRecordReturnsHttp404NotFoundIfSuchMedicalRecordDoesNotExist() throws Exception {
-        MedicalRecordDetailDto dto = MedicalRecordDetailDto.builder()
-                .diagnosis("DIAGNOSIS")
-                .build();
+        MedicalRecordDetailDto dto = TestDataUtil.createMedicalRecordDetailDto(null, null);
         String dtoJson = objectMapper.writeValueAsString(dto);
         String accessToken = getAccessTokenForDoctor();
         mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patient/medical-records/1")
@@ -354,26 +336,8 @@ public class MedicalRecordControllerIntegrationTest {
     }
 
     private String getAccessTokenForDoctor() throws Exception {
-
         LoginForm loginForm = TestDataUtil.createLoginForm();
         loginForm.setEmail("doctor@email.com");
-        String loginFormJson = objectMapper.writeValueAsString(loginForm);
-        Cookie cookieToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginFormJson)
-                        .with(csrf()))
-                .andReturn().getResponse().getCookie("accessToken");
-        String token = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/get-jwt")
-                        .cookie(cookieToken))
-                .andReturn().getResponse().getContentAsString();
-        String accessToken = objectMapper.readValue(token, JwtToken.class).getAccessToken();
-        return accessToken;
-    }
-
-    private String getAccessToken() throws Exception {
-        RegisterPatientForm register = TestDataUtil.createRegisterForm();
-        userService.register(register);
-        LoginForm loginForm = TestDataUtil.createLoginForm();
         String loginFormJson = objectMapper.writeValueAsString(loginForm);
         Cookie cookieToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -382,7 +346,22 @@ public class MedicalRecordControllerIntegrationTest {
         String token = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/get-jwt")
                         .cookie(cookieToken))
                 .andReturn().getResponse().getContentAsString();
-        String accessToken = objectMapper.readValue(token, JwtToken.class).getAccessToken();
-        return accessToken;
+        return objectMapper.readValue(token, JwtToken.class).getAccessToken();
+    }
+
+    private String getAccessToken() throws Exception {
+        RegisterPatientForm register = TestDataUtil.createRegisterForm();
+        userService.register(register);
+        LoginForm loginForm = TestDataUtil.createLoginForm();
+        loginForm.setEmail("patient@email.com");
+        String loginFormJson = objectMapper.writeValueAsString(loginForm);
+        Cookie cookieToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginFormJson))
+                .andReturn().getResponse().getCookie("accessToken");
+        String token = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/get-jwt")
+                        .cookie(cookieToken))
+                .andReturn().getResponse().getContentAsString();
+        return objectMapper.readValue(token, JwtToken.class).getAccessToken();
     }
 }

@@ -2,11 +2,9 @@ package com._olelllka.HealthSphere_Backend.configuration;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.java.Log;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -19,7 +17,6 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-@Log
 public class WebSecurityConfig {
 
     final AuthenticationProvider provider;
@@ -52,7 +49,7 @@ public class WebSecurityConfig {
                 .logout((logout) -> {
                     logout
                             .logoutUrl("/api/v1/logout")
-                            .deleteCookies("JSESSIONID", "accessToken", "XSRF-TOKEN")
+                            .deleteCookies("JSESSIONID", "accessToken")
                             .invalidateHttpSession(true)
                             .logoutSuccessHandler(((request, response, authentication) -> {
                                 response.setStatus(HttpServletResponse.SC_OK);

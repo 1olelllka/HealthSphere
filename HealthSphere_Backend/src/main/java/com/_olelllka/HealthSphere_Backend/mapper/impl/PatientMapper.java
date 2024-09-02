@@ -10,12 +10,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class PatientMapper implements Mapper<PatientEntity, PatientDto> {
 
-    private ModelMapper modelMapper;
-
     @Autowired
-    public PatientMapper(ModelMapper modelMapper) {
-        this.modelMapper = modelMapper;
-    }
+    private ModelMapper modelMapper;
 
     @Override
     public PatientEntity toEntity(PatientDto patientDto) {

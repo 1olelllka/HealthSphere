@@ -46,7 +46,7 @@ public class DoctorServiceUnitTest {
     public void testThatGetAllDoctorsReturnPage() {
         // given
         Pageable pageable = PageRequest.of(1, 1);
-        DoctorEntity entity = DoctorEntity.builder().firstName("First Name").build();
+        DoctorEntity entity = createDoctorEntity();
         Page<DoctorEntity> expected = new PageImpl<>(List.of(entity));
         // when
         when(repository.findAll(pageable)).thenReturn(expected);
@@ -85,7 +85,7 @@ public class DoctorServiceUnitTest {
     public void testThatGetDoctorByIdReturnsDoctor() {
         // given
         Long id = 1L;
-        DoctorEntity doctor = DoctorEntity.builder().id(1L).firstName("First Name").build();
+        DoctorEntity doctor = createDoctorEntity();
         // when
         when(repository.findById(id)).thenReturn(Optional.of(doctor));
         DoctorEntity result = doctorService.getDoctorById(id);
@@ -102,7 +102,7 @@ public class DoctorServiceUnitTest {
         // given
         String jwt = "jwt";
         String email = "email";
-        DoctorEntity doctor = DoctorEntity.builder().firstName("First Name").build();
+        DoctorEntity doctor = createDoctorEntity();
         // when
         when(jwtService.extractUsername(jwt)).thenReturn(email);
         when(repository.findByUserEmail(email)).thenReturn(Optional.of(doctor));
@@ -118,7 +118,6 @@ public class DoctorServiceUnitTest {
     public void testThatPatchDoctorByIdThrowsException() {
         // given
         Long id = 1L;
-        String email = "email";
         // when
         when(repository.findById(id)).thenReturn(Optional.empty());
         // then
@@ -131,16 +130,9 @@ public class DoctorServiceUnitTest {
     public void testThatPatchDoctorByIdWorks() {
         // given
         Long id = 1L;
-        String email = "email";
-        DoctorEntity doctor = DoctorEntity
-                .builder()
-                .firstName("First Name")
-                .specializations(List.of())
-                .build();
-        DoctorEntity updated = DoctorEntity.builder()
-                .firstName("UPDATED")
-                .specializations(List.of())
-                .build();
+        DoctorEntity doctor = createDoctorEntity();
+        DoctorEntity updated = createDoctorEntity();
+        updated.setFirstName("UPDATED");
         // when
         when(repository.findById(id)).thenReturn(Optional.of(doctor));
         when(repository.save(updated)).thenReturn(updated);
@@ -185,6 +177,14 @@ public class DoctorServiceUnitTest {
                 () -> assertEquals(result, expected)
         );
         verify(elasticRepository, times(1)).findByParams(params, pageable);
+    }
+
+    private DoctorEntity createDoctorEntity() {
+        return DoctorEntity
+                .builder()
+                .firstName("First Name")
+                .specializations(List.of())
+                .build();
     }
 
 }

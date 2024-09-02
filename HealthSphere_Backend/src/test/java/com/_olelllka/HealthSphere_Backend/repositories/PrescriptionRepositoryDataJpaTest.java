@@ -2,7 +2,6 @@ package com._olelllka.HealthSphere_Backend.repositories;
 
 import com._olelllka.HealthSphere_Backend.domain.entity.PrescriptionEntity;
 import com._olelllka.HealthSphere_Backend.domain.entity.PrescriptionMedicineEntity;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

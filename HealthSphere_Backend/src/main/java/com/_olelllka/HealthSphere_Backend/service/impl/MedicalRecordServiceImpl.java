@@ -9,7 +9,6 @@ import com._olelllka.HealthSphere_Backend.repositories.MedicalRecordRepository;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.NotFoundException;
 import com._olelllka.HealthSphere_Backend.service.MedicalRecordService;
 import com._olelllka.HealthSphere_Backend.service.rabbitmq.MedicalRecordMessageProducer;
-import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,7 +19,6 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 @Service
-@Log
 public class MedicalRecordServiceImpl implements MedicalRecordService {
 
 
@@ -55,6 +53,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     }
 
     @Override
+    @Transactional
     public MedicalRecordEntity patchMedicalRecordForPatient(Long id, MedicalRecordEntity updated) {
         return medicalRecordRepository.findById(id).map(record -> {
             Optional.ofNullable(updated.getDiagnosis()).ifPresent(record::setDiagnosis);

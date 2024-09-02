@@ -6,7 +6,6 @@ import com._olelllka.HealthSphere_Backend.domain.dto.auth.LoginForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterPatientForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.UserDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.patients.PatientDto;
-import com._olelllka.HealthSphere_Backend.service.PatientService;
 import com._olelllka.HealthSphere_Backend.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
@@ -31,17 +30,14 @@ import java.text.SimpleDateFormat;
 public class PatientControllerIntegrationTest {
 
     private MockMvc mockMvc;
-    private PatientService patientService;
     private UserService userService;
     private ObjectMapper objectMapper;
 
     @Autowired
     public PatientControllerIntegrationTest(MockMvc mockMvc,
-                                            PatientService patientService,
                                             UserService userService) {
         this.mockMvc = mockMvc;
         this.objectMapper = new ObjectMapper();
-        this.patientService = patientService;
         this.userService = userService;
     }
 
@@ -53,23 +49,12 @@ public class PatientControllerIntegrationTest {
 
     @Test
     public void testThatGetPatientReturnsHttp200OkAndCorrespondingDataIfCalledCorrectly() throws Exception {
-        RegisterPatientForm registerPatientForm = TestDataUtil.createRegisterForm();
-        userService.register(registerPatientForm);
-        LoginForm loginForm = TestDataUtil.createLoginForm();
-        String loginFormJson = objectMapper.writeValueAsString(loginForm);
-        Cookie cookieToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginFormJson))
-                .andReturn().getResponse().getCookie("accessToken");
-        String token = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/get-jwt")
-                        .cookie(cookieToken))
-                .andReturn().getResponse().getContentAsString();
-        String accessToken = objectMapper.readValue(token, JwtToken.class).getAccessToken();
+        String accessToken = getAccessToken();
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/patient/me")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.firstName").value(registerPatientForm.getFirstName()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.lastName").value(registerPatientForm.getLastName()));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.firstName").value("First Name"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.lastName").value("Last Name"));
     }
 
     @Test
@@ -152,6 +137,7 @@ public class PatientControllerIntegrationTest {
         RegisterPatientForm register = TestDataUtil.createRegisterForm();
         userService.register(register);
         LoginForm loginForm = TestDataUtil.createLoginForm();
+        loginForm.setEmail("patient@email.com");
         String loginFormJson = objectMapper.writeValueAsString(loginForm);
         Cookie cookieToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
                         .contentType(MediaType.APPLICATION_JSON)

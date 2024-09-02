@@ -1,5 +1,6 @@
 package com._olelllka.HealthSphere_Backend.repositories;
 
+import com._olelllka.HealthSphere_Backend.TestContainers;
 import com._olelllka.HealthSphere_Backend.domain.documents.DoctorRecordList;
 import com._olelllka.HealthSphere_Backend.domain.documents.MedicalRecordDocument;
 import org.junit.jupiter.api.AfterAll;
@@ -28,9 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class MedicalRecordElasticRepositoryIntegrationTest {
 
     @Container
-    static ElasticsearchContainer container =
-            new ElasticsearchContainer(DockerImageName.parse("elasticsearch").withTag("7.17.23"))
-            ;
+    static ElasticsearchContainer container = TestContainers.elasticsearchContainer;
 
 
     @DynamicPropertySource

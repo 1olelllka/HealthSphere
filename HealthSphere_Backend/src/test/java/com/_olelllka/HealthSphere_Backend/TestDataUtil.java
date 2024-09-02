@@ -1,5 +1,6 @@
 package com._olelllka.HealthSphere_Backend;
 
+import com._olelllka.HealthSphere_Backend.domain.documents.MedicalRecordDocument;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.LoginForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterDoctorForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterPatientForm;
@@ -8,17 +9,20 @@ import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDetailDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.patients.PatientDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.prescriptions.PrescriptionDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.prescriptions.PrescriptionMedicineDto;
+import com._olelllka.HealthSphere_Backend.domain.dto.records.MedicalRecordDetailDto;
 import com._olelllka.HealthSphere_Backend.domain.entity.*;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 
 public class TestDataUtil {
 
     public static RegisterPatientForm createRegisterForm() throws ParseException {
         return RegisterPatientForm.builder()
-                .email("email@email.com")
+                .email("patient@email.com")
                 .password("password123")
                 .firstName("First Name")
                 .lastName("Last Name")
@@ -33,15 +37,16 @@ public class TestDataUtil {
                 .build();
     }
 
-    public static RegisterDoctorForm createRegisterDoctorForm() throws ParseException {
+    public static RegisterDoctorForm createRegisterDoctorForm() {
         return RegisterDoctorForm.builder()
-                .email("email@email.com")
+                .email("doctor@email.com")
                 .password("password123")
                 .licenseNumber("12341090189123")
                 .phoneNumber("123456789")
                 .clinicAddress("West 12 St.")
                 .firstName("First Name")
                 .lastName("Last Name")
+                .specializations(List.of())
                 .build();
     }
 
@@ -93,5 +98,15 @@ public class TestDataUtil {
                 .medicineName("NAME")
                 .dosage("DOSAGE")
                 .build();
+    }
+
+    public static MedicalRecordDetailDto createMedicalRecordDetailDto(PatientDto patientDto, DoctorDetailDto doctorDetailDto) {
+        return MedicalRecordDetailDto.builder()
+                .id(30L)
+                .patient(patientDto)
+                .doctor(doctorDetailDto)
+                .diagnosis("Diagnosis")
+                .treatment("Treatment")
+                .recordDate(LocalDate.of(2020, Month.APRIL, 1)).build();
     }
 }

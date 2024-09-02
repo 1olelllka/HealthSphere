@@ -1,8 +1,6 @@
 package com._olelllka.HealthSphere_Backend.service.rabbitmq;
 
 import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDocumentDto;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;

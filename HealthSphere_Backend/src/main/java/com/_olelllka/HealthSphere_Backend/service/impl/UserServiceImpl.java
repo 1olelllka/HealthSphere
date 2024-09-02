@@ -50,6 +50,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserEntity register(RegisterPatientForm registerPatientForm) {
         UserEntity user = UserEntity.builder()
                 .email(registerPatientForm.getEmail())

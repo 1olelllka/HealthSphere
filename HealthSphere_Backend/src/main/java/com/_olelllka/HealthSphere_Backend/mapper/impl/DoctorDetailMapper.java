@@ -4,16 +4,14 @@ import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDetailDto;
 import com._olelllka.HealthSphere_Backend.domain.entity.DoctorEntity;
 import com._olelllka.HealthSphere_Backend.mapper.Mapper;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DoctorDetailMapper implements Mapper<DoctorEntity, DoctorDetailDto> {
 
+    @Autowired
     private ModelMapper modelMapper;
-
-    public DoctorDetailMapper(ModelMapper modelMapper) {
-        this.modelMapper = modelMapper;
-    }
 
     @Override
     public DoctorEntity toEntity(DoctorDetailDto doctorDetailDto) {
