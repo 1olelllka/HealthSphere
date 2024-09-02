@@ -17,4 +17,6 @@ public interface PrescriptionService {
     void removeMedicineById(Long id);
 
     PrescriptionMedicineEntity updateTheMedicineById(Long id, PrescriptionMedicineEntity entity);
+
+    void deletePrescription(Long id);
 }

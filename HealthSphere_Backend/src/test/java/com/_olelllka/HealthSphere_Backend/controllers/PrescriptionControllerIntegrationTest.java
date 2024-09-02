@@ -247,6 +247,20 @@ public class PrescriptionControllerIntegrationTest {
                 .andExpect(MockMvcResultMatchers.status().isAccepted());
     }
 
+    @Test
+    public void testThatDeletePrescriptionReturnsHttp403ForbiddenIfUnauthorized() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/prescriptions/1"))
+                .andExpect(MockMvcResultMatchers.status().isForbidden());
+    }
+
+    @Test
+    public void testThatDeletePrescriptionReturnsHttp202Accepted() throws Exception {
+        String accessToken = getAccessToken();
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/prescriptions/1")
+                .header("Authorization", "Bearer " + accessToken))
+                .andExpect(MockMvcResultMatchers.status().isAccepted());
+    }
+
     private String getAccessToken() throws Exception {
         LoginForm loginForm = TestDataUtil.createLoginForm();
         loginForm.setEmail("doctor@email.com");

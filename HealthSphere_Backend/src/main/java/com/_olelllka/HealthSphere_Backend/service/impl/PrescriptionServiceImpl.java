@@ -11,6 +11,7 @@ import com._olelllka.HealthSphere_Backend.service.JwtService;
 import com._olelllka.HealthSphere_Backend.service.PrescriptionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -69,5 +70,13 @@ public class PrescriptionServiceImpl implements PrescriptionService {
             Optional.ofNullable(entity.getInstructions()).ifPresent(med::setInstructions);
             return medicineRepository.save(med);
         }).orElseThrow(() -> new NotFoundException("Medicine with such id was not found."));
+    }
+
+    @Override
+    @Transactional
+    public void deletePrescription(Long id) {
+        List<PrescriptionMedicineEntity> medicines = medicineRepository.findByPrescriptionId(id);
+        medicineRepository.deleteAll(medicines);
+        repository.deleteById(id);
     }
 }

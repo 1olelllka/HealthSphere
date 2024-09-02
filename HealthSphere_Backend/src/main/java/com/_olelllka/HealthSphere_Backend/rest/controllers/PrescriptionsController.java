@@ -93,4 +93,11 @@ public class PrescriptionsController {
         return new ResponseEntity(null, HttpStatus.ACCEPTED);
     }
 
+    @PreAuthorize("hasRole('DOCTOR')")
+    @DeleteMapping("/prescriptions/{id}")
+    public ResponseEntity deletePrescriptionById(@PathVariable Long id) {
+        service.deletePrescription(id);
+        return new ResponseEntity(null, HttpStatus.ACCEPTED);
+    }
+
 }

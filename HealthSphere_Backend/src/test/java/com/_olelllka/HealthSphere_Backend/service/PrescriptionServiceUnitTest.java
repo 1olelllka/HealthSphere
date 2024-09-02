@@ -157,4 +157,16 @@ public class PrescriptionServiceUnitTest {
         // then
         verify(medicineRepository, times(1)).deleteById(id);
     }
+
+    @Test
+    public void testThatDeleteWholePrescriptionWorks() {
+        // given
+        Long id = 1L;
+        // when
+        when(medicineRepository.findByPrescriptionId(1L)).thenReturn(List.of());
+        service.deletePrescription(id);
+        // then
+        verify(medicineRepository, times(1)).deleteAll(List.of());
+        verify(repository, times(1)).deleteById(id);
+    }
 }
