@@ -18,6 +18,7 @@ import java.util.Date;
 @Table(name="appointment")
 public class AppointmentEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne
     @JoinColumn(name="patient_id", referencedColumnName = "id")
@@ -25,7 +26,7 @@ public class AppointmentEntity {
     @ManyToOne
     @JoinColumn(name="doctor_id", referencedColumnName = "id")
     private DoctorEntity doctor;
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private Date appointmentDate;
     @Enumerated(EnumType.STRING)
     private Status status;

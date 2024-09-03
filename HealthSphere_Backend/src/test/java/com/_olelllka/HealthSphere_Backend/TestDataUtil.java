@@ -1,6 +1,7 @@
 package com._olelllka.HealthSphere_Backend;
 
 import com._olelllka.HealthSphere_Backend.domain.documents.MedicalRecordDocument;
+import com._olelllka.HealthSphere_Backend.domain.dto.appointments.AppointmentDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.LoginForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterDoctorForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterPatientForm;
@@ -16,6 +17,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.Date;
 import java.util.List;
 
 public class TestDataUtil {
@@ -106,5 +108,15 @@ public class TestDataUtil {
                 .diagnosis("Diagnosis")
                 .treatment("Treatment")
                 .recordDate(LocalDate.of(2020, Month.APRIL, 1)).build();
+    }
+
+    public static AppointmentDto createAppointmentDto(PatientEntity patient, DoctorEntity doctor) {
+        return AppointmentDto.builder()
+                .appointmentDate(new Date())
+                .reason("REASON")
+                .doctor(doctor)
+                .patient(patient)
+                .status(Status.SCHEDULED)
+                .build();
     }
 }

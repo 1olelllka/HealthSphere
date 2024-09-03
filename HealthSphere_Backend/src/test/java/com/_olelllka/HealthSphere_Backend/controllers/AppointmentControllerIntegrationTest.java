@@ -3,9 +3,11 @@ package com._olelllka.HealthSphere_Backend.controllers;
 import com._olelllka.HealthSphere_Backend.TestContainers;
 import com._olelllka.HealthSphere_Backend.TestDataUtil;
 import com._olelllka.HealthSphere_Backend.domain.dto.JwtToken;
+import com._olelllka.HealthSphere_Backend.domain.dto.appointments.AppointmentDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.LoginForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterDoctorForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterPatientForm;
+import com._olelllka.HealthSphere_Backend.domain.entity.Status;
 import com._olelllka.HealthSphere_Backend.service.AppointmentService;
 import com._olelllka.HealthSphere_Backend.service.UserService;
 import jakarta.servlet.http.Cookie;
@@ -108,6 +110,61 @@ public class AppointmentControllerIntegrationTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/doctors/1/appointments")
                 .header("Authorization", "Bearer " + accessToken))
                 .andExpect(MockMvcResultMatchers.status().isOk());
+    }
+
+    @Test
+    public void testThatGetAppointmentByIdReturnsHttp404NotFoundIfSuchAppointmentWasNotFound() throws Exception {
+        String accessToken = getAccessToken();
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/patients/appointments/1")
+                .header("Authorization", "Bearer " + accessToken))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
+
+    @Test
+    public void testThatCreateAppointmentForPatientOrDoctorReturnsHttp400BadRequestIfInvalidData() throws Exception {
+        String accessToken = getAccessToken();
+        AppointmentDto dto = TestDataUtil.createAppointmentDto(null, null);
+        dto.setAppointmentDate(null);
+        String json = objectMapper.writeValueAsString(dto);
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/patients/appointments")
+                .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    public void testThatCreateAppointmentForPatientReturnsHttp201CreatedAndCorrespondingData() throws Exception {
+        String accessToken = getAccessToken();
+        AppointmentDto dto = TestDataUtil.createAppointmentDto(null, null);
+        String json = objectMapper.writeValueAsString(dto);
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/patients/appointments")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(Status.SCHEDULED.name()));
+    }
+
+    @Test
+    public void testThatCreateAppointmentForDoctorReturnsHttp201CreatedAndCorrespondingData() throws Exception {
+        String accessToken = getDoctorAccessToken();
+        AppointmentDto dto = TestDataUtil.createAppointmentDto(null, null);
+        String json = objectMapper.writeValueAsString(dto);
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/patients/appointments")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(Status.SCHEDULED.name()));
+    }
+
+    @Test
+    public void testThatDeleteAppointmentByIdReturnsHttp202Accepted() throws Exception {
+        String accessToken = getAccessToken();
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/patients/appointments/1")
+                .header("Authorization", "Bearer " + accessToken))
+                .andExpect(MockMvcResultMatchers.status().isAccepted());
     }
 
     private String getDoctorAccessToken() throws Exception {

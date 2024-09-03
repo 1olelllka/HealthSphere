@@ -8,4 +8,12 @@ public interface AppointmentService {
     Page<AppointmentEntity> getAllAppointmentsForPatient(Long userId, Pageable pageable);
 
     Page<AppointmentEntity> getAllAppointmentsForDoctor(Long doctorId, Pageable pageable);
+
+    AppointmentEntity getAppointmentById(Long id);
+
+    void deleteById(Long id);
+
+    AppointmentEntity createNewAppointmentForDoctor(AppointmentEntity entity, String substring);
+
+    AppointmentEntity createNewAppointmentForPatient(AppointmentEntity entity, String substring);
 }
