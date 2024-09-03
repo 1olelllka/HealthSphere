@@ -16,7 +16,7 @@ public interface MedicalRecordService {
 
     MedicalRecordEntity patchMedicalRecordForPatient(Long id, MedicalRecordEntity dto);
 
-    MedicalRecordEntity createMedicalRecord(MedicalRecordEntity entity);
+    MedicalRecordEntity createMedicalRecord(MedicalRecordEntity entity, String jwt);
 
     void deleteById(Long id);
 }

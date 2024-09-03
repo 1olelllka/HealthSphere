@@ -4,6 +4,7 @@ import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDetailDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.patients.PatientDto;
 import com._olelllka.HealthSphere_Backend.domain.entity.PrescriptionEntity;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,7 +20,7 @@ import java.util.Date;
 public class MedicalRecordDetailDto {
     private Long id;
     private PatientDto patient;
-    private DoctorDetailDto doctor;
+    @NotNull(message = "Record Date must not be null.")
     private LocalDate recordDate;
     @NotBlank(message = "Diagnosis must not be empty.")
     private String diagnosis;

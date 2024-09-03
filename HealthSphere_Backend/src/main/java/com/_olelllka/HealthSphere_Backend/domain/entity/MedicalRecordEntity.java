@@ -21,10 +21,10 @@ public class MedicalRecordEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name="patient_id", referencedColumnName = "id")
     private PatientEntity patient;
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name="doctor_id", referencedColumnName = "id")
     private DoctorEntity doctor;
     @Column(nullable = false)

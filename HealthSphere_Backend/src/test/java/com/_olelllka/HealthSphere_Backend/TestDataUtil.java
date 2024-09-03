@@ -102,9 +102,7 @@ public class TestDataUtil {
 
     public static MedicalRecordDetailDto createMedicalRecordDetailDto(PatientDto patientDto, DoctorDetailDto doctorDetailDto) {
         return MedicalRecordDetailDto.builder()
-                .id(30L)
                 .patient(patientDto)
-                .doctor(doctorDetailDto)
                 .diagnosis("Diagnosis")
                 .treatment("Treatment")
                 .recordDate(LocalDate.of(2020, Month.APRIL, 1)).build();

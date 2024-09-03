@@ -5,6 +5,7 @@ import com._olelllka.HealthSphere_Backend.domain.dto.records.MedicalRecordDocume
 import com._olelllka.HealthSphere_Backend.domain.entity.DoctorEntity;
 import com._olelllka.HealthSphere_Backend.domain.entity.MedicalRecordEntity;
 import com._olelllka.HealthSphere_Backend.domain.entity.PatientEntity;
+import com._olelllka.HealthSphere_Backend.repositories.DoctorRepository;
 import com._olelllka.HealthSphere_Backend.repositories.MedicalRecordElasticRepository;
 import com._olelllka.HealthSphere_Backend.repositories.MedicalRecordRepository;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.NotFoundException;
@@ -38,6 +39,10 @@ public class MedicalRecordServiceUnitTest {
     private MedicalRecordElasticRepository elasticRepository;
     @Mock
     private MedicalRecordMessageProducer messageProducer;
+    @Mock
+    private JwtService jwtService;
+    @Mock
+    private DoctorRepository doctorRepository;
     @InjectMocks
     private MedicalRecordServiceImpl medicalRecordService;
 
@@ -139,16 +144,19 @@ public class MedicalRecordServiceUnitTest {
     @Test
     public void testThatCreateMedicalRecordPerformsAsExpected() throws ParseException {
         // given
+        String jwt = "jwt";
         PatientEntity patient = PatientEntity.builder().build();
         DoctorEntity doctor = DoctorEntity.builder()
                 .id(1L)
                 .firstName("First Name")
                 .lastName("Last Name")
                 .build();
-        MedicalRecordEntity entity = createMedicalRecordEntity(patient, doctor);
+        MedicalRecordEntity entity = createMedicalRecordEntity(patient, null);
         // when
         when(medicalRecordRepository.save(entity)).thenReturn(entity);
-        MedicalRecordEntity result = medicalRecordService.createMedicalRecord(entity);
+        when(jwtService.extractUsername(jwt)).thenReturn("email");
+        when(doctorRepository.findByUserEmail("email")).thenReturn(Optional.of(doctor));
+        MedicalRecordEntity result = medicalRecordService.createMedicalRecord(entity, jwt);
         // then
         assertAll(
                 () -> assertNotNull(result),

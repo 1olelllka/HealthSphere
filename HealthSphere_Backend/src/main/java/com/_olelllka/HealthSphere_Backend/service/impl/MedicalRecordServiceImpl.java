@@ -1,12 +1,14 @@
 package com._olelllka.HealthSphere_Backend.service.impl;
 
-import com._olelllka.HealthSphere_Backend.domain.documents.DoctorRecordList;
 import com._olelllka.HealthSphere_Backend.domain.documents.MedicalRecordDocument;
 import com._olelllka.HealthSphere_Backend.domain.dto.records.MedicalRecordDocumentDto;
+import com._olelllka.HealthSphere_Backend.domain.entity.DoctorEntity;
 import com._olelllka.HealthSphere_Backend.domain.entity.MedicalRecordEntity;
+import com._olelllka.HealthSphere_Backend.repositories.DoctorRepository;
 import com._olelllka.HealthSphere_Backend.repositories.MedicalRecordElasticRepository;
 import com._olelllka.HealthSphere_Backend.repositories.MedicalRecordRepository;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.NotFoundException;
+import com._olelllka.HealthSphere_Backend.service.JwtService;
 import com._olelllka.HealthSphere_Backend.service.MedicalRecordService;
 import com._olelllka.HealthSphere_Backend.service.rabbitmq.MedicalRecordMessageProducer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,14 +27,20 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     private MedicalRecordRepository medicalRecordRepository;
     private MedicalRecordElasticRepository elasticRepository;
     private MedicalRecordMessageProducer messageProducer;
+    private DoctorRepository doctorRepository;
+    private JwtService jwtService;
 
     @Autowired
     public MedicalRecordServiceImpl(MedicalRecordRepository medicalRecordRepository,
                                     MedicalRecordElasticRepository elasticRepository,
-                                    MedicalRecordMessageProducer messageProducer) {
+                                    MedicalRecordMessageProducer messageProducer,
+                                    DoctorRepository doctorRepository,
+                                    JwtService jwtService) {
         this.medicalRecordRepository = medicalRecordRepository;
         this.elasticRepository = elasticRepository;
         this.messageProducer = messageProducer;
+        this.doctorRepository = doctorRepository;
+        this.jwtService = jwtService;
     }
 
     @Override
@@ -71,7 +79,10 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
 
     @Override
     @Transactional
-    public MedicalRecordEntity createMedicalRecord(MedicalRecordEntity entity) {
+    public MedicalRecordEntity createMedicalRecord(MedicalRecordEntity entity, String jwt) {
+        String email = jwtService.extractUsername(jwt);
+        DoctorEntity doctor = doctorRepository.findByUserEmail(email).orElseThrow(() -> new NotFoundException("Doctor with such email was not found."));
+        entity.setDoctor(doctor);
         MedicalRecordEntity result = medicalRecordRepository.save(entity);
         MedicalRecordDocumentDto dto = MedicalRecordDocumentDto.builder()
                 .id(result.getId())
@@ -79,10 +90,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 .user_id(result.getPatient().getId())
                 .diagnosis(result.getDiagnosis())
                 .treatment(result.getTreatment())
-                .doctor(DoctorRecordList.builder()
-                        .id(result.getDoctor().getId())
-                        .firstName(result.getDoctor().getFirstName())
-                        .lastName(result.getDoctor().getLastName()).build())
+                .doctor(result.getDoctor().getFirstName() + " " + result.getDoctor().getLastName())
                 .build();
         messageProducer.sendMedicalRecordCreateUpdate(dto);
         return result;

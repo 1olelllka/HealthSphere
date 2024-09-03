@@ -1,7 +1,6 @@
 package com._olelllka.HealthSphere_Backend.repositories;
 
 import com._olelllka.HealthSphere_Backend.TestContainers;
-import com._olelllka.HealthSphere_Backend.domain.documents.DoctorRecordList;
 import com._olelllka.HealthSphere_Backend.domain.documents.MedicalRecordDocument;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -17,7 +16,6 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -59,7 +57,7 @@ public class MedicalRecordElasticRepositoryIntegrationTest {
                 .diagnosis("Some diagnosis")
                 .recordDate(LocalDate.of(2020, Month.APRIL, 10))
                 .treatment("Some treatment")
-                .doctor(DoctorRecordList.builder().build()).build();
+                .doctor("DOCTOR DOCTOR").build();
         elasticRepository.save(document);
     }
 

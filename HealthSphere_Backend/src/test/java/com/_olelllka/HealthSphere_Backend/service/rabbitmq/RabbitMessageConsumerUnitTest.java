@@ -1,7 +1,6 @@
 package com._olelllka.HealthSphere_Backend.service.rabbitmq;
 
 import com._olelllka.HealthSphere_Backend.domain.documents.DoctorDocument;
-import com._olelllka.HealthSphere_Backend.domain.documents.DoctorRecordList;
 import com._olelllka.HealthSphere_Backend.domain.documents.MedicalRecordDocument;
 import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDocumentDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.records.MedicalRecordDocumentDto;
@@ -74,7 +73,7 @@ public class RabbitMessageConsumerUnitTest {
                 .user_id(1L)
                 .treatment("TREATMENT")
                 .diagnosis("DIAGNOSIS")
-                .doctor(DoctorRecordList.builder().build())
+                .doctor("DOCTOR DOCTOR")
                 .build();
         MedicalRecordDocument expected = MedicalRecordDocument.builder()
                 .id(1L)
@@ -82,7 +81,7 @@ public class RabbitMessageConsumerUnitTest {
                 .user_id(1L)
                 .treatment("TREATMENT")
                 .diagnosis("DIAGNOSIS")
-                .doctor(DoctorRecordList.builder().build())
+                .doctor("DOCTOR DOCTOR")
                 .build();
         // when
         messageConsumer.consumeMedicalRecordCreateUpdate(dto);

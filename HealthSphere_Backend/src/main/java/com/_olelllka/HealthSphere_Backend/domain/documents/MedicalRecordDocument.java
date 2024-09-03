@@ -20,7 +20,7 @@ public class MedicalRecordDocument {
     @Id
     private Long id;
     private Long user_id;
-    private DoctorRecordList doctor;
+    private String doctor;
     @Field(type= FieldType.Date, format = {}, pattern = "yyyy-MM-dd")
     private LocalDate recordDate;
     private String diagnosis;

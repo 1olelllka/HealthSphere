@@ -76,7 +76,8 @@ public class MedicalRecordController {
 
     @PostMapping("/patient/medical-records")
     @PreAuthorize("hasRole('DOCTOR')")
-    public ResponseEntity<MedicalRecordDetailDto> createMedicalRecord(@RequestBody @Valid MedicalRecordDetailDto dto,
+    public ResponseEntity<MedicalRecordDetailDto> createMedicalRecord(@RequestHeader(name="Authorization") String header,
+                                                                      @RequestBody @Valid MedicalRecordDetailDto dto,
                                                                       BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             String msg = bindingResult.getAllErrors().stream().map(err -> err.getDefaultMessage()).collect(Collectors.joining(" "));
@@ -84,13 +85,12 @@ public class MedicalRecordController {
         }
         MedicalRecordEntity entity = MedicalRecordEntity.builder()
                         .patient(patientMapper.toEntity(dto.getPatient()))
-                        .doctor(doctorMapper.toEntity(dto.getDoctor()))
                         .recordDate(dto.getRecordDate())
                         .treatment(dto.getTreatment())
                         .diagnosis(dto.getDiagnosis())
                         .prescription(dto.getPrescription())
                         .build();
-        MedicalRecordEntity created = medicalRecordService.createMedicalRecord(entity);
+        MedicalRecordEntity created = medicalRecordService.createMedicalRecord(entity, header.substring(7));
         return new ResponseEntity<>(detailMapper.toDto(created), HttpStatus.CREATED);
     }
 

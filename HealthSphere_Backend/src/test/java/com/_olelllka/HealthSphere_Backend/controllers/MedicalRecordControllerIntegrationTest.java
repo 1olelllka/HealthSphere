@@ -37,7 +37,6 @@ import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
-import org.testcontainers.utility.DockerImageName;
 
 import java.text.ParseException;
 import java.time.LocalDate;
@@ -174,15 +173,13 @@ public class MedicalRecordControllerIntegrationTest {
         String doctorJson = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/doctors/me")
                         .header("Authorization", "Bearer " + doctorAccessToken))
                 .andReturn().getResponse().getContentAsString();
-        DoctorEntity doctor = objectMapper.readValue(doctorJson, DoctorEntity.class);
         MedicalRecordEntity record = MedicalRecordEntity.builder()
                 .id(30L)
                 .patient(patient)
-                .doctor(doctor)
                 .diagnosis("Diagnosis")
                 .treatment("Treatment")
                 .recordDate(LocalDate.of(2020, Month.APRIL, 1)).build();
-        medicalRecordService.createMedicalRecord(record);
+        medicalRecordService.createMedicalRecord(record, doctorAccessToken);
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/patient/medical-records/1")
                 .header("Authorization", "Bearer " + patientAccessToken))
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -226,9 +223,7 @@ public class MedicalRecordControllerIntegrationTest {
                 .andReturn().getResponse().getContentAsString();
         DoctorEntity doctor = objectMapper.readValue(doctorJson, DoctorEntity.class);
         DoctorDetailDto doctorDto = DoctorDetailDto.builder()
-                .id(doctor.getId())
-                .firstName(doctor.getFirstName())
-                .lastName(doctor.getLastName()).build();
+                .id(doctor.getId()).build();
         MedicalRecordDetailDto record = TestDataUtil.createMedicalRecordDetailDto(patientDto, doctorDto);
         String recordJson = objectMapper.writeValueAsString(record);
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/patient/medical-records")
@@ -289,17 +284,16 @@ public class MedicalRecordControllerIntegrationTest {
         String doctorJson = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/doctors/me")
                         .header("Authorization", "Bearer " + doctorAccessToken))
                 .andReturn().getResponse().getContentAsString();
-        DoctorEntity doctor = objectMapper.readValue(doctorJson, DoctorEntity.class);
         MedicalRecordEntity record = MedicalRecordEntity.builder()
                 .id(30L)
                 .patient(patient)
-                .doctor(doctor)
                 .diagnosis("Diagnosis")
                 .treatment("Treatment")
                 .recordDate(LocalDate.of(2020, Month.APRIL, 1)).build();
-        medicalRecordService.createMedicalRecord(record);
+        medicalRecordService.createMedicalRecord(record, doctorAccessToken);
         MedicalRecordDetailDto dto = MedicalRecordDetailDto.builder()
                 .diagnosis("DIAGNOSIS")
+                .recordDate(LocalDate.of(2020, Month.APRIL, 1))
                 .build();
         String dtoJson = objectMapper.writeValueAsString(dto);
         mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patient/medical-records/1")
