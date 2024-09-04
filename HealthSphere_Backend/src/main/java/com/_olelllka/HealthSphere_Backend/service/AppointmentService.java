@@ -16,4 +16,6 @@ public interface AppointmentService {
     AppointmentEntity createNewAppointmentForDoctor(AppointmentEntity entity, String substring);
 
     AppointmentEntity createNewAppointmentForPatient(AppointmentEntity entity, String substring);
+
+    AppointmentEntity updateEntity(AppointmentEntity entity, Long id);
 }

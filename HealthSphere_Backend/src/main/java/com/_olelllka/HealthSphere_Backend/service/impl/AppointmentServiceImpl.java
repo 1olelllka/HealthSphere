@@ -10,12 +10,16 @@ import com._olelllka.HealthSphere_Backend.repositories.PatientRepository;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.NotFoundException;
 import com._olelllka.HealthSphere_Backend.service.AppointmentService;
 import com._olelllka.HealthSphere_Backend.service.JwtService;
+import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
+@Log
 public class AppointmentServiceImpl implements AppointmentService {
 
     private AppointmentRepository repository;
@@ -72,6 +76,15 @@ public class AppointmentServiceImpl implements AppointmentService {
         entity.setPatient(patient);
         entity.setStatus(Status.SCHEDULED);
         return repository.save(entity);
+    }
+
+    @Override
+    public AppointmentEntity updateEntity(AppointmentEntity entity, Long id) {
+        return repository.findById(id).map(appointment -> {
+            Optional.ofNullable(entity.getReason()).ifPresent(appointment::setReason);
+            Optional.ofNullable(entity.getStatus()).ifPresent(appointment::setStatus);
+            return repository.save(appointment);
+        }).orElseThrow(() -> new NotFoundException("Appointment with such id was not found."));
     }
 
 }

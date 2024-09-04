@@ -110,9 +110,9 @@ public class TestDataUtil {
                 .recordDate(LocalDate.of(2020, Month.APRIL, 1)).build();
     }
 
-    public static AppointmentDto createAppointmentDto(PatientEntity patient, DoctorEntity doctor) {
+    public static AppointmentDto createAppointmentDto(PatientEntity patient, DoctorEntity doctor) throws ParseException{
         return AppointmentDto.builder()
-                .appointmentDate(new Date())
+                .appointmentDate(new SimpleDateFormat("yyyy-MM-dd").parse("2025-01-01"))
                 .reason("REASON")
                 .doctor(doctor)
                 .patient(patient)

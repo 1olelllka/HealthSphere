@@ -33,8 +33,17 @@ public class MedicalRecordRepositoryDataJpaTest {
         this.userRepository = userRepository;
     }
 
-    @BeforeEach
-    public void setUp() {
+
+    @AfterEach
+    public void tearDown() {
+        medicalRecordRepository.deleteAll();
+        patientRepository.deleteAll();
+        userRepository.deleteAll();
+        doctorRepository.deleteAll();
+    }
+
+    @Test
+    public void testThatMedicalRecordRepositoryFindsRecordsByPatientId() {
         UserEntity user = UserEntity.builder().email("someEmail1@email.com").role(Role.ROLE_PATIENT).build();
         PatientEntity patient = PatientEntity.builder().user(user)
                 .firstName("Patient")
@@ -59,21 +68,8 @@ public class MedicalRecordRepositoryDataJpaTest {
         userRepository.save(user);
         doctorRepository.save(doctor);
         medicalRecordRepository.save(medicalRecord);
-    }
-
-    @AfterEach
-    public void tearDown() {
-        medicalRecordRepository.deleteAll();
-        patientRepository.deleteAll();
-        userRepository.deleteAll();
-        doctorRepository.deleteAll();
-    }
-
-    @Test
-    public void testThatMedicalRecordRepositoryFindsRecordsByPatientId() {
         Pageable pageable = PageRequest.of(0, 1);
-        Long id = 3L;
-        Page<MedicalRecordEntity> result = medicalRecordRepository.findByPatientId(id, pageable);
+        Page<MedicalRecordEntity> result = medicalRecordRepository.findByPatientId(patient.getId(), pageable);
         assertAll(
                 () -> assertNotNull(result),
                 () -> assertEquals(result.getContent().size(), 1),

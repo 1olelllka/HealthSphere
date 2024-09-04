@@ -7,9 +7,12 @@ import com._olelllka.HealthSphere_Backend.domain.dto.appointments.AppointmentDto
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.LoginForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterDoctorForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterPatientForm;
+import com._olelllka.HealthSphere_Backend.domain.entity.AppointmentEntity;
+import com._olelllka.HealthSphere_Backend.domain.entity.DoctorEntity;
 import com._olelllka.HealthSphere_Backend.domain.entity.Status;
 import com._olelllka.HealthSphere_Backend.service.AppointmentService;
 import com._olelllka.HealthSphere_Backend.service.UserService;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -19,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -31,6 +35,10 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.text.SimpleDateFormat;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
@@ -136,6 +144,21 @@ public class AppointmentControllerIntegrationTest {
     @Test
     public void testThatCreateAppointmentForPatientReturnsHttp201CreatedAndCorrespondingData() throws Exception {
         String accessToken = getAccessToken();
+        getDoctorAccessToken();
+        AppointmentDto dto = TestDataUtil.createAppointmentDto(null, DoctorEntity.builder().id(1L).build());
+        String json = objectMapper.writeValueAsString(dto);
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/patients/appointments")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(Status.SCHEDULED.name()));
+    }
+
+    @Test
+    @WithMockUser(roles = "DOCTOR")
+    public void testThatCreateAppointmentForDoctorReturnsHttp201CreatedAndCorrespondingData() throws Exception {
+        String accessToken = getDoctorAccessToken();
         AppointmentDto dto = TestDataUtil.createAppointmentDto(null, null);
         String json = objectMapper.writeValueAsString(dto);
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/patients/appointments")
@@ -147,9 +170,133 @@ public class AppointmentControllerIntegrationTest {
     }
 
     @Test
-    public void testThatCreateAppointmentForDoctorReturnsHttp201CreatedAndCorrespondingData() throws Exception {
+    public void testThatPatchAppointmentReturnsHttp400BadRequestIfDataIsInvalid() throws Exception {
+        String accessToken = getAccessToken();
+        AppointmentDto dto = AppointmentDto
+                .builder()
+                .appointmentDate(new SimpleDateFormat("yyyy-MM-dd").parse("2024-01-01"))
+                .build();
+        String json = objectMapper.writeValueAsString(dto);
+        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patients/appointments/1")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    public void testThatPatchAppointmentReturnsHttp404NotFoundIfAppointmentWasNotFound() throws Exception {
+        String accessToken = getAccessToken();
+        AppointmentDto dto = AppointmentDto
+                .builder()
+                .appointmentDate(new SimpleDateFormat("yyyy-MM-dd").parse("2024-10-01"))
+                .status(Status.SCHEDULED)
+                .build();
+        String json = objectMapper.writeValueAsString(dto);
+        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patients/appointments/1")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
+
+    @Test
+    public void testThatPatchAppointmentReturnsHttp200OkAndCorrespondingDataIfChangedReasonOrStatus() throws Exception {
+        String accessToken = getAccessToken();
+        getDoctorAccessToken();
+        AppointmentEntity entity = AppointmentEntity.builder()
+                .doctor(DoctorEntity.builder().id(1L).build())
+                .appointmentDate(new SimpleDateFormat("yyyy-MM-dd").parse("2024-09-01"))
+                .build();
+        service.createNewAppointmentForPatient(entity, accessToken);
+        AppointmentDto dto = AppointmentDto
+                .builder()
+                .status(Status.COMPLETED)
+                .build();
+        String json = objectMapper.writeValueAsString(dto);
+        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patients/appointments/1")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(Status.COMPLETED.name()));
+    }
+
+    @Test
+    public void testThatPatchAppointmentReturnsHttp204AcceptedIfStatusIsCanceled() throws Exception {
+        String accessToken = getAccessToken();
+        getDoctorAccessToken();
+        AppointmentEntity entity = AppointmentEntity.builder()
+                .doctor(DoctorEntity.builder().id(1L).build())
+                .appointmentDate(new SimpleDateFormat("yyyy-MM-dd").parse("2024-09-01"))
+                .build();
+        service.createNewAppointmentForPatient(entity, accessToken);
+        AppointmentDto dto = AppointmentDto
+                .builder()
+                .status(Status.CANCELED)
+                .build();
+        String json = objectMapper.writeValueAsString(dto);
+        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patients/appointments/1")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(MockMvcResultMatchers.status().isAccepted());
+    }
+
+    @Test
+    public void testThatPatchAppointmentAsPatientReturnsHttp201CreatedAndCorrespondingDataIfChangedDate() throws Exception {
+        String accessToken = getAccessToken();
+        getDoctorAccessToken();
+        AppointmentEntity entity = AppointmentEntity.builder()
+                .doctor(DoctorEntity.builder().id(1L).build())
+                .appointmentDate(new SimpleDateFormat("yyyy-MM-dd").parse("2024-09-01"))
+                .build();
+        service.createNewAppointmentForPatient(entity, accessToken);
+        AppointmentDto dto = AppointmentDto
+                .builder()
+                .appointmentDate(new SimpleDateFormat("yyyy-MM-dd").parse("2024-10-01"))
+                .build();
+        String json = objectMapper.writeValueAsString(dto);
+        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patients/appointments/1")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                // this will show that it's newly created appointment.
+                .andExpect(MockMvcResultMatchers.jsonPath("$.patient").hasJsonPath())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(2L))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.appointmentDate").value(dto.getAppointmentDate()));
+    }
+
+    @Test
+    public void testThatPatchAppointmentAsDoctorReturnsHttp201CreatedAndCorrespondingDataIfChangedDate() throws  Exception {
         String accessToken = getDoctorAccessToken();
-        AppointmentDto dto = TestDataUtil.createAppointmentDto(null, null);
+        AppointmentEntity entity = AppointmentEntity.builder()
+                .doctor(DoctorEntity.builder().id(1L).build())
+                .appointmentDate(new SimpleDateFormat("yyyy-MM-dd").parse("2024-09-01"))
+                .build();
+        service.createNewAppointmentForDoctor(entity, accessToken);
+        AppointmentDto dto = AppointmentDto
+                .builder()
+                .appointmentDate(new SimpleDateFormat("yyyy-MM-dd").parse("2024-10-01"))
+                .build();
+        String json = objectMapper.writeValueAsString(dto);
+        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patients/appointments/1")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                // this will show that it's newly created appointment.
+                .andExpect(MockMvcResultMatchers.jsonPath("$.patient").doesNotExist())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(2L))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.appointmentDate").value(dto.getAppointmentDate()));
+    }
+
+    @Test
+    public void testThatCreatingTheAppointmentToTheSameDoctorAtTheSameTimeThrowsException() throws Exception {
+        String accessToken = getAccessToken();
+        getDoctorAccessToken();
+        AppointmentDto dto = TestDataUtil.createAppointmentDto(null, DoctorEntity.builder().id(1L).build());
         String json = objectMapper.writeValueAsString(dto);
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/patients/appointments")
                         .header("Authorization", "Bearer " + accessToken)
@@ -157,6 +304,12 @@ public class AppointmentControllerIntegrationTest {
                         .content(json))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(Status.SCHEDULED.name()));
+
+        assertThrows(ServletException.class, () ->
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/patients/appointments")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)));
     }
 
     @Test

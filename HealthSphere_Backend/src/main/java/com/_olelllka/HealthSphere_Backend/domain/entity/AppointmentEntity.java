@@ -15,7 +15,8 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@Table(name="appointment")
+@Table(name="appointment",
+uniqueConstraints = {@UniqueConstraint(name="doctor_appointmentDate_constraint", columnNames = {"doctor_id", "appointment_date"})})
 public class AppointmentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,7 +27,7 @@ public class AppointmentEntity {
     @ManyToOne
     @JoinColumn(name="doctor_id", referencedColumnName = "id")
     private DoctorEntity doctor;
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private Date appointmentDate;
     @Enumerated(EnumType.STRING)
     private Status status;

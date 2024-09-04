@@ -170,6 +170,38 @@ public class AppointmentServiceUnitTest {
     }
 
     @Test
+    public void testThatPatchAppointmentThrowsException() {
+        // given
+        Long id = 1L;
+        AppointmentEntity entity = AppointmentEntity.builder().build();
+        // when
+        when(repository.findById(id)).thenReturn(Optional.empty());
+        // then
+        assertThrows(NotFoundException.class, () -> service.updateEntity(entity, id));
+        verify(repository, never()).save(any(AppointmentEntity.class));
+    }
+
+    @Test
+    public void testThatPatchAppointmentWorks() {
+        // given
+        Long id = 1L;
+        AppointmentEntity entity = AppointmentEntity.builder().build();
+        AppointmentEntity updated = AppointmentEntity
+                .builder()
+                .reason("REASON")
+                .build();
+        // when
+        when(repository.findById(id)).thenReturn(Optional.of(entity));
+        when(repository.save(updated)).thenReturn(updated);
+        AppointmentEntity result = service.updateEntity(updated, id);
+        // then
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertEquals(updated.getReason(), result.getReason())
+        );
+    }
+
+    @Test
     public void testThatDeleteAppointmentByIdWorks() {
         // given
         Long id = 1L;
