@@ -9,6 +9,9 @@ import PatientRegister from "./components/auth/PatientRegister";
 import Login from "./components/auth/Login";
 import DoctorRegister from "./components/auth/DoctorRegister";
 import PatientMainpage from "./components/pages/PatientMainPage/PatientMainPage";
+import DoctorMainPage from "./components/pages/DoctorMainPage/DoctorMainPage";
+import DoctorDetail from "./components/pages/DoctorDetail/DoctorDetail";
+import ListOfDoctors from "./components/pages/ListOfDoctors";
 
 const router = createBrowserRouter([
   {
@@ -31,6 +34,18 @@ const router = createBrowserRouter([
   {
     path: "/patient/me/",
     element: <PatientMainpage />,
+  },
+  {
+    path: "/doctors",
+    element: <ListOfDoctors />,
+  },
+  {
+    path: "/doctors/:id",
+    element: <DoctorDetail />,
+  },
+  {
+    path: "/doctors/me",
+    element: <DoctorMainPage />,
   },
 ]);
 
