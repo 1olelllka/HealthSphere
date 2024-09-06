@@ -9,3 +9,17 @@
     @apply bg-primary;
   }
 }
+
+@keyframes moveUpAndDown {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px); /* Moves the arrow up by 10px */
+  }
+}
+
+.animate-arrow {
+  animation: moveUpAndDown 1.5s infinite;
+}

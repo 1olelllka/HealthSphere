@@ -1,9 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MainNavbar } from "./MainNavbar";
 import { FaArrowDown } from "react-icons/fa6";
+import { Events, animateScroll as scroll, scrollSpy } from "react-scroll";
 
 export const Navbar = () => {
   const [fixed, setFixed] = useState(false);
+
+  useEffect(() => {
+    Events.scrollEvent.register("begin", () => {});
+
+    Events.scrollEvent.register("end", () => {});
+
+    scrollSpy.update();
+
+    return () => {
+      Events.scrollEvent.remove("begin");
+      Events.scrollEvent.remove("end");
+    };
+  }, []);
+
+  const scrollTo = () => {
+    scroll.scrollTo(750);
+  };
 
   const setFix = () => {
     if (window.scrollY >= 400) {
@@ -28,7 +46,9 @@ export const Navbar = () => {
               </h1>
             </div>
             <div className="absolute bottom-8 left-0 right-0 w-screen flex justify-center">
-              <FaArrowDown className="text-4xl" />
+              <a onClick={scrollTo}>
+                <FaArrowDown className="text-4xl animate-arrow" />
+              </a>
             </div>
             <div
               className={`top-0 left-0 right-0 px-16 pt-5 pb-4 bg-primary border-b-2 border-gray-400 z-10 fixed transition-all duration-300 ease-in-out flex flex-row grid grid-cols-9 ${

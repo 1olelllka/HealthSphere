@@ -23,7 +23,7 @@ export const Layout = ({
         )}
       </div>
       {children}
-      <div className="h-screen flex items-end">
+      <div className="flex bottom-0 mt-20">
         <Footer />
       </div>
     </div>

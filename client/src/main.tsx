@@ -12,10 +12,6 @@ const router = createBrowserRouter([
     element: <Layout children={<Home />} main={true} />,
     errorElement: <NotFoundPage />,
   },
-  {
-    path: "/faq",
-    element: <Layout children={<Home />} main={false} />,
-  },
 ]);
 
 createRoot(document.getElementById("root")!).render(
