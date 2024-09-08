@@ -9,7 +9,7 @@ export const ServerDownError = () => {
           521
         </h1>
         <h2 className="text-[#040D12]">
-          Server is down. He wants some rest too :)
+          Server is down. It wants some rest too :)
         </h2>
       </div>
     </>

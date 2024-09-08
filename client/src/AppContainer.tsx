@@ -2,8 +2,9 @@ import { App } from "./App";
 import { useState, useEffect } from "react";
 import { ServerDownError } from "./pages/ServerDownError";
 import { Provider } from "react-redux";
-import { store } from "./redux/store";
+import { persistor, store } from "./redux/store";
 import axios from "axios";
+import { PersistGate } from "redux-persist/integration/react";
 
 export const AppContainer = () => {
   const [error, setError] = useState<boolean>(false);
@@ -33,7 +34,9 @@ export const AppContainer = () => {
         <ServerDownError />
       ) : (
         <Provider store={store}>
-          <App />
+          <PersistGate loading={null} persistor={persistor}>
+            <App />
+          </PersistGate>
         </Provider>
       )}
     </>
