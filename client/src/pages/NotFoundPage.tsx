@@ -20,7 +20,7 @@ export const NotFoundPage = () => {
           <Link to="/">
             <Button
               variant={"ghost"}
-              className="[box-shadow:1px_1px_2px_var(--tw-shadow-color)] shadow-slate-400 font-semibold dark:hover:bg-[#040D12]"
+              className="[box-shadow:1px_1px_2px_var(--tw-shadow-color)] shadow-slate-400 font-semibold hover:bg-[#040D12] hover:text-white"
             >
               Go home
             </Button>
@@ -28,7 +28,7 @@ export const NotFoundPage = () => {
           <span onClick={() => navigate(-1)}>
             <Button
               variant={"ghost"}
-              className="[box-shadow:1px_1px_2px_var(--tw-shadow-color)] shadow-slate-400 font-semibold dark:hover:bg-[#040D12]"
+              className="[box-shadow:1px_1px_2px_var(--tw-shadow-color)] shadow-slate-400 font-semibold hover:bg-[#040D12] hover:text-white"
             >
               Go back
             </Button>
