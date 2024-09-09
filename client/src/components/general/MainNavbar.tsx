@@ -1,9 +1,10 @@
 import { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export const MainNavbar = () => {
   const profile = useSelector((state: RootState) => state.profile);
+  const navigate = useNavigate();
 
   return (
     <>
@@ -30,7 +31,12 @@ export const MainNavbar = () => {
       </div>
       {!profile.firstName && (
         <div className="flex flex-row gap-5 justify-end col-span-1">
-          <h1 className="text-xl text-[#040D12] cursor-pointer">Log In</h1>
+          <h1
+            className="text-xl text-[#040D12] cursor-pointer"
+            onClick={() => navigate("/login")}
+          >
+            Log In
+          </h1>
           <h1 className="text-xl text-[#040D12]">Sign Up</h1>
         </div>
       )}

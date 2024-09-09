@@ -1,5 +1,9 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { setProfile } from "../action/profileAction";
+import {
+  patchDoctorProfile,
+  patchPatientProfile,
+  setProfile,
+} from "../action/profileActions";
 
 type User = {
   email: string;
@@ -8,7 +12,7 @@ type User = {
   updatedAt: number;
 };
 
-type Spezialization = {
+export type Spezialization = {
   id: number;
   specializationName: string;
 };
@@ -22,9 +26,9 @@ export interface ProfileState {
   phoneNumber: string;
   user: User;
   specializations: Spezialization[] | null;
-  licenseNumber: string | null;
-  experienceYears: number | null;
-  clinicAddress: string | null;
+  licenseNumber: string;
+  experienceYears: number | undefined;
+  clinicAddress: string;
   createdAt: number;
   updatedAt: number;
 }
@@ -44,9 +48,9 @@ const initialState: ProfileState = {
     updatedAt: 0,
   },
   specializations: null,
-  licenseNumber: null,
-  experienceYears: null,
-  clinicAddress: null,
+  licenseNumber: "",
+  experienceYears: undefined,
+  clinicAddress: "",
   createdAt: 0,
   updatedAt: 0,
 };
@@ -64,6 +68,38 @@ const profileSlice = createSlice({
         setProfile.fulfilled,
         (state, action: PayloadAction<ProfileState>) => {
           state = action.payload;
+          return state;
+        }
+      );
+    builder
+      .addCase(patchPatientProfile.pending, () => {
+        console.log("Updating patient profile...");
+      })
+      .addCase(
+        patchPatientProfile.fulfilled,
+        (state, action: PayloadAction<ProfileState>) => {
+          state.address = action.payload.address;
+          state.dateOfBirth = action.payload.dateOfBirth;
+          state.firstName = action.payload.firstName;
+          state.lastName = action.payload.lastName;
+          state.phoneNumber = action.payload.phoneNumber;
+          return state;
+        }
+      );
+    builder
+      .addCase(patchDoctorProfile.pending, () => {
+        console.log("Updating doctor profile...");
+      })
+      .addCase(
+        patchDoctorProfile.fulfilled,
+        (state, action: PayloadAction<ProfileState>) => {
+          state.clinicAddress = action.payload.clinicAddress;
+          state.firstName = action.payload.firstName;
+          state.lastName = action.payload.lastName;
+          state.phoneNumber = action.payload.phoneNumber;
+          state.experienceYears = action.payload.experienceYears;
+          state.specializations = action.payload.specializations;
+          return state;
         }
       );
   },

@@ -1,4 +1,4 @@
-import { setProfile } from "@/redux/action/profileAction";
+import { setProfile } from "@/redux/action/profileActions";
 import { AppDispatch, RootState } from "@/redux/store";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
