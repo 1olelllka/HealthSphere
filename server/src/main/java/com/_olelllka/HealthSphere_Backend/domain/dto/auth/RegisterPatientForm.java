@@ -14,6 +14,7 @@ import java.util.Date;
 @NoArgsConstructor
 @Data
 public class RegisterPatientForm {
+    @NotBlank(message = "Email must not be empty.")
     @Email(message = "Email must be a well-formed email address.")
     private String email;
     @Pattern(regexp = "^(?=.*\\d).{8,}$", message = "Your password should contain at least 8 characters including at least 1 number.")

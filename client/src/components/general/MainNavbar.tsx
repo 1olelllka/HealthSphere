@@ -37,7 +37,12 @@ export const MainNavbar = () => {
           >
             Log In
           </h1>
-          <h1 className="text-xl text-[#040D12]">Sign Up</h1>
+          <h1
+            className="text-xl text-[#040D12] cursor-pointer"
+            onClick={() => navigate("/register")}
+          >
+            Sign Up
+          </h1>
         </div>
       )}
     </>

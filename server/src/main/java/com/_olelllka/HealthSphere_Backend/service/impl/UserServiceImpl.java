@@ -9,6 +9,7 @@ import com._olelllka.HealthSphere_Backend.mapper.impl.SpecializationMapper;
 import com._olelllka.HealthSphere_Backend.repositories.DoctorRepository;
 import com._olelllka.HealthSphere_Backend.repositories.PatientRepository;
 import com._olelllka.HealthSphere_Backend.repositories.UserRepository;
+import com._olelllka.HealthSphere_Backend.rest.exceptions.DuplicateException;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.NotFoundException;
 import com._olelllka.HealthSphere_Backend.service.rabbitmq.DoctorMessageProducer;
 import com._olelllka.HealthSphere_Backend.service.UserService;
@@ -52,6 +53,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserEntity register(RegisterPatientForm registerPatientForm) {
+        existsByEmail(registerPatientForm.getEmail());
         UserEntity user = UserEntity.builder()
                 .email(registerPatientForm.getEmail())
                 .password(passwordEncoder.encode(registerPatientForm.getPassword()))
@@ -70,6 +72,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserEntity doctorRegister(RegisterDoctorForm registerDoctorForm) {
+        existsByEmail(registerDoctorForm.getEmail());
         UserEntity user = UserEntity.builder()
                 .email(registerDoctorForm.getEmail())
                 .password(passwordEncoder.encode(registerDoctorForm.getPassword()))
@@ -97,5 +100,11 @@ public class UserServiceImpl implements UserService {
                         .build();
         messageProducer.sendDoctorToIndex(dto);
         return result;
+    }
+
+    private void existsByEmail(String email) {
+        if (userRepository.existsByEmail(email)) {
+            throw new DuplicateException("User with such email already exists.");
+        }
     }
 }

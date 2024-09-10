@@ -12,9 +12,7 @@ import com._olelllka.HealthSphere_Backend.repositories.UserRepository;
 import com._olelllka.HealthSphere_Backend.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.listener.RabbitListenerEndpointRegistry;
@@ -33,9 +31,11 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.shaded.org.awaitility.Awaitility;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -43,6 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @ExtendWith(SpringExtension.class)
 @DirtiesContext(classMode= DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @AutoConfigureMockMvc
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class UserControllerIntegrationTest {
 
     @Container
@@ -108,6 +109,17 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
+    public void testThatUserRegisterReturnsHttp409ConflictIfAlreadyExists() throws Exception {
+        RegisterPatientForm registerPatientForm = TestDataUtil.createRegisterForm();
+        userService.register(registerPatientForm);
+        String registerFromJson = objectMapper.writeValueAsString(registerPatientForm);
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/register/patient")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(registerFromJson))
+                .andExpect(MockMvcResultMatchers.status().isConflict());
+    }
+
+    @Test
     public void testThatUserRegisterReturnsHttp201CreatedAndCorrectData() throws Exception {
         RegisterPatientForm registerPatientForm = TestDataUtil.createRegisterForm();
         String registerFormJson = objectMapper.writeValueAsString(registerPatientForm);
@@ -130,6 +142,19 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
+    public void testThatDoctorRegisterReturnsHttp409ConflictIfAlreadyExists() throws Exception {
+        String accessToken = getAccessTokenForAdmin();
+        RegisterDoctorForm registerDoctorForm = TestDataUtil.createRegisterDoctorForm();
+        userService.doctorRegister(registerDoctorForm);
+        String registerFromJson = objectMapper.writeValueAsString(registerDoctorForm);
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/register/doctor")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(registerFromJson))
+                .andExpect(MockMvcResultMatchers.status().isConflict());
+    }
+
+    @Test
     public void testThatDoctorRegisterReturnsHttp400BadRequestIfInvalidData() throws Exception {
         String accessToken = getAccessTokenForAdmin();
         RegisterDoctorForm registerDoctorForm = TestDataUtil.createRegisterDoctorForm();
@@ -143,6 +168,7 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
+    @Order(1)
     public void testThatDoctorRegisterReturnsHttp201CreatedAndCorrespondingDataIfEverythingOk() throws Exception {
         listenerRegistry.stop();
         assertEquals(0, Objects.requireNonNull(admin.getQueueInfo("doctors_index_queue")).getMessageCount());

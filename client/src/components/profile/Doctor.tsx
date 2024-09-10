@@ -66,7 +66,11 @@ export const Doctor = (props: { data: ProfileState }) => {
         <div className="col-span-1 space-y-2 bg-slate-50 p-10 rounded-3xl drop-shadow-lg">
           <h1 className="text-2xl">Contact Information</h1>
           <h1 className="text-xl text-slate-500">{data.user.email}</h1>
-          <h1 className="text-xl text-slate-500">+{data.phoneNumber}</h1>
+          {data.phoneNumber ? (
+            <h1 className="text-xl text-slate-500">+{data.phoneNumber}</h1>
+          ) : (
+            <h1 className="text-xl text-slate-500">No phone number</h1>
+          )}
           <h1 className="text-xl text-slate-500">{data.clinicAddress}</h1>
         </div>
       </div>

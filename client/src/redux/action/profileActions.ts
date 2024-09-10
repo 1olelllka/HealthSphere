@@ -20,7 +20,6 @@ export const setProfile = createAsyncThunk("profile/setProfile", async () => {
     }
   }
 });
-
 export const patchPatientProfile = createAsyncThunk(
   "profile/patchPatientProfile",
   async (values: {

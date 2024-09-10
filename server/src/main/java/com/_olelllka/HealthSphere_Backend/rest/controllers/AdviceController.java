@@ -1,6 +1,7 @@
 package com._olelllka.HealthSphere_Backend.rest.controllers;
 
 import com._olelllka.HealthSphere_Backend.domain.dto.ErrorMessage;
+import com._olelllka.HealthSphere_Backend.rest.exceptions.DuplicateException;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.NotAuthorizedException;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.NotFoundException;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.ValidationException;
@@ -25,6 +26,11 @@ public class AdviceController {
     @ExceptionHandler(NotAuthorizedException.class)
     public ResponseEntity<ErrorMessage> notAuthorizedException(NotAuthorizedException ex) {
         return new ResponseEntity<>(ErrorMessage.builder().message(ex.getMessage()).build(), HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(DuplicateException.class)
+    public ResponseEntity<ErrorMessage> duplicateException(DuplicateException ex) {
+        return new ResponseEntity<>(ErrorMessage.builder().message(ex.getMessage()).build(), HttpStatus.CONFLICT);
     }
 
 }

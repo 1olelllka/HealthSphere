@@ -5,14 +5,12 @@ import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterDoctorForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterPatientForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDocumentDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.doctors.SpecializationDto;
-import com._olelllka.HealthSphere_Backend.domain.entity.DoctorEntity;
-import com._olelllka.HealthSphere_Backend.domain.entity.Role;
-import com._olelllka.HealthSphere_Backend.domain.entity.SpecializationEntity;
-import com._olelllka.HealthSphere_Backend.domain.entity.UserEntity;
+import com._olelllka.HealthSphere_Backend.domain.entity.*;
 import com._olelllka.HealthSphere_Backend.mapper.impl.SpecializationMapper;
 import com._olelllka.HealthSphere_Backend.repositories.DoctorRepository;
 import com._olelllka.HealthSphere_Backend.repositories.PatientRepository;
 import com._olelllka.HealthSphere_Backend.repositories.UserRepository;
+import com._olelllka.HealthSphere_Backend.rest.exceptions.DuplicateException;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.NotFoundException;
 import com._olelllka.HealthSphere_Backend.service.impl.UserServiceImpl;
 import com._olelllka.HealthSphere_Backend.service.rabbitmq.DoctorMessageProducer;
@@ -75,6 +73,18 @@ public class UserServiceImplUnitTest {
     }
 
     @Test
+    public void testThatPatientRegisterThrowsDuplicateException() throws ParseException {
+        // given
+        RegisterPatientForm registerPatientForm = TestDataUtil.createRegisterForm();
+        // when
+        when(userRepository.existsByEmail(registerPatientForm.getEmail())).thenReturn(true);
+        // then
+        assertThrows(DuplicateException.class, () -> userService.register(registerPatientForm));
+        verify(userRepository, never()).save(any(UserEntity.class));
+        verify(patientRepository, never()).save(any(PatientEntity.class));
+    }
+
+    @Test
     public void testThatPatientRegisterWorksWell() throws ParseException {
         // given
         RegisterPatientForm registerPatientForm = TestDataUtil.createRegisterForm();
@@ -93,6 +103,19 @@ public class UserServiceImplUnitTest {
         verify(passwordEncoder, times(1)).encode(anyString());
         assertEquals(result.getEmail(), user.getEmail());
         assertNotEquals(result.getPassword(), registerPatientForm.getPassword());
+    }
+
+    @Test
+    public void testThatDoctorRegisterThrowsDuplicateException() throws ParseException {
+        // given
+        RegisterDoctorForm registerDoctorForm = TestDataUtil.createRegisterDoctorForm();
+        // when
+        when(userRepository.existsByEmail(registerDoctorForm.getEmail())).thenReturn(true);
+        // then
+        assertThrows(DuplicateException.class, () -> userService.doctorRegister(registerDoctorForm));
+        verify(userRepository, never()).save(any(UserEntity.class));
+        verify(doctorRepository, never()).save(any(DoctorEntity.class));
+        verify(messageProducer, never()).sendDoctorToIndex(any(DoctorDocumentDto.class));
     }
 
     @Test

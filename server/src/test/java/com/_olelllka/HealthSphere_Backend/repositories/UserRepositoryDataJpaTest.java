@@ -52,4 +52,18 @@ public class UserRepositoryDataJpaTest {
                 () -> assertEquals(user.get().getEmail(), "email@email.com")
         );
     }
+
+    @Test
+    public void testThatExistentUserWillExist() {
+        boolean result = userRepository.existsByEmail("email@email.com");
+
+        assertTrue(result);
+    }
+
+    @Test
+    public void testThatNotExistentUserWillNotExist() {
+        boolean result = userRepository.existsByEmail("notemail@email.com");
+
+        assertFalse(result);
+    }
 }

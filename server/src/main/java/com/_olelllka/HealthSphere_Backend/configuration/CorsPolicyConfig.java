@@ -12,9 +12,15 @@ public class CorsPolicyConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
 
-        registry.addMapping("/api/**")
+        registry.addMapping("/api/v1/**")
                 .allowedOrigins("http://localhost:5173")
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowCredentials(true).maxAge(3600);
+
+        registry.addMapping("/actuator/**")
+                .allowedOrigins("http://localhost:5173")
+                .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+                .allowCredentials(true)
+                .maxAge(3600);
     }
 }
