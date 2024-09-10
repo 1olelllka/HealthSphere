@@ -173,7 +173,9 @@ export const EditPatient = () => {
                   Close
                 </Button>
               </DialogClose>
-              <Button type="submit">Save changes</Button>
+              <DialogClose asChild>
+                <Button type="submit">Save changes</Button>
+              </DialogClose>
             </DialogFooter>
           </form>
         </Form>

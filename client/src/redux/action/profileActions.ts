@@ -72,3 +72,31 @@ export const patchDoctorProfile = createAsyncThunk(
     }
   }
 );
+
+export const deletePatientProfile = createAsyncThunk(
+  "profile/deletePatientProfile",
+  async (id: number) => {
+    try {
+      const response = await SERVER_API.delete("/patient/" + id);
+      if (response.status === 202) {
+        return "deleted";
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }
+);
+
+export const deleteDoctorProfile = createAsyncThunk(
+  "profile/deleteDoctorProfile",
+  async (id: number) => {
+    try {
+      const response = await SERVER_API.delete("/doctors/" + id);
+      if (response.status === 202) {
+        return "deleted";
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }
+);
