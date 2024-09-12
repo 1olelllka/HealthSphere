@@ -4,6 +4,7 @@ import { configureStore } from "@reduxjs/toolkit";
 
 import profileReducer from "./reducers/profileReducer";
 import specializationReducer from "./reducers/specializationReducer";
+import recordReducer from "./reducers/recordReducer";
 
 // const persistConfig = {
 //   key: "root",
@@ -17,6 +18,7 @@ export const store = configureStore({
   reducer: {
     profile: profileReducer,
     specialization: specializationReducer,
+    record: recordReducer,
   },
 });
 

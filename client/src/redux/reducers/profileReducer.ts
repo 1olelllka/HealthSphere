@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
   deleteDoctorProfile,
   deletePatientProfile,
+  logoutProfile,
   patchDoctorProfile,
   patchPatientProfile,
   setProfile,
@@ -117,6 +118,14 @@ const profileSlice = createSlice({
         console.log("Deleting doctor profile...");
       })
       .addCase(deleteDoctorProfile.fulfilled, (state) => {
+        state = initialState;
+        return state;
+      });
+    builder
+      .addCase(logoutProfile.pending, () => {
+        console.log("Logging out...");
+      })
+      .addCase(logoutProfile.fulfilled, (state) => {
         state = initialState;
         return state;
       });

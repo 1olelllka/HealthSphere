@@ -1,10 +1,17 @@
-import { RootState } from "@/redux/store";
-import { useSelector } from "react-redux";
+import { logoutProfile } from "@/redux/action/profileActions";
+import { AppDispatch, RootState } from "@/redux/store";
+import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 
 export const MainNavbar = () => {
   const profile = useSelector((state: RootState) => state.profile);
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+
+  const logout = async () => {
+    dispatch(logoutProfile());
+    navigate("/login");
+  };
 
   return (
     <>
@@ -29,7 +36,7 @@ export const MainNavbar = () => {
           License
         </h1>
       </div>
-      {!profile.firstName && (
+      {!profile.firstName ? (
         <div className="flex flex-row gap-5 justify-end col-span-1">
           <h1
             className="text-xl text-[#040D12] cursor-pointer"
@@ -42,6 +49,21 @@ export const MainNavbar = () => {
             onClick={() => navigate("/register")}
           >
             Sign Up
+          </h1>
+        </div>
+      ) : (
+        <div className="flex flex-row gap-5 justify-end col-span-1">
+          <h1
+            className="text-xl text-[#040D12] cursor-pointer"
+            onClick={() => navigate("/profile")}
+          >
+            Profile
+          </h1>
+          <h1
+            className="text-xl text-[#040D12] cursor-pointer"
+            onClick={logout}
+          >
+            Logout
           </h1>
         </div>
       )}

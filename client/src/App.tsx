@@ -6,6 +6,7 @@ import { Layout } from "./lib/Layout";
 import { LoginPage } from "./pages/LoginPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { RegisterPage } from "./pages/RegisterPage";
+import { MedicalRecordDetail } from "./components/profile/MedicalRecordDetail";
 
 const router = createBrowserRouter([
   {
@@ -24,6 +25,10 @@ const router = createBrowserRouter([
   {
     path: "/profile",
     element: <Layout children={<ProfilePage />} />,
+  },
+  {
+    path: "/medical-records/:id",
+    element: <Layout children={<MedicalRecordDetail />} />,
   },
 ]);
 

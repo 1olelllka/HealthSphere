@@ -1,6 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { SERVER_API } from "../api/utils";
 import { Spezialization } from "../reducers/profileReducer";
+import axios from "axios";
 
 export const setProfile = createAsyncThunk("profile/setProfile", async () => {
   try {
@@ -63,6 +64,26 @@ export const patchDoctorProfile = createAsyncThunk(
           "Content-Type": "application/json",
         },
       });
+      if (response.status === 200) {
+        return response.data;
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }
+);
+
+export const logoutProfile = createAsyncThunk(
+  "profile/logoutProfile",
+  async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/api/v1/logout",
+        {},
+        {
+          withCredentials: true,
+        }
+      );
       if (response.status === 200) {
         return response.data;
       }
