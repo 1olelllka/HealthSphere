@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Builder
@@ -14,7 +15,7 @@ import java.util.Date;
 public class MedicalRecordListDto {
     private Long id;
     private DoctorRecordList doctor;
-    private Date recordDate;
+    private LocalDate recordDate;
     private String diagnosis;
     private String treatment;
 }

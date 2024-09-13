@@ -19,7 +19,8 @@ export type Spezialization = {
   id: number;
   specializationName: string;
 };
-export interface ProfileState {
+
+export interface Profile {
   id: number;
   firstName: string;
   lastName: string;
@@ -35,27 +36,37 @@ export interface ProfileState {
   createdAt: number;
   updatedAt: number;
 }
+export interface ProfileState {
+  data: Profile;
+  error: {
+    status: number;
+    message: string;
+  } | null;
+}
 
 const initialState: ProfileState = {
-  id: 0,
-  firstName: "",
-  lastName: "",
-  dateOfBirth: 0,
-  gender: null,
-  address: "",
-  phoneNumber: "",
-  user: {
-    email: "",
-    role: "",
+  data: {
+    id: 0,
+    firstName: "",
+    lastName: "",
+    dateOfBirth: 0,
+    gender: null,
+    address: "",
+    phoneNumber: "",
+    user: {
+      email: "",
+      role: "",
+      createdAt: 0,
+      updatedAt: 0,
+    },
+    specializations: null,
+    licenseNumber: "",
+    experienceYears: undefined,
+    clinicAddress: "",
     createdAt: 0,
     updatedAt: 0,
   },
-  specializations: null,
-  licenseNumber: "",
-  experienceYears: undefined,
-  clinicAddress: "",
-  createdAt: 0,
-  updatedAt: 0,
+  error: null,
 };
 
 const profileSlice = createSlice({
@@ -64,28 +75,34 @@ const profileSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(setProfile.pending, () => {
+      .addCase(setProfile.pending, (state) => {
+        state.error = null;
         console.log("Loading profile...");
       })
       .addCase(
         setProfile.fulfilled,
-        (state, action: PayloadAction<ProfileState>) => {
-          state = action.payload;
+        (state, action: PayloadAction<Profile>) => {
+          state.data = action.payload;
+          state.error = { status: 0, message: "" };
           return state;
         }
-      );
+      )
+      .addCase(setProfile.rejected, (state, action) => {
+        state.error = action.payload as { status: number; message: string };
+        return state;
+      });
     builder
       .addCase(patchPatientProfile.pending, () => {
         console.log("Updating patient profile...");
       })
       .addCase(
         patchPatientProfile.fulfilled,
-        (state, action: PayloadAction<ProfileState>) => {
-          state.address = action.payload.address;
-          state.dateOfBirth = action.payload.dateOfBirth;
-          state.firstName = action.payload.firstName;
-          state.lastName = action.payload.lastName;
-          state.phoneNumber = action.payload.phoneNumber;
+        (state, action: PayloadAction<Profile>) => {
+          state.data.address = action.payload.address;
+          state.data.dateOfBirth = action.payload.dateOfBirth;
+          state.data.firstName = action.payload.firstName;
+          state.data.lastName = action.payload.lastName;
+          state.data.phoneNumber = action.payload.phoneNumber;
           return state;
         }
       );
@@ -96,12 +113,12 @@ const profileSlice = createSlice({
       .addCase(
         patchDoctorProfile.fulfilled,
         (state, action: PayloadAction<ProfileState>) => {
-          state.clinicAddress = action.payload.clinicAddress;
-          state.firstName = action.payload.firstName;
-          state.lastName = action.payload.lastName;
-          state.phoneNumber = action.payload.phoneNumber;
-          state.experienceYears = action.payload.experienceYears;
-          state.specializations = action.payload.specializations;
+          state.data.clinicAddress = action.payload.data.clinicAddress;
+          state.data.firstName = action.payload.data.firstName;
+          state.data.lastName = action.payload.data.lastName;
+          state.data.phoneNumber = action.payload.data.phoneNumber;
+          state.data.experienceYears = action.payload.data.experienceYears;
+          state.data.specializations = action.payload.data.specializations;
           return state;
         }
       );

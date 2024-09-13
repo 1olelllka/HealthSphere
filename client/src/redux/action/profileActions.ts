@@ -3,24 +3,28 @@ import { SERVER_API } from "../api/utils";
 import { Spezialization } from "../reducers/profileReducer";
 import axios from "axios";
 
-export const setProfile = createAsyncThunk("profile/setProfile", async () => {
-  try {
-    const doctorResponse = await SERVER_API.get("/doctors/me");
-    if (doctorResponse.status === 200) {
-      return doctorResponse.data;
-    }
-  } catch (err) {
-    console.log(err);
+export const setProfile = createAsyncThunk(
+  "profile/setProfile",
+  async (_, { rejectWithValue }) => {
     try {
-      const patientResponse = await SERVER_API.get("/patient/me");
-      if (patientResponse.status === 200) {
-        return patientResponse.data;
+      const doctorResponse = await SERVER_API.get("/doctors/me");
+      if (doctorResponse.status === 200) {
+        return doctorResponse.data;
       }
     } catch (err) {
       console.log(err);
+      try {
+        const patientResponse = await SERVER_API.get("/patients/me");
+        if (patientResponse.status === 200) {
+          return patientResponse.data;
+        }
+      } catch (err) {
+        console.log(err);
+      }
     }
+    return rejectWithValue({ status: 403, message: "Forbidden" });
   }
-});
+);
 export const patchPatientProfile = createAsyncThunk(
   "profile/patchPatientProfile",
   async (values: {
@@ -32,11 +36,15 @@ export const patchPatientProfile = createAsyncThunk(
     dateOfBirth: string;
   }) => {
     try {
-      const response = await SERVER_API.patch("/patient/" + values.id, values, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await SERVER_API.patch(
+        "/patients/" + values.id,
+        values,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
       if (response.status === 200) {
         return response.data;
       }
@@ -97,7 +105,7 @@ export const deletePatientProfile = createAsyncThunk(
   "profile/deletePatientProfile",
   async (id: number) => {
     try {
-      const response = await SERVER_API.delete("/patient/" + id);
+      const response = await SERVER_API.delete("/patients/" + id);
       if (response.status === 202) {
         return "deleted";
       }

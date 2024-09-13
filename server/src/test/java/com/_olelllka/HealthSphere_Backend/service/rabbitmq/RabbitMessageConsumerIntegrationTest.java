@@ -3,11 +3,14 @@ package com._olelllka.HealthSphere_Backend.service.rabbitmq;
 import com._olelllka.HealthSphere_Backend.TestContainers;
 import com._olelllka.HealthSphere_Backend.domain.documents.DoctorDocument;
 import com._olelllka.HealthSphere_Backend.domain.documents.MedicalRecordDocument;
+import com._olelllka.HealthSphere_Backend.domain.documents.PatientDocument;
 import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDocumentDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.doctors.SpecializationDto;
+import com._olelllka.HealthSphere_Backend.domain.dto.patients.PatientListDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.records.MedicalRecordDocumentDto;
 import com._olelllka.HealthSphere_Backend.repositories.DoctorElasticRepository;
 import com._olelllka.HealthSphere_Backend.repositories.MedicalRecordElasticRepository;
+import com._olelllka.HealthSphere_Backend.repositories.PatientElasticRepository;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -53,22 +56,28 @@ public class RabbitMessageConsumerIntegrationTest {
 
     private DoctorElasticRepository doctorElasticRepository;
     private MedicalRecordElasticRepository medicalRecordElasticRepository;
+    private PatientElasticRepository patientElasticRepository;
     private DoctorMessageProducer doctorMessageProducer;
     private MedicalRecordMessageProducer recordMessageProducer;
+    private PatientMessageProducer patientMessageProducer;
     private RabbitListenerEndpointRegistry listenerRegistry;
     private RabbitAdmin admin;
 
     @Autowired
     public RabbitMessageConsumerIntegrationTest(DoctorElasticRepository doctorElasticRepository,
                                                 MedicalRecordElasticRepository medicalRecordElasticRepository,
+                                                PatientElasticRepository patientElasticRepository,
                                                 DoctorMessageProducer doctorMessageProducer,
                                                 MedicalRecordMessageProducer recordMessageProducer,
                                                 RabbitListenerEndpointRegistry listenerRegistry,
+                                                PatientMessageProducer patientMessageProducer,
                                                 RabbitAdmin admin) {
         this.doctorElasticRepository = doctorElasticRepository;
+        this.patientElasticRepository = patientElasticRepository;
         this.medicalRecordElasticRepository = medicalRecordElasticRepository;
         this.doctorMessageProducer = doctorMessageProducer;
         this.recordMessageProducer = recordMessageProducer;
+        this.patientMessageProducer = patientMessageProducer;
         this.listenerRegistry = listenerRegistry;
         this.admin = admin;
     }
@@ -156,6 +165,34 @@ public class RabbitMessageConsumerIntegrationTest {
         listenerRegistry.getListenerContainer("medical-record.delete").start();
         recordMessageProducer.sendMedicalRecordDelete(1L);
         awaitFunction("medical_record_delete");
+        assertFalse(medicalRecordElasticRepository.existsById(1L));
+    }
+
+    @Test
+    public void testThatConsumePatientCreateUpdatePerformsAddToElasticSearchDb() {
+        listenerRegistry.stop();
+        assertEquals(0, Objects.requireNonNull(admin.getQueueInfo("patient_index_queue")).getMessageCount());
+        PatientListDto patientListDto = PatientListDto.builder()
+                        .id(1L)
+                        .email("email@email.com")
+                        .firstName("First Name")
+                        .lastName("Last Name")
+                        .build();
+        listenerRegistry.getListenerContainer("patient.post").start();
+        patientMessageProducer.sendMessageCreatePatient(patientListDto);
+        awaitFunction("patient_index_queue");
+        assertTrue(medicalRecordElasticRepository.existsById(10L));
+    }
+
+    @Test
+    public void testThatConsumePatientDeletePerformsDeleteFromElasticSearchDb() {
+        listenerRegistry.stop();
+        assertEquals(0, Objects.requireNonNull(admin.getQueueInfo("patient_index_delete_queue")).getMessageCount());
+        PatientDocument document = PatientDocument.builder().id(1L).build();
+        patientElasticRepository.save(document);
+        listenerRegistry.getListenerContainer("patient.delete").start();
+        recordMessageProducer.sendMedicalRecordDelete(1L);
+        awaitFunction("patient_index_delete_queue");
         assertFalse(medicalRecordElasticRepository.existsById(1L));
     }
 

@@ -12,7 +12,7 @@ public interface MedicalRecordService {
 
     MedicalRecordEntity getDetailedMedicalRecordForPatient(Long id);
 
-    Page<MedicalRecordDocument> getRecordsByParams(Long id, String diagnosis, LocalDate from, LocalDate to, Pageable pageable);
+    Page<MedicalRecordDocument> getRecordsByParams(Long id, String diagnosis, String from, String to, Pageable pageable);
 
     MedicalRecordEntity patchMedicalRecordForPatient(Long id, MedicalRecordEntity dto);
 

@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/hover-card";
 import { MedicalRecords } from "./MedicalRecords";
 
-export const Patient = (props: { data: ProfileState }) => {
+export const Patient = (props: { data: ProfileState["data"] }) => {
   const data = props.data;
   return (
     <>

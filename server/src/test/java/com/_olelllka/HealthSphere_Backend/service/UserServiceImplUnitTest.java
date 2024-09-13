@@ -5,6 +5,7 @@ import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterDoctorForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterPatientForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDocumentDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.doctors.SpecializationDto;
+import com._olelllka.HealthSphere_Backend.domain.dto.patients.PatientListDto;
 import com._olelllka.HealthSphere_Backend.domain.entity.*;
 import com._olelllka.HealthSphere_Backend.mapper.impl.SpecializationMapper;
 import com._olelllka.HealthSphere_Backend.repositories.DoctorRepository;
@@ -14,6 +15,7 @@ import com._olelllka.HealthSphere_Backend.rest.exceptions.DuplicateException;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.NotFoundException;
 import com._olelllka.HealthSphere_Backend.service.impl.UserServiceImpl;
 import com._olelllka.HealthSphere_Backend.service.rabbitmq.DoctorMessageProducer;
+import com._olelllka.HealthSphere_Backend.service.rabbitmq.PatientMessageProducer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -41,6 +43,8 @@ public class UserServiceImplUnitTest {
     private DoctorRepository doctorRepository;
     @Mock
     private DoctorMessageProducer messageProducer;
+    @Mock
+    private PatientMessageProducer patientMessageProducer;
     @Mock
     private SpecializationMapper mapper;
     @InjectMocks
@@ -82,6 +86,7 @@ public class UserServiceImplUnitTest {
         assertThrows(DuplicateException.class, () -> userService.register(registerPatientForm));
         verify(userRepository, never()).save(any(UserEntity.class));
         verify(patientRepository, never()).save(any(PatientEntity.class));
+        verify(patientMessageProducer, never()).sendMessageCreatePatient(any(PatientListDto.class));
     }
 
     @Test
@@ -101,6 +106,7 @@ public class UserServiceImplUnitTest {
         verify(userRepository, times(1)).save(any());
         verify(patientRepository, times(1)).save(any());
         verify(passwordEncoder, times(1)).encode(anyString());
+        verify(patientMessageProducer, times(1)).sendMessageCreatePatient(any());
         assertEquals(result.getEmail(), user.getEmail());
         assertNotEquals(result.getPassword(), registerPatientForm.getPassword());
     }

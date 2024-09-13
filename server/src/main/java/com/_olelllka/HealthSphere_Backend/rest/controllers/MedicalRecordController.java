@@ -8,9 +8,11 @@ import com._olelllka.HealthSphere_Backend.mapper.impl.*;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.ValidationException;
 import com._olelllka.HealthSphere_Backend.service.MedicalRecordService;
 import jakarta.validation.Valid;
+import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(path="/api/v1")
+@Log
 public class MedicalRecordController {
 
     private MedicalRecordService medicalRecordService;
@@ -51,17 +54,17 @@ public class MedicalRecordController {
     @GetMapping("/patient/{id}/medical-records")
     public ResponseEntity<Page<MedicalRecordListDto>> getAllMedicalRecords(@PathVariable Long id,
                                                                            Pageable pageable,
-                                                                           @RequestParam(name="diagnosis", required = false) Optional<String> diagnosis,
+                                                                           @RequestParam(name="diagnosis", required = false) String diagnosis,
                                                                            @RequestParam(name = "from", required = false)
-                                                                               @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> from,
-                                                                           @RequestParam(name = "to", required = false) Optional<LocalDate> to) {
-        if (diagnosis.isEmpty() && from.isEmpty() && to.isEmpty()) {
+                                                                               String from,
+                                                                           @RequestParam(name = "to", required = false) String to) {
+        if (diagnosis == null && from == null && to == null) {
             Page<MedicalRecordEntity> medicalRecordEntities = medicalRecordService.getAllRecordsByPatientId(id, pageable);
             Page<MedicalRecordListDto> result = medicalRecordEntities.map(listMapper::toDto);
             return new ResponseEntity<>(result, HttpStatus.OK);
         } else {
-            Page<MedicalRecordDocument> medicalRecordDocuments = medicalRecordService.getRecordsByParams(id, diagnosis.orElse(null),
-                    from.orElse(null), to.orElse(null), pageable);
+            Page<MedicalRecordDocument> medicalRecordDocuments = medicalRecordService.getRecordsByParams(id, !diagnosis.isEmpty() ? diagnosis : "",
+                    !from.isEmpty() ? from : ("1970-01-01"), !to.isEmpty() ? to : (LocalDate.now().toString()), pageable);
             Page<MedicalRecordListDto> result = medicalRecordDocuments.map(documentMapper::toDto);
             return new ResponseEntity<>(result, HttpStatus.OK);
         }

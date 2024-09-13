@@ -7,8 +7,8 @@ import { Patient } from "./Patient";
 import { ForbiddenPage } from "@/pages/ForbiddenPage";
 
 export const Profile = () => {
+  const { data, error } = useSelector((state: RootState) => state.profile);
   const dispatch = useDispatch<AppDispatch>();
-  const data = useSelector((state: RootState) => state.profile);
 
   useEffect(() => {
     const getProfile = async () => {
@@ -20,7 +20,7 @@ export const Profile = () => {
 
   return (
     <>
-      {!data.firstName ? (
+      {error && error.status == 403 ? (
         <ForbiddenPage />
       ) : (
         <div className="flex flex-col pt-28 justify-center items-center">
@@ -28,8 +28,10 @@ export const Profile = () => {
             <h1 className="text-4xl">Profile</h1>
             {data && data.user.role === "ROLE_DOCTOR" ? (
               <Doctor data={data} />
-            ) : (
+            ) : data && data.user.role === "ROLE_PATIENT" ? (
               <Patient data={data} />
+            ) : (
+              <></>
             )}
           </div>
         </div>

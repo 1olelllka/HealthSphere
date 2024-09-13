@@ -2,11 +2,14 @@ package com._olelllka.HealthSphere_Backend.service.rabbitmq;
 
 import com._olelllka.HealthSphere_Backend.domain.documents.DoctorDocument;
 import com._olelllka.HealthSphere_Backend.domain.documents.MedicalRecordDocument;
+import com._olelllka.HealthSphere_Backend.domain.documents.PatientDocument;
 import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDocumentDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.doctors.SpecializationDto;
+import com._olelllka.HealthSphere_Backend.domain.dto.patients.PatientListDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.records.MedicalRecordDocumentDto;
 import com._olelllka.HealthSphere_Backend.repositories.DoctorElasticRepository;
 import com._olelllka.HealthSphere_Backend.repositories.MedicalRecordElasticRepository;
+import com._olelllka.HealthSphere_Backend.repositories.PatientElasticRepository;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,6 +22,9 @@ public class RabbitMessageConsumer {
 
     @Autowired
     private MedicalRecordElasticRepository recordRepository;
+
+    @Autowired
+    private PatientElasticRepository patientRepository;
 
 
     @RabbitListener(id = "doctor.post", queues = "doctors_index_queue")
@@ -56,5 +62,21 @@ public class RabbitMessageConsumer {
     @RabbitListener(id="medical-record.delete", queues = "medical_record_delete")
     public void consumeMedicalRecordDelete(Long id) {
         recordRepository.deleteById(id);
+    }
+
+    @RabbitListener(id="patient.post", queues = "patient_index_queue")
+    public void consumePatientCreateUpdate(PatientListDto dto) {
+        PatientDocument document = PatientDocument.builder()
+                .email(dto.getEmail())
+                .firstName(dto.getFirstName())
+                .lastName(dto.getLastName())
+                .id(dto.getId())
+                .build();
+        patientRepository.save(document);
+    }
+
+    @RabbitListener(id="patient.delete", queues = "patient_index_delete_queue")
+    public void consumePatientDelete(Long id) {
+        patientRepository.deleteById(id);
     }
 }

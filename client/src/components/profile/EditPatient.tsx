@@ -37,7 +37,7 @@ const schema = z.object({
 });
 
 export const EditPatient = () => {
-  const data = useSelector((state: RootState) => state.profile);
+  const data = useSelector((state: RootState) => state.profile.data);
   const dispatch = useDispatch<AppDispatch>();
 
   const form = useForm<z.infer<typeof schema>>({

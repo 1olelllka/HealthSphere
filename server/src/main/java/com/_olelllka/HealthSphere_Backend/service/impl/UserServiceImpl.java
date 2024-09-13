@@ -4,6 +4,7 @@ import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDocumentDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterDoctorForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterPatientForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.doctors.SpecializationDto;
+import com._olelllka.HealthSphere_Backend.domain.dto.patients.PatientListDto;
 import com._olelllka.HealthSphere_Backend.domain.entity.*;
 import com._olelllka.HealthSphere_Backend.mapper.impl.SpecializationMapper;
 import com._olelllka.HealthSphere_Backend.repositories.DoctorRepository;
@@ -13,6 +14,7 @@ import com._olelllka.HealthSphere_Backend.rest.exceptions.DuplicateException;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.NotFoundException;
 import com._olelllka.HealthSphere_Backend.service.rabbitmq.DoctorMessageProducer;
 import com._olelllka.HealthSphere_Backend.service.UserService;
+import com._olelllka.HealthSphere_Backend.service.rabbitmq.PatientMessageProducer;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,6 +31,7 @@ public class UserServiceImpl implements UserService {
     private DoctorRepository doctorRepository;
     private DoctorMessageProducer messageProducer;
     private SpecializationMapper specializationMapper;
+    private PatientMessageProducer patientMessageProducer;
 
     @Autowired
     public UserServiceImpl(UserRepository userRepository,
@@ -36,13 +39,15 @@ public class UserServiceImpl implements UserService {
                            PatientRepository patientRepository,
                            DoctorRepository doctorRepository,
                            DoctorMessageProducer messageProducer,
-                           SpecializationMapper specializationMapper) {
+                           SpecializationMapper specializationMapper,
+                            PatientMessageProducer patientMessageProducer) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.patientRepository = patientRepository;
         this.doctorRepository = doctorRepository;
         this.messageProducer = messageProducer;
         this.specializationMapper = specializationMapper;
+        this.patientMessageProducer = patientMessageProducer;
     }
 
     @Override
@@ -66,7 +71,14 @@ public class UserServiceImpl implements UserService {
                 .gender(registerPatientForm.getGender())
                 .build();
         patientRepository.save(patient);
-        return userRepository.save(user);
+        UserEntity result = userRepository.save(user);
+        PatientListDto listDto = PatientListDto.builder()
+                        .firstName(registerPatientForm.getFirstName())
+                        .lastName(registerPatientForm.getLastName())
+                        .email(result.getEmail())
+                        .build();
+        patientMessageProducer.sendMessageCreatePatient(listDto);
+        return result;
     }
 
     @Override

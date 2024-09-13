@@ -68,8 +68,8 @@ public class MedicalRecordServiceUnitTest {
         // given
         Long id = 1L;
         String diagnosis = "some diagnosis";
-        LocalDate from = LocalDate.of(2020, Month.APRIL, 1);
-        LocalDate to = LocalDate.of(2021, Month.APRIL, 1);
+        String from = "2020-02-02";
+        String to = "2021-02-02";
         Pageable pageable = PageRequest.of(0, 1);
         MedicalRecordDocument document = MedicalRecordDocument.builder().diagnosis("Some Diagnosis").build();
         // when

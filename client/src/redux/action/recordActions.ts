@@ -53,14 +53,23 @@ export const searchRecord = createAsyncThunk(
 
 export const setDetailedRecord = createAsyncThunk(
   "record/setDetailedRecord",
-  async (id: number) => {
+  async (id: number, { rejectWithValue }) => {
     try {
       const response = await SERVER_API.get(`patient/medical-records/${id}`);
       if (response.status === 200) {
         return response.data;
+      } else if (response.status == 403) {
+        return rejectWithValue({
+          status: response.status,
+          message: "Forbidden",
+        });
       }
     } catch (err) {
       console.log(err);
+      return rejectWithValue({
+        status: 403,
+        message: "Forbidden",
+      });
     }
   }
 );

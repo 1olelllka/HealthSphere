@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 
 export const MainNavbar = () => {
-  const profile = useSelector((state: RootState) => state.profile);
+  const profile = useSelector((state: RootState) => state.profile.data);
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
 

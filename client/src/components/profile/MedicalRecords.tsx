@@ -38,7 +38,7 @@ const schema = z.object({
 export const MedicalRecords = () => {
   const navigate = useNavigate();
   const records = useSelector((state: RootState) => state.record);
-  const patient = useSelector((state: RootState) => state.profile);
+  const patient = useSelector((state: RootState) => state.profile.data);
   const dispatch = useDispatch<AppDispatch>();
   const [searchParams] = useSearchParams();
   const page = parseInt(searchParams.get("page") || "0", 10);
@@ -242,17 +242,19 @@ export const MedicalRecords = () => {
                 </PaginationItem>
               )}
 
-              {Array.from({ length: records.totalPages }).map((_, i) => (
-                <PaginationItem key={i + 1}>
-                  <PaginationLink
-                    className="cursor-pointer"
-                    isActive={records.number === i}
-                    onClick={() => updatePage(i)}
-                  >
-                    {i + 1}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
+              {[records.number - 1, records.number, records.number + 1]
+                .filter((p) => p >= 1 && p <= records.totalPages)
+                .map((p) => (
+                  <PaginationItem key={p}>
+                    <PaginationLink
+                      className="cursor-pointer"
+                      isActive={records.number === p - 1}
+                      onClick={() => updatePage(p - 1)}
+                    >
+                      {p}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
 
               {!records.last && (
                 <PaginationItem>

@@ -5,6 +5,8 @@ import { configureStore } from "@reduxjs/toolkit";
 import profileReducer from "./reducers/profileReducer";
 import specializationReducer from "./reducers/specializationReducer";
 import recordReducer from "./reducers/recordReducer";
+import doctorReducer from "./reducers/doctorsReducer";
+import patientReducer from "./reducers/patientsReducer";
 
 // const persistConfig = {
 //   key: "root",
@@ -19,6 +21,8 @@ export const store = configureStore({
     profile: profileReducer,
     specialization: specializationReducer,
     record: recordReducer,
+    doctor: doctorReducer,
+    patient: patientReducer,
   },
 });
 

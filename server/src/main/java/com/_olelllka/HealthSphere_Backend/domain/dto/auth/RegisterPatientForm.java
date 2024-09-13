@@ -23,6 +23,7 @@ public class RegisterPatientForm {
     private String firstName;
     @NotBlank(message = "Your last name must not be empty.")
     private String lastName;
+    @NotNull(message = "Your date of birth must not be empty.")
     @Past(message = "Your date of birth must be in the past.")
     private Date dateOfBirth;
     private Gender gender;

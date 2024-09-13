@@ -8,6 +8,7 @@ import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterDoctorForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterPatientForm;
 import com._olelllka.HealthSphere_Backend.domain.entity.Role;
 import com._olelllka.HealthSphere_Backend.domain.entity.UserEntity;
+import com._olelllka.HealthSphere_Backend.repositories.PatientElasticRepository;
 import com._olelllka.HealthSphere_Backend.repositories.UserRepository;
 import com._olelllka.HealthSphere_Backend.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,6 +39,7 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
@@ -76,6 +78,7 @@ public class UserControllerIntegrationTest {
 
     private UserService userService;
     private UserRepository userRepository;
+    private PatientElasticRepository patientElasticRepository;
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
     private RabbitListenerEndpointRegistry listenerRegistry;
@@ -85,6 +88,7 @@ public class UserControllerIntegrationTest {
     public UserControllerIntegrationTest(UserService userService,
                                          MockMvc mockMvc,
                                          UserRepository userRepository,
+                                         PatientElasticRepository patientElasticRepository,
                                          RabbitListenerEndpointRegistry listenerRegistry,
                                          RabbitAdmin admin) {
         this.mockMvc = mockMvc;
@@ -93,6 +97,7 @@ public class UserControllerIntegrationTest {
         this.userRepository = userRepository;
         this.admin = admin;
         this.listenerRegistry = listenerRegistry;
+        this.patientElasticRepository = patientElasticRepository;
     }
 
 

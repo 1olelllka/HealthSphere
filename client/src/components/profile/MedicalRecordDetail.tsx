@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/hover-card";
 import { SERVER_API } from "@/redux/api/utils";
 import { InfoIcon } from "lucide-react";
+import { ForbiddenPage } from "@/pages/ForbiddenPage";
 
 type Medicine = {
   id: number;
@@ -59,73 +60,78 @@ export const MedicalRecordDetail = () => {
   console.log(medicine);
   return (
     <>
-      <div className="flex flex-col pt-28 justify-center items-center">
-        <div className="container">
-          <h1 className="text-3xl">Medical record #{id}</h1>
-          <Card className="mt-10">
-            <div className="grid grid-cols-2">
-              <div className="col-span-1">
-                <CardHeader>
-                  <CardTitle className="text-3xl">{data.diagnosis}</CardTitle>
-                  <CardDescription>
-                    Record Date: {data.recordDate}
-                  </CardDescription>
-                  <CardDescription>
-                    Last Updated:{" "}
-                    {data.updatedAt &&
-                      new Date(data.updatedAt).toISOString().substring(0, 10)}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <h1 className="text-xl font-bold">
-                    Patient: {data.patient?.firstName} {data.patient?.lastName}
-                  </h1>
-                  <h1 className="text-xl font-bold">
-                    Examined by: Dr. {data.doctor?.firstName}{" "}
-                    {data.doctor?.lastName}
-                  </h1>
-                  {data.treatment && (
-                    <h1 className="text-xl">Conclusion: {data?.treatment}</h1>
-                  )}
-                </CardContent>
-              </div>
-              {data.prescription && (
+      {record.error && record.error.status == 403 ? (
+        <ForbiddenPage />
+      ) : (
+        <div className="flex flex-col pt-28 justify-center items-center">
+          <div className="container">
+            <h1 className="text-3xl">Medical record #{id}</h1>
+            <Card className="mt-10">
+              <div className="grid grid-cols-2">
                 <div className="col-span-1">
                   <CardHeader>
-                    <CardTitle className="text-3xl">Prescription</CardTitle>
+                    <CardTitle className="text-3xl">{data.diagnosis}</CardTitle>
                     <CardDescription>
-                      Issued at:{" "}
-                      {data.prescription.issuedDate &&
-                        new Date(data.prescription?.issuedDate)
-                          .toISOString()
-                          .substring(0, 10)}
+                      Record Date: {data.recordDate}
+                    </CardDescription>
+                    <CardDescription>
+                      Last Updated:{" "}
+                      {data.updatedAt &&
+                        new Date(data.updatedAt).toISOString().substring(0, 10)}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {medicine.map((item) => (
-                      <div className="flex flex-row w-[300px] bg-slate-200 mt-2 rounded-lg">
-                        <h1 className="text-xl font-medium pl-3 py-2">
-                          {item.medicineName} - {item.dosage}
-                        </h1>
-                        {item.instructions && (
-                          <HoverCard>
-                            <HoverCardTrigger asChild>
-                              <InfoIcon className="w-5 h-5 ml-4 mt-[12px] text-slate-500" />
-                            </HoverCardTrigger>
-                            <HoverCardContent>
-                              <p>{item.instructions}</p>
-                            </HoverCardContent>
-                          </HoverCard>
-                        )}
-                      </div>
-                    ))}
+                    <h1 className="text-xl font-bold">
+                      Patient: {data.patient?.firstName}{" "}
+                      {data.patient?.lastName}
+                    </h1>
+                    <h1 className="text-xl font-bold">
+                      Examined by: Dr. {data.doctor?.firstName}{" "}
+                      {data.doctor?.lastName}
+                    </h1>
+                    {data.treatment && (
+                      <h1 className="text-xl">Conclusion: {data?.treatment}</h1>
+                    )}
                   </CardContent>
                 </div>
-              )}
-            </div>
-          </Card>
+                {data.prescription && (
+                  <div className="col-span-1">
+                    <CardHeader>
+                      <CardTitle className="text-3xl">Prescription</CardTitle>
+                      <CardDescription>
+                        Issued at:{" "}
+                        {data.prescription.issuedDate &&
+                          new Date(data.prescription?.issuedDate)
+                            .toISOString()
+                            .substring(0, 10)}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {medicine.map((item) => (
+                        <div className="flex flex-row w-[300px] bg-slate-200 mt-2 rounded-lg">
+                          <h1 className="text-xl font-medium pl-3 py-2">
+                            {item.medicineName} - {item.dosage}
+                          </h1>
+                          {item.instructions && (
+                            <HoverCard>
+                              <HoverCardTrigger asChild>
+                                <InfoIcon className="w-5 h-5 ml-4 mt-[12px] text-slate-500" />
+                              </HoverCardTrigger>
+                              <HoverCardContent>
+                                <p>{item.instructions}</p>
+                              </HoverCardContent>
+                            </HoverCard>
+                          )}
+                        </div>
+                      ))}
+                    </CardContent>
+                  </div>
+                )}
+              </div>
+            </Card>
+          </div>
         </div>
-      </div>
+      )}
     </>
   );
 };

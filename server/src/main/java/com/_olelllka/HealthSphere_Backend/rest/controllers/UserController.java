@@ -107,7 +107,6 @@ public class UserController {
                     .maxAge(60 * 60)
                     .secure(false)
                     .httpOnly(true)
-                    .sameSite("Lax")
                     .path("/")
                     .build();
             response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());

@@ -38,6 +38,10 @@ type Result = {
   totalPages: number;
   pageNumber: number;
   number: number;
+  error: {
+    status: number;
+    message: string;
+  } | null;
 };
 
 const initialState: Result = {
@@ -71,6 +75,7 @@ const initialState: Result = {
   pageNumber: 0,
   totalPages: 0,
   number: 0,
+  error: null,
 };
 
 const recordSlice = createSlice({
@@ -107,7 +112,11 @@ const recordSlice = createSlice({
           state.content = [action.payload];
           return state;
         }
-      );
+      )
+      .addCase(setDetailedRecord.rejected, (state, action) => {
+        state.error = action.payload as { status: number; message: string };
+        return state;
+      });
   },
 });
 

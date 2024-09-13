@@ -17,7 +17,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.Optional;
 
 @Service
@@ -54,10 +53,8 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     }
 
     @Override
-    public Page<MedicalRecordDocument> getRecordsByParams(Long id, String diagnosis, LocalDate from, LocalDate to, Pageable pageable) {
-        String localFrom = from.toString();
-        String localTo = to.toString();
-        return elasticRepository.findByParams(id, diagnosis, localFrom, localTo, pageable);
+    public Page<MedicalRecordDocument> getRecordsByParams(Long id, String diagnosis, String from, String to, Pageable pageable) {
+        return elasticRepository.findByParams(id, diagnosis, from, to, pageable);
     }
 
     @Override
@@ -71,6 +68,9 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
             MedicalRecordDocumentDto dto = MedicalRecordDocumentDto.builder()
                             .id(result.getId())
                             .diagnosis(result.getDiagnosis())
+                    .user_id(result.getPatient().getId())
+                    .recordDate(result.getRecordDate())
+                    .doctor(result.getDoctor().getFirstName() + " " + result.getDoctor().getLastName())
                             .treatment(result.getTreatment()).build();
             messageProducer.sendMedicalRecordCreateUpdate(dto);
             return result;

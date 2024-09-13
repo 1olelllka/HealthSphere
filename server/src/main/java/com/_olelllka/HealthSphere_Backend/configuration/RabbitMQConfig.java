@@ -15,8 +15,11 @@ public class RabbitMQConfig {
     private final String queueDeleteName = "doctor_index_delete_queue";
     private final String queueMedicalRecordCreateUpdate = "medical_record_create_update";
     private final String queueMedicalRecordDelete = "medical_record_delete";
+    private final String queuePatientCreate = "patient_index_queue";
+    private final String queuePatientDelete = "patient_index_delete_queue";
     private final String exchangeName = "doctor_exchange";
     private final String medicalExchange = "record_exchange";
+    private final String patientExchange = "patient_exchange";
 
     @Bean
     public Queue doctorIndexCreateUpdateQueue() {
@@ -39,6 +42,16 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue patientIndexCreateUpdateQueue() {
+        return new Queue(queuePatientCreate, true);
+    }
+
+    @Bean
+    public Queue patientIndexDeleteQueue() {
+        return new Queue(queuePatientDelete, true);
+    }
+
+    @Bean
     public DirectExchange medicalRecordExchange() {
         return new DirectExchange(medicalExchange);
     }
@@ -46,6 +59,11 @@ public class RabbitMQConfig {
     @Bean
     public DirectExchange doctorDirectExchange() {
         return new DirectExchange(exchangeName);
+    }
+
+    @Bean
+    public DirectExchange patientDirectExchange() {
+        return new DirectExchange(patientExchange);
     }
 
     @Bean
@@ -66,6 +84,16 @@ public class RabbitMQConfig {
     @Bean
     public Binding medicalRecordDeleteBinding(Queue medicalRecordIndexDeleteQueue, DirectExchange medicalRecordExchange) {
         return BindingBuilder.bind(medicalRecordIndexDeleteQueue).to(medicalRecordExchange).with(queueMedicalRecordDelete);
+    }
+
+    @Bean
+    public Binding patientIndexCreateUpdateBinding(Queue patientIndexCreateUpdateQueue, DirectExchange patientDirectExchange) {
+        return BindingBuilder.bind(patientIndexCreateUpdateQueue).to(patientDirectExchange).with(queuePatientCreate);
+    }
+
+    @Bean
+    public Binding patientIndexDeleteBinding(Queue patientIndexDeleteQueue, DirectExchange patientDirectExchange) {
+        return BindingBuilder.bind(patientIndexDeleteQueue).to(patientDirectExchange).with(queuePatientDelete);
     }
 
     @Bean

@@ -3,6 +3,7 @@ package com._olelllka.HealthSphere_Backend.rest.controllers;
 import com._olelllka.HealthSphere_Backend.domain.documents.DoctorDocument;
 import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDetailDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorListDto;
+import com._olelllka.HealthSphere_Backend.domain.dto.doctors.SpecializationDto;
 import com._olelllka.HealthSphere_Backend.domain.entity.DoctorEntity;
 import com._olelllka.HealthSphere_Backend.mapper.impl.DoctorDetailMapper;
 import com._olelllka.HealthSphere_Backend.mapper.impl.DoctorDocumentMapper;
@@ -10,16 +11,22 @@ import com._olelllka.HealthSphere_Backend.mapper.impl.DoctorListMapper;
 import com._olelllka.HealthSphere_Backend.service.DoctorService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController
 @RequestMapping(path="/api/v1")
+@Log
 public class DoctorController {
 
     private DoctorService doctorService;
@@ -49,6 +56,16 @@ public class DoctorController {
         } else {
             Page<DoctorDocument> doctors = doctorService.getAllDoctorsByParam(params, pageable);
             Page<DoctorListDto> result = doctors.map(documentMapper::toDto);
+            result.getContent().forEach(doctor -> {
+                List<SpecializationDto> specializations = doctors.getContent().stream()
+                        .filter(doc -> doc.getId().equals(doctor.getId()))
+                        .flatMap(doc -> doc.getSpecializations().stream())
+                        .map(name -> SpecializationDto.builder()
+                                .specializationName(name)
+                                .build())
+                        .collect(Collectors.toList());
+                doctor.setSpecializations(specializations);
+            });
             return new ResponseEntity<>(result, HttpStatus.OK);
         }
     }

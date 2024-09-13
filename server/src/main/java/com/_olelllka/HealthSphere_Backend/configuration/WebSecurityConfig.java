@@ -39,7 +39,7 @@ public class WebSecurityConfig {
                             .requestMatchers(HttpMethod.DELETE, "/api/v1/doctors/me", "/api/v1/patient/medical-records/*", "/api/v1/prescriptions/**").hasRole("DOCTOR")
                             .requestMatchers(HttpMethod.PATCH, "/api/v1/doctors/me", "/api/v1/patient/medical-records/*", "/api/v1/prescriptions/**").hasRole("DOCTOR")
                             .requestMatchers(HttpMethod.GET, "/api/v1/doctors/me").hasRole("DOCTOR")
-                            .requestMatchers(HttpMethod.GET, "/api/v1/csrf-cookie", "/api/v1/get-jwt", "/actuator/health/**").permitAll()
+                            .requestMatchers(HttpMethod.GET, "/api/v1/get-jwt", "/actuator/health/**", "/api/v1/doctors", "/api/v1/doctors/**").permitAll()
                             .anyRequest()
                             .authenticated();
                 })
@@ -51,6 +51,7 @@ public class WebSecurityConfig {
                             .logoutUrl("/api/v1/logout")
                             .deleteCookies("JSESSIONID", "accessToken")
                             .invalidateHttpSession(true)
+                            .clearAuthentication(true)
                             .logoutSuccessHandler(((request, response, authentication) -> {
                                 response.setStatus(HttpServletResponse.SC_OK);
                             }));

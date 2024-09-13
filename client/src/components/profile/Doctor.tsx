@@ -7,7 +7,7 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 
-export const Doctor = (props: { data: ProfileState }) => {
+export const Doctor = (props: { data: ProfileState["data"] }) => {
   const data = props.data;
   return (
     <>
