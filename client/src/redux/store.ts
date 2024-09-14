@@ -7,6 +7,7 @@ import specializationReducer from "./reducers/specializationReducer";
 import recordReducer from "./reducers/recordReducer";
 import doctorReducer from "./reducers/doctorsReducer";
 import patientReducer from "./reducers/patientsReducer";
+import medicineReducer from "./reducers/medicineReducer";
 
 // const persistConfig = {
 //   key: "root",
@@ -23,6 +24,7 @@ export const store = configureStore({
     record: recordReducer,
     doctor: doctorReducer,
     patient: patientReducer,
+    medicine: medicineReducer,
   },
 });
 

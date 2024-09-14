@@ -18,6 +18,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 
 const schema = z.object({
   params: z.string().optional(),
@@ -60,6 +61,12 @@ export const DoctorsList = () => {
     <>
       <div className="flex flex-col pt-28 justify-center items-center">
         <div className="container">
+          {doctors.error && (
+            <Alert className="w-1/3 mx-auto" variant="destructive">
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{doctors.error.message}</AlertDescription>
+            </Alert>
+          )}
           <h1 className="text-5xl font-semibold">Search</h1>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>

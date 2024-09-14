@@ -10,6 +10,7 @@ import { MedicalRecordDetail } from "./components/profile/MedicalRecordDetail";
 import { DoctorsListPage } from "./pages/DoctorsListPage";
 import { DoctorDetailPage } from "./pages/DoctorDetailPage";
 import { PatientListPage } from "./pages/PatientListPage";
+import { PatientDetailPage } from "./pages/PatientDetailPage";
 
 const router = createBrowserRouter([
   {
@@ -44,6 +45,10 @@ const router = createBrowserRouter([
   {
     path: "/patients",
     element: <Layout children={<PatientListPage />} />,
+  },
+  {
+    path: "/patients/:id",
+    element: <Layout children={<PatientDetailPage />} />,
   },
 ]);
 

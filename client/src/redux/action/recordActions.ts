@@ -1,5 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { SERVER_API } from "../api/utils";
+import { AxiosError } from "axios";
 
 export const setRecord = createAsyncThunk(
   "record/setRecord",
@@ -70,6 +71,104 @@ export const setDetailedRecord = createAsyncThunk(
         status: 403,
         message: "Forbidden",
       });
+    }
+  }
+);
+
+export const createPrescriptionForRecord = createAsyncThunk(
+  "record/createPrescriptionForRecord",
+  async (
+    values: {
+      id: number;
+      patient: { id: number };
+      diagnosis: string;
+      recordDate: string;
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const createdPrescription = await SERVER_API.post(
+        "/prescriptions",
+        values
+      );
+      const updatedValues = {
+        recordDate: values.recordDate,
+        diagnosis: values.diagnosis,
+        prescription: {
+          id: createdPrescription.data.id,
+        },
+      };
+      const patchedMedicalRecord = await SERVER_API.patch(
+        "/patient/medical-records/" + values.id,
+        updatedValues
+      );
+      if (
+        createdPrescription.status == 201 &&
+        patchedMedicalRecord.status == 200
+      ) {
+        return patchedMedicalRecord.data;
+      } else {
+        return rejectWithValue({
+          status: 500,
+          message: "An error occurred. Please try again later.",
+        });
+      }
+    } catch (err) {
+      const axiosError = err as AxiosError;
+      if (axiosError.response?.status == 403) {
+        return rejectWithValue({
+          status: 403,
+          message: (axiosError.response?.data as { message: string })
+            ?.message as string,
+        });
+      }
+    }
+  }
+);
+
+export const updateMedicalRecord = createAsyncThunk(
+  "record/updateMedicalRecord",
+  async (
+    values: {
+      id: number;
+      diagnosis: string;
+      treatment?: string;
+      recordDate?: string;
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await SERVER_API.patch(
+        `/patient/medical-records/${values.id}`,
+        values
+      );
+      if (response.status == 200) {
+        console.log(response.data);
+        return response.data;
+      }
+    } catch (err) {
+      const axiosError = err as AxiosError;
+      if (axiosError.response?.status == 400) {
+        return rejectWithValue({
+          status: 400,
+          message: (axiosError.response?.data as { message: string })
+            ?.message as string,
+        });
+      } else if (axiosError.response?.status == 403) {
+        console.log(axiosError);
+        return rejectWithValue({
+          status: 403,
+          message: (axiosError.response?.data as { message: string })
+            ?.message as string,
+        });
+      } else if (axiosError.response?.status == 404) {
+        return rejectWithValue({
+          status: 404,
+          message: (axiosError.response?.data as { message: string })
+            ?.message as string,
+        });
+      }
+      console.log(err);
     }
   }
 );

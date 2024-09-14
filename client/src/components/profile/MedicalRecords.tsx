@@ -35,10 +35,10 @@ const schema = z.object({
   to: z.date().optional(),
 });
 
-export const MedicalRecords = () => {
+export const MedicalRecords = (props: { id: number }) => {
+  const id = props.id;
   const navigate = useNavigate();
   const records = useSelector((state: RootState) => state.record);
-  const patient = useSelector((state: RootState) => state.profile.data);
   const dispatch = useDispatch<AppDispatch>();
   const [searchParams] = useSearchParams();
   const page = parseInt(searchParams.get("page") || "0", 10);
@@ -72,8 +72,8 @@ export const MedicalRecords = () => {
         );
       }
     };
-    getAllRecords(patient.id);
-  }, [dispatch, patient.id, page, searchParams]);
+    getAllRecords(id);
+  }, [dispatch, id, page, searchParams]);
 
   const onSubmit = async (values: {
     diagnosis?: string | undefined;
@@ -81,7 +81,7 @@ export const MedicalRecords = () => {
     to?: Date | undefined;
   }) => {
     console.log(values);
-    let url = "/profile";
+    let url = window.location.href;
     const params = new URLSearchParams();
 
     if (values.diagnosis) {
@@ -98,7 +98,7 @@ export const MedicalRecords = () => {
       url += `?${params.toString()}`;
     }
     window.history.pushState({}, "", url);
-    dispatch(searchRecord({ id: patient.id, page: 0, ...values }));
+    dispatch(searchRecord({ id: id, page: 0, ...values }));
   };
 
   const updatePage = (newPage: number) => {

@@ -18,6 +18,10 @@ type Result = {
   totalPages: number;
   pageNumber: number;
   number: number;
+  error: {
+    status: number;
+    message: string;
+  } | null;
 };
 
 const initialState: Result = {
@@ -37,6 +41,7 @@ const initialState: Result = {
   totalPages: 0,
   pageNumber: 0,
   number: 0,
+  error: null,
 };
 
 const doctorsSlice = createSlice({
@@ -45,8 +50,9 @@ const doctorsSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(getAllDoctors.pending, () => {
-        console.log("Loading doctors...");
+      .addCase(getAllDoctors.pending, (state) => {
+        state.error = null;
+        return state;
       })
       .addCase(
         getAllDoctors.fulfilled,
@@ -54,7 +60,11 @@ const doctorsSlice = createSlice({
           state = action.payload;
           return state;
         }
-      );
+      )
+      .addCase(getAllDoctors.rejected, (state, action) => {
+        state.error = action.payload as { status: number; message: string };
+        return state;
+      });
   },
 });
 

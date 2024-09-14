@@ -1,11 +1,18 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { getAllPatients } from "../action/patientActions";
 
-type Patient = {
+export type Patient = {
   id: number;
+  email: string;
+  user: {
+    email: string;
+  };
   firstName: string;
   lastName: string;
-  email: string;
+  dateOfBirth: string | undefined;
+  gender: string | null;
+  address: string | null;
+  phoneNumber: string | null;
 };
 type Result = {
   content: Patient[];
@@ -28,6 +35,13 @@ const initialState: Result = {
       email: "",
       firstName: "",
       lastName: "",
+      user: {
+        email: "",
+      },
+      dateOfBirth: undefined,
+      gender: null,
+      address: null,
+      phoneNumber: null,
     },
   ],
   last: false,

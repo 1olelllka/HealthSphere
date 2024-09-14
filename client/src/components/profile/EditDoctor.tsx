@@ -49,7 +49,7 @@ const schema = z.object({
 });
 
 export const EditDoctor = () => {
-  const data = useSelector((state: RootState) => state.profile);
+  const data = useSelector((state: RootState) => state.profile.data);
   const dispatch = useDispatch<AppDispatch>();
 
   const [selectedSpecializations, setSelectedSpecializations] = useState<

@@ -65,7 +65,7 @@ export const Patient = (props: { data: ProfileState["data"] }) => {
           <h1 className="text-xl text-slate-500">{data.address}</h1>
         </div>
       </div>
-      <MedicalRecords />
+      <MedicalRecords id={data.id} />
     </>
   );
 };

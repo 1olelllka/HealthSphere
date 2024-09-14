@@ -1,8 +1,10 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
+  createPrescriptionForRecord,
   searchRecord,
   setDetailedRecord,
   setRecord,
+  updateMedicalRecord,
 } from "../action/recordActions";
 
 export type MedicalRecord = {
@@ -84,16 +86,16 @@ const recordSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(setRecord.pending, () => {
-        console.log("Loading records...");
+      .addCase(setRecord.pending, (state) => {
+        state.error = null;
       })
       .addCase(setRecord.fulfilled, (state, action: PayloadAction<Result>) => {
         state = action.payload;
         return state;
       });
     builder
-      .addCase(searchRecord.pending, () => {
-        console.log("Searching records...");
+      .addCase(searchRecord.pending, (state) => {
+        state.error = null;
       })
       .addCase(
         searchRecord.fulfilled,
@@ -114,6 +116,37 @@ const recordSlice = createSlice({
         }
       )
       .addCase(setDetailedRecord.rejected, (state, action) => {
+        state.error = action.payload as { status: number; message: string };
+        return state;
+      });
+    builder
+      .addCase(createPrescriptionForRecord.pending, (state) => {
+        state.error = null;
+        return state;
+      })
+      .addCase(
+        createPrescriptionForRecord.fulfilled,
+        (state, action: PayloadAction<MedicalRecord>) => {
+          state.content[0] = action.payload;
+          return state;
+        }
+      )
+      .addCase(createPrescriptionForRecord.rejected, (state, action) => {
+        state.error = action.payload as { status: number; message: string };
+      });
+    builder
+      .addCase(updateMedicalRecord.pending, (state) => {
+        state.error = null;
+      })
+      .addCase(
+        updateMedicalRecord.fulfilled,
+        (state, action: PayloadAction<MedicalRecord>) => {
+          state.content[0].diagnosis = action.payload.diagnosis;
+          state.content[0].treatment = action.payload.treatment;
+          return state;
+        }
+      )
+      .addCase(updateMedicalRecord.rejected, (state, action) => {
         state.error = action.payload as { status: number; message: string };
         return state;
       });
