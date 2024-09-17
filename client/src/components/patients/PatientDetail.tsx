@@ -7,6 +7,7 @@ import { Patient } from "@/redux/reducers/patientsReducer";
 import { SERVER_API } from "@/redux/api/utils";
 import { AxiosError } from "axios";
 import { NotFoundPage } from "@/pages/NotFoundPage";
+import { Appointments } from "./Appointments";
 
 export const PatientDetail = () => {
   const id = useParams().id;
@@ -76,6 +77,7 @@ export const PatientDetail = () => {
               </div>
             </div>
             <MedicalRecords id={data?.id as number} />
+            <Appointments />
           </div>
         </div>
       )}

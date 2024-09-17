@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
+  createAppointment,
   deleteAppointment,
   patchAppointment,
   setAppointmentsForDoctor,
@@ -131,6 +132,22 @@ const AppointmentSlice = createSlice({
         return state;
       })
       .addCase(patchAppointment.rejected, (state, action) => {
+        state.error = action.payload as { status: number; message: string };
+        return state;
+      });
+    builder
+      .addCase(createAppointment.pending, (state) => {
+        state.error = null;
+        return state;
+      })
+      .addCase(
+        createAppointment.fulfilled,
+        (state, action: PayloadAction<AppointmentState>) => {
+          state.data.push(action.payload);
+          return state;
+        }
+      )
+      .addCase(createAppointment.rejected, (state, action) => {
         state.error = action.payload as { status: number; message: string };
         return state;
       });

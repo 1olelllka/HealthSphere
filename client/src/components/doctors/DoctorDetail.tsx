@@ -6,11 +6,17 @@ import { HoverCard, HoverCardContent } from "../ui/hover-card";
 import { HoverCardTrigger } from "@radix-ui/react-hover-card";
 import { Button } from "../ui/button";
 import { NotFoundPage } from "@/pages/NotFoundPage";
-import { ForbiddenPage } from "@/pages/ForbiddenPage";
 import { AxiosError } from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/redux/store";
+import { setProfile } from "@/redux/action/profileActions";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Appointments } from "./Appointments";
 
 export const DoctorDetail = () => {
   const [doctor, setDoctor] = useState<Profile | null>(null);
+  const profile = useSelector((state: RootState) => state.profile);
+  const dispatch = useDispatch<AppDispatch>();
   const id = useParams().id;
   const [error, setError] = useState<{
     status: number;
@@ -40,19 +46,30 @@ export const DoctorDetail = () => {
         console.log(err);
       }
     };
+    const getProfile = async () => {
+      dispatch(setProfile());
+    };
+    getProfile();
     getDetailDoctor(id ?? "");
-  }, [id]);
+  }, [dispatch, id]);
 
-  console.log(doctor);
+  console.log(profile);
   return (
     <>
       {error?.status === 404 ? (
         <NotFoundPage />
-      ) : error?.status === 403 ? (
-        <ForbiddenPage />
       ) : (
         <div className="flex flex-col pt-28 justify-center items-center">
           <div className="container">
+            {profile.error && profile.error.status != 0 && (
+              <Alert className="w-1/3 mx-auto" variant={"destructive"}>
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>
+                  An error with your profile occurred. Log in to be able to book
+                  an appointment.
+                </AlertDescription>
+              </Alert>
+            )}
             <div className="grid grid-cols-3 gap-10 pt-10">
               <div className="cols-span-1">
                 <img
@@ -128,6 +145,7 @@ export const DoctorDetail = () => {
                 </h1>
               </div>
             </div>
+            {profile.data.id != 0 && <Appointments id={doctor?.id as number} />}
           </div>
         </div>
       )}
