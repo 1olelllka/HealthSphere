@@ -7,19 +7,24 @@ import com._olelllka.HealthSphere_Backend.domain.entity.MedicalRecordEntity;
 import com._olelllka.HealthSphere_Backend.repositories.DoctorRepository;
 import com._olelllka.HealthSphere_Backend.repositories.MedicalRecordElasticRepository;
 import com._olelllka.HealthSphere_Backend.repositories.MedicalRecordRepository;
+import com._olelllka.HealthSphere_Backend.rest.exceptions.AccessDeniedException;
+import com._olelllka.HealthSphere_Backend.rest.exceptions.NotAuthorizedException;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.NotFoundException;
 import com._olelllka.HealthSphere_Backend.service.JwtService;
 import com._olelllka.HealthSphere_Backend.service.MedicalRecordService;
 import com._olelllka.HealthSphere_Backend.service.rabbitmq.MedicalRecordMessageProducer;
+import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
+@Log
 public class MedicalRecordServiceImpl implements MedicalRecordService {
 
 
@@ -59,8 +64,14 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
 
     @Override
     @Transactional
-    public MedicalRecordEntity patchMedicalRecordForPatient(Long id, MedicalRecordEntity updated) {
+    public MedicalRecordEntity patchMedicalRecordForPatient(Long id, MedicalRecordEntity updated, String jwt) {
         return medicalRecordRepository.findById(id).map(record -> {
+            String email = jwtService.extractUsername(jwt);
+            log.info(email);
+            if (!Objects.equals(record.getDoctor().getUser().getEmail(), email)) {
+                log.info(record.getDoctor().getUser().getEmail());
+                throw new AccessDeniedException("You are not allowed to perform this action");
+            }
             Optional.ofNullable(updated.getDiagnosis()).ifPresent(record::setDiagnosis);
             Optional.ofNullable(updated.getTreatment()).ifPresent(record::setTreatment);
             Optional.ofNullable(updated.getPrescription()).ifPresent(record::setPrescription);
@@ -98,7 +109,12 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
 
     @Override
     @Transactional
-    public void deleteById(Long id) {
+    public void deleteById(Long id, String jwt) {
+        MedicalRecordEntity entity = medicalRecordRepository.findById(id).orElseThrow(() -> new NotFoundException("Medical record with such id was not found."));
+        String email = jwtService.extractUsername(jwt);
+        if (!Objects.equals(email, entity.getDoctor().getUser().getEmail())) {
+            throw new AccessDeniedException("You are not allowed to perform this action.");
+        }
         medicalRecordRepository.deleteById(id);
         messageProducer.sendMedicalRecordDelete(id);
     }

@@ -5,19 +5,18 @@ import com._olelllka.HealthSphere_Backend.domain.dto.appointments.UpdateAppointm
 import com._olelllka.HealthSphere_Backend.domain.entity.AppointmentEntity;
 import com._olelllka.HealthSphere_Backend.domain.entity.Status;
 import com._olelllka.HealthSphere_Backend.mapper.impl.AppointmentMapper;
+import com._olelllka.HealthSphere_Backend.rest.exceptions.ValidationException;
 import com._olelllka.HealthSphere_Backend.service.AppointmentService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import jakarta.validation.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
@@ -36,19 +35,17 @@ public class AppointmentController {
 
 
     @GetMapping("/patients/{patientId}/appointments")
-    public ResponseEntity<Page<AppointmentDto>> getAllAppointmentsForPatient(@PathVariable Long patientId,
-                                                                             Pageable pageable) {
-        Page<AppointmentEntity> entities =  service.getAllAppointmentsForPatient(patientId, pageable);
-        Page<AppointmentDto> result = entities.map(mapper::toDto);
+    public ResponseEntity<List<AppointmentDto>> getAllAppointmentsForPatient(@PathVariable Long patientId) {
+        List<AppointmentEntity> entities =  service.getAllAppointmentsForPatient(patientId);
+        List<AppointmentDto> result = entities.stream().map(mapper::toDto).toList();
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('DOCTOR')")
     @GetMapping("/doctors/{doctorId}/appointments")
-    public ResponseEntity<Page<AppointmentDto>> getAllAppointmentsForDoctor(@PathVariable Long doctorId,
-                                                                            Pageable pageable) {
-        Page<AppointmentEntity> entities = service.getAllAppointmentsForDoctor(doctorId, pageable);
-        Page<AppointmentDto> result = entities.map(mapper::toDto);
+    public ResponseEntity<List<AppointmentDto>> getAllAppointmentsForDoctor(@PathVariable Long doctorId) {
+        List<AppointmentEntity> entities = service.getAllAppointmentsForDoctor(doctorId);
+        List<AppointmentDto> result = entities.stream().map(mapper::toDto).toList();
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 

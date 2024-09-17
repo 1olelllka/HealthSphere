@@ -60,13 +60,12 @@ public class AppointmentRepositoryDataJpaTest {
                 .doctor(savedDoctor)
                 .build();
         appointmentRepository.save(appointment);
-        Pageable pageable = PageRequest.of(0, 1);
-        Page<AppointmentEntity> result = appointmentRepository.findByPatientId(savedPatient.getId(), pageable);
-        Page<AppointmentEntity> expected = new PageImpl<>(List.of(AppointmentEntity.builder().build()));
+        List<AppointmentEntity> result = appointmentRepository.findByPatientId(savedPatient.getId());
+        List<AppointmentEntity> expected = List.of(AppointmentEntity.builder().build());
 
         assertAll(
                 () -> assertNotNull(result),
-                () -> assertEquals(result.getContent().size(), expected.getContent().size())
+                () -> assertEquals(result.size(), expected.size())
         );
     }
 
@@ -94,12 +93,12 @@ public class AppointmentRepositoryDataJpaTest {
                 .build();
         appointmentRepository.save(appointment);
         Pageable pageable = PageRequest.of(0, 1);
-        Page<AppointmentEntity> result = appointmentRepository.findByDoctorId(savedDoctor.getId(), pageable);
-        Page<AppointmentEntity> expected = new PageImpl<>(List.of(AppointmentEntity.builder().build()));
+        List<AppointmentEntity> result = appointmentRepository.findByDoctorId(savedDoctor.getId());
+        List<AppointmentEntity> expected = List.of(AppointmentEntity.builder().build());
 
         assertAll(
                 () -> assertNotNull(result),
-                () -> assertEquals(result.getContent().size(), expected.getContent().size())
+                () -> assertEquals(result.size(), expected.size())
         );
     }
 

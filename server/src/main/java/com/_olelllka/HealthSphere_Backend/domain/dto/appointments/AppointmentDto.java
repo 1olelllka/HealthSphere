@@ -23,7 +23,6 @@ public class AppointmentDto {
     @NotNull(message = "Appointment date must not be null.")
     @Future(message = "Appointment date must be in the future.")
     private Date appointmentDate;
-    @NotNull(message = "Status must not be null.")
     private Status status;
     private String reason;
     private Date createdAt;

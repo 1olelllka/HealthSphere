@@ -7,6 +7,7 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { MedicalRecords } from "./MedicalRecords";
+import { PatientAppointments } from "./appointments/PatientAppointments";
 
 export const Patient = (props: { data: ProfileState["data"] }) => {
   const data = props.data;
@@ -66,6 +67,7 @@ export const Patient = (props: { data: ProfileState["data"] }) => {
         </div>
       </div>
       <MedicalRecords id={data.id} />
+      <PatientAppointments id={data.id} />
     </>
   );
 };

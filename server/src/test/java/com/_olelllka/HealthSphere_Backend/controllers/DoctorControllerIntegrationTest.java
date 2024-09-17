@@ -107,17 +107,10 @@ public class DoctorControllerIntegrationTest {
         this.admin = admin;
     }
 
-    @Test
-    public void testThatGetAllDoctorsReturnsHttp403ForbiddenIfCalledUnauthorized() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/doctors"))
-                .andExpect(MockMvcResultMatchers.status().isForbidden());
-    }
 
     @Test
     public void testThatGetAllDoctorsReturnsHttp200OkAndCorrespondingData() throws Exception {
-        String accessToken = getAccessToken();
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/doctors")
-                .header("Authorization", "Bearer " + accessToken))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/doctors"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.pageable").exists());
@@ -126,9 +119,7 @@ public class DoctorControllerIntegrationTest {
 
     @Test
     public void testThatGetAllDoctorsByParamsReturnsHttp200OkAndData() throws Exception {
-        String accessToken = getAccessToken();
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/doctors?search=First Last")
-                        .header("Authorization", "Bearer " + accessToken))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/doctors?search=First Last"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.pageable").exists());
@@ -153,24 +144,14 @@ public class DoctorControllerIntegrationTest {
     }
 
     @Test
-    public void testThatGetDoctorByIdReturnsHttp403ForbiddenIfCalledUnauthorized() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/doctors/1"))
-                .andExpect(MockMvcResultMatchers.status().isForbidden());
-    }
-
-    @Test
     public void testThatGetDoctorByIdReturnsHttp404NotFoundIfDoctorWasNotFound() throws Exception {
-        String accessToken = getAccessToken();
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/doctors/3")
-                .header("Authorization", "Bearer " + accessToken))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/doctors/3"))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
     @Test
     public void testThatGetDoctorByIdReturnsHttp200OkIfDoctorWasFound() throws Exception {
-        String accessToken = getAccessToken();
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/doctors/1")
-                        .header("Authorization", "Bearer " + accessToken))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/doctors/1"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.firstName").value("First Name"));
         assertTrue(elasticRepository.findById(1L).isPresent());

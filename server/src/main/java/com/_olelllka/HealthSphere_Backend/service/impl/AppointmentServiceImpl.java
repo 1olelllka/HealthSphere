@@ -13,9 +13,9 @@ import com._olelllka.HealthSphere_Backend.service.JwtService;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -39,13 +39,13 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public Page<AppointmentEntity> getAllAppointmentsForPatient(Long userId, Pageable pageable) {
-        return repository.findByPatientId(userId, pageable);
+    public List<AppointmentEntity> getAllAppointmentsForPatient(Long userId) {
+        return repository.findByPatientId(userId);
     }
 
     @Override
-    public Page<AppointmentEntity> getAllAppointmentsForDoctor(Long doctorId, Pageable pageable) {
-        return repository.findByDoctorId(doctorId, pageable);
+    public List<AppointmentEntity> getAllAppointmentsForDoctor(Long doctorId) {
+        return repository.findByDoctorId(doctorId);
     }
 
     @Override

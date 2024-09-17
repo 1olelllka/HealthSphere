@@ -5,9 +5,12 @@ import com._olelllka.HealthSphere_Backend.domain.dto.records.MedicalRecordDocume
 import com._olelllka.HealthSphere_Backend.domain.entity.DoctorEntity;
 import com._olelllka.HealthSphere_Backend.domain.entity.MedicalRecordEntity;
 import com._olelllka.HealthSphere_Backend.domain.entity.PatientEntity;
+import com._olelllka.HealthSphere_Backend.domain.entity.UserEntity;
 import com._olelllka.HealthSphere_Backend.repositories.DoctorRepository;
 import com._olelllka.HealthSphere_Backend.repositories.MedicalRecordElasticRepository;
 import com._olelllka.HealthSphere_Backend.repositories.MedicalRecordRepository;
+import com._olelllka.HealthSphere_Backend.rest.exceptions.AccessDeniedException;
+import com._olelllka.HealthSphere_Backend.rest.exceptions.NotAuthorizedException;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.NotFoundException;
 import com._olelllka.HealthSphere_Backend.service.impl.MedicalRecordServiceImpl;
 import com._olelllka.HealthSphere_Backend.service.rabbitmq.MedicalRecordMessageProducer;
@@ -114,31 +117,57 @@ public class MedicalRecordServiceUnitTest {
         // given
         Long id = 1L;
         MedicalRecordEntity entity = createMedicalRecordEntity(null, null);
+        String jwt = "jwt";
         // when
         when(medicalRecordRepository.findById(id)).thenReturn(Optional.empty());
         // then
-        assertThrows(NotFoundException.class, () -> medicalRecordService.patchMedicalRecordForPatient(id, entity));
+        assertThrows(NotFoundException.class, () -> medicalRecordService.patchMedicalRecordForPatient(id, entity, jwt));
+        verify(jwtService, never()).extractUsername(jwt);
+    }
+
+    @Test
+    public void testThatPatchMedicalRecordForPatientThrowsNotAuthorizedException() {
+        // given
+        Long id = 1L;
+        String jwt = "jwt";
+        MedicalRecordEntity entity = createMedicalRecordEntity(null, DoctorEntity
+                .builder()
+                .user(UserEntity.builder().email("email@email.com").build())
+                .build());
+        // when
+        when(medicalRecordRepository.findById(id)).thenReturn(Optional.of(entity));
+        when(jwtService.extractUsername(jwt)).thenReturn("anotherEmail@email.com");
+        // then
+        assertThrows(AccessDeniedException.class, () -> medicalRecordService.patchMedicalRecordForPatient(id, entity, jwt));
     }
 
     @Test
     public void testThatPatchMedicalForPatientUpdatesTheRecord() throws ParseException {
         // given
         Long id = 1L;
-        MedicalRecordEntity entity = createMedicalRecordEntity(null, null);
-        MedicalRecordEntity updated = MedicalRecordEntity.builder().
+        String jwt = "jwt";
+        MedicalRecordEntity entity = createMedicalRecordEntity(PatientEntity.builder().id(1L).build(), DoctorEntity
+                .builder()
+                .user(UserEntity.builder().email("email@email.com").build())
+                .build());        MedicalRecordEntity updated = MedicalRecordEntity.builder().
             treatment("UPDATED")
         .build();
-        MedicalRecordEntity expected = createMedicalRecordEntity(null, null);
+        MedicalRecordEntity expected = createMedicalRecordEntity(PatientEntity.builder().id(1L).build(), DoctorEntity
+                .builder()
+                .user(UserEntity.builder().email("email@email.com").build())
+                .build());
         expected.setTreatment("UPDATED");
         // when
         when(medicalRecordRepository.findById(id)).thenReturn(Optional.of(entity));
+        when(jwtService.extractUsername(jwt)).thenReturn("email@email.com");
         when(medicalRecordRepository.save(expected)).thenReturn(expected);
-        MedicalRecordEntity result = medicalRecordService.patchMedicalRecordForPatient(id, updated);
+        MedicalRecordEntity result = medicalRecordService.patchMedicalRecordForPatient(id, updated, jwt);
         // then
         assertAll(
                 () -> assertNotNull(result),
                 () -> assertEquals(result, expected)
         );
+        verify(messageProducer, times(1)).sendMedicalRecordCreateUpdate(any(MedicalRecordDocumentDto.class));
     }
 
     @Test
@@ -167,11 +196,49 @@ public class MedicalRecordServiceUnitTest {
     }
 
     @Test
-    public void testThatDeleteMedicalRecordByIdPerformsAsExpected() {
+    public void testThatDeleteMedicalRecordByIdThrowsNotFoundException() {
         // given
         Long id = 1L;
         // when
-        medicalRecordService.deleteById(id);
+        when(medicalRecordRepository.findById(id)).thenReturn(Optional.empty());
+        // then
+        assertThrows(NotFoundException.class, () -> medicalRecordService.deleteById(1L, ""));
+        verify(messageProducer, never()).sendMedicalRecordDelete(anyLong());
+        verify(jwtService, never()).extractUsername(anyString());
+        verify(medicalRecordRepository, never()).deleteById(anyLong());
+    }
+
+    @Test
+    public void testThatDeleteMedicalRecordByIdThrowsNotAuthorizedException(){
+        // given
+        Long id = 1L;
+        String jwt = "jwt";
+        MedicalRecordEntity entity = createMedicalRecordEntity(null, DoctorEntity
+                .builder()
+                .user(UserEntity.builder().email("email@email.com")
+                        .build()).build());
+        // when
+        when(medicalRecordRepository.findById(id)).thenReturn(Optional.of(entity));
+        when(jwtService.extractUsername(jwt)).thenReturn("incorrectEmail@email.com");
+        // then
+        assertThrows(AccessDeniedException.class, () -> medicalRecordService.deleteById(id, jwt));
+        verify(medicalRecordRepository, never()).deleteById(anyLong());
+        verify(messageProducer, never()).sendMedicalRecordDelete(anyLong());
+    }
+
+    @Test
+    public void testThatDeleteMedicalRecordByIdPerformsAsExpected() {
+        // given
+        Long id = 1L;
+        String jwt = "jwt";
+        MedicalRecordEntity entity = createMedicalRecordEntity(null, DoctorEntity
+                .builder()
+                .user(UserEntity.builder().email("email@email.com")
+                        .build()).build());
+        // when
+        when(medicalRecordRepository.findById(id)).thenReturn(Optional.of(entity));
+        when(jwtService.extractUsername(jwt)).thenReturn("email@email.com");
+        medicalRecordService.deleteById(id, jwt);
         // then
         verify(medicalRecordRepository, times(1)).deleteById(id);
         verify(messageProducer, times(1)).sendMedicalRecordDelete(id);

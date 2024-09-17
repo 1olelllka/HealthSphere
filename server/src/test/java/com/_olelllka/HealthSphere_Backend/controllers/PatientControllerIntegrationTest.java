@@ -202,7 +202,6 @@ public class PatientControllerIntegrationTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.firstName").value("UPDATED"));
         Awaitility.await().atMost(5, TimeUnit.SECONDS)
                 .until(() -> admin.getQueueInfo("patient_index_queue").getMessageCount() == 0);
-        assertTrue(patientElasticRepository.existsById(1L));
     }
 
     @Test

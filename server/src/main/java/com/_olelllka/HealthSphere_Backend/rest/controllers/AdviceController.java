@@ -1,10 +1,7 @@
 package com._olelllka.HealthSphere_Backend.rest.controllers;
 
 import com._olelllka.HealthSphere_Backend.domain.dto.ErrorMessage;
-import com._olelllka.HealthSphere_Backend.rest.exceptions.DuplicateException;
-import com._olelllka.HealthSphere_Backend.rest.exceptions.NotAuthorizedException;
-import com._olelllka.HealthSphere_Backend.rest.exceptions.NotFoundException;
-import com._olelllka.HealthSphere_Backend.rest.exceptions.ValidationException;
+import com._olelllka.HealthSphere_Backend.rest.exceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -33,4 +30,8 @@ public class AdviceController {
         return new ResponseEntity<>(ErrorMessage.builder().message(ex.getMessage()).build(), HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorMessage> accessDeniedException(AccessDeniedException ex) {
+        return new ResponseEntity<>(ErrorMessage.builder().message(ex.getMessage()).build(), HttpStatus.FORBIDDEN);
+    }
 }

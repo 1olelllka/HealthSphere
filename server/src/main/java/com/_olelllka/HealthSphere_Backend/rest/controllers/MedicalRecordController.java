@@ -12,8 +12,6 @@ import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,7 +19,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -100,6 +97,7 @@ public class MedicalRecordController {
     @PatchMapping("/patient/medical-records/{id}")
     @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<MedicalRecordDetailDto> patchDetailedMedicalRecord(@PathVariable Long id,
+                                                                             @RequestHeader(name="Authorization") String header,
                                                                              @RequestBody @Valid MedicalRecordDetailDto dto,
                                                                              BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -107,14 +105,15 @@ public class MedicalRecordController {
             throw new ValidationException(msg);
         }
         MedicalRecordEntity entity = detailMapper.toEntity(dto);
-        MedicalRecordEntity updated = medicalRecordService.patchMedicalRecordForPatient(id, entity);
+        MedicalRecordEntity updated = medicalRecordService.patchMedicalRecordForPatient(id, entity, header.substring(7));
         return new ResponseEntity<>(detailMapper.toDto(updated), HttpStatus.OK);
     }
 
     @DeleteMapping("/patient/medical-records/{id}")
     @PreAuthorize("hasRole('DOCTOR')")
-    public ResponseEntity deleteMedicalRecordById(@PathVariable Long id) {
-        medicalRecordService.deleteById(id);
+    public ResponseEntity deleteMedicalRecordById(@PathVariable Long id,
+                                                  @RequestHeader(name="Authorization") String header) {
+        medicalRecordService.deleteById(id, header.substring(7));
         return new ResponseEntity(null, HttpStatus.ACCEPTED);
     }
 }

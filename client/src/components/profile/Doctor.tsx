@@ -6,6 +6,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import { DoctorAppointments } from "./appointments/DoctorAppointments";
 
 export const Doctor = (props: { data: ProfileState["data"] }) => {
   const data = props.data;
@@ -74,6 +75,7 @@ export const Doctor = (props: { data: ProfileState["data"] }) => {
           <h1 className="text-xl text-slate-500">{data.clinicAddress}</h1>
         </div>
       </div>
+      <DoctorAppointments id={data.id} />
     </>
   );
 };

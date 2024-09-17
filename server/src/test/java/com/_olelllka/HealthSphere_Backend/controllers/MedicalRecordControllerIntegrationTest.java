@@ -165,7 +165,7 @@ public class MedicalRecordControllerIntegrationTest {
     @Test
     public void testThatGetMedicalRecordsReturnsHttp200OkIfEverythingGood() throws Exception {
         String patientAccessToken = getAccessToken();
-        String patientJson = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/patient/me")
+        String patientJson = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/patients/me")
                         .header("Authorization", "Bearer " + patientAccessToken))
                 .andReturn().getResponse().getContentAsString();
         PatientEntity patient = objectMapper.readValue(patientJson, PatientEntity.class);
@@ -212,7 +212,7 @@ public class MedicalRecordControllerIntegrationTest {
         assertEquals(0, Objects.requireNonNull(admin.getQueueInfo("medical_record_create_update")).getMessageCount());
         listenerRegistry.getListenerContainer("medical-record.post").start();
         String patientAccessToken = getAccessToken();
-        String patientJson = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/patient/me")
+        String patientJson = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/patients/me")
                 .header("Authorization", "Bearer " + patientAccessToken))
                 .andReturn().getResponse().getContentAsString();
         PatientEntity patient = objectMapper.readValue(patientJson, PatientEntity.class);
@@ -276,7 +276,7 @@ public class MedicalRecordControllerIntegrationTest {
         assertEquals(0, Objects.requireNonNull(admin.getQueueInfo("medical_record_create_update")).getMessageCount());
         listenerRegistry.getListenerContainer("medical-record.post").start();
         String patientAccessToken = getAccessToken();
-        String patientJson = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/patient/me")
+        String patientJson = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/patients/me")
                         .header("Authorization", "Bearer " + patientAccessToken))
                 .andReturn().getResponse().getContentAsString();
         PatientEntity patient = objectMapper.readValue(patientJson, PatientEntity.class);
@@ -284,8 +284,10 @@ public class MedicalRecordControllerIntegrationTest {
         String doctorJson = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/doctors/me")
                         .header("Authorization", "Bearer " + doctorAccessToken))
                 .andReturn().getResponse().getContentAsString();
+        DoctorEntity doctor = objectMapper.readValue(doctorJson, DoctorEntity.class);
         MedicalRecordEntity record = MedicalRecordEntity.builder()
                 .id(30L)
+                .doctor(doctor)
                 .patient(patient)
                 .diagnosis("Diagnosis")
                 .treatment("Treatment")
@@ -315,17 +317,77 @@ public class MedicalRecordControllerIntegrationTest {
     }
 
     @Test
-    public void testThatDeleteMedicalRecordReturnsHttp202AcceptedIfEverythingIsOk() throws Exception {
+    public void testThatDeleteMedicalRecordReturnsHttp404IfRecordWasNotFound() throws Exception {
+        String accessToken = getAccessTokenForDoctor();
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/patient/medical-records/1")
+                .header("Authorization", "Bearer " + accessToken))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
+
+    @Test
+    public void testThatDeleteMedicalRecordReturnsHttp403ForbiddenIfIncorrectDoctor() throws Exception {
         listenerRegistry.stop();
         assertEquals(0, Objects.requireNonNull(admin.getQueueInfo("medical_record_delete")).getMessageCount());
         elasticRepository.save(MedicalRecordDocument.builder().id(1L).build());
         listenerRegistry.getListenerContainer("medical-record.delete").start();
+
+        String patientAccessToken = getAccessToken();
+        String patientJson = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/patients/me")
+                        .header("Authorization", "Bearer " + patientAccessToken))
+                .andReturn().getResponse().getContentAsString();
+        PatientEntity patient = objectMapper.readValue(patientJson, PatientEntity.class);
+        MedicalRecordEntity record = MedicalRecordEntity.builder()
+                .id(30L)
+                .patient(patient)
+                .diagnosis("Diagnosis")
+                .treatment("Treatment")
+                .recordDate(LocalDate.of(2020, Month.APRIL, 1)).build();
         String accessToken = getAccessTokenForDoctor();
+        medicalRecordService.createMedicalRecord(record, accessToken);
+        RegisterDoctorForm doctorForm = TestDataUtil.createRegisterDoctorForm();
+        doctorForm.setEmail("e@email.com");
+        userService.doctorRegister(doctorForm);
+        LoginForm loginForm = TestDataUtil.createLoginForm();
+        loginForm.setEmail("e@email.com");
+        String loginFormJson = objectMapper.writeValueAsString(loginForm);
+        Cookie cookieToken = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginFormJson))
+                .andReturn().getResponse().getCookie("accessToken");
+        String token = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/get-jwt")
+                        .cookie(cookieToken))
+                .andReturn().getResponse().getContentAsString();
+        String anotherToken = objectMapper.readValue(token, JwtToken.class).getAccessToken();
+
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/patient/medical-records/1")
-                .header("Authorization", "Bearer " + accessToken))
+                        .header("Authorization", "Bearer " + anotherToken))
+                .andExpect(MockMvcResultMatchers.status().isForbidden());
+    }
+
+    @Test
+    public void testThatDeleteMedicalRecordReturnsHttp202Accepted() throws Exception {
+        listenerRegistry.stop();
+        assertEquals(0, Objects.requireNonNull(admin.getQueueInfo("medical_record_delete")).getMessageCount());
+        listenerRegistry.getListenerContainer("medical-record.delete").start();
+
+        String patientAccessToken = getAccessToken();
+        String patientJson = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/patients/me")
+                        .header("Authorization", "Bearer " + patientAccessToken))
+                .andReturn().getResponse().getContentAsString();
+        PatientEntity patient = objectMapper.readValue(patientJson, PatientEntity.class);
+        MedicalRecordEntity record = MedicalRecordEntity.builder()
+                .id(1L)
+                .patient(patient)
+                .diagnosis("Diagnosis")
+                .treatment("Treatment")
+                .recordDate(LocalDate.of(2020, Month.APRIL, 1)).build();
+        String accessToken = getAccessTokenForDoctor();
+        medicalRecordService.createMedicalRecord(record, accessToken);
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/patient/medical-records/1")
+                        .header("Authorization", "Bearer " + accessToken))
                 .andExpect(MockMvcResultMatchers.status().isAccepted());
-        Awaitility.await().atMost(10, TimeUnit.SECONDS)
-                .until(() -> admin.getQueueInfo("medical_record_delete").getMessageCount() == 0, Boolean.TRUE::equals);
+        Awaitility.await().atMost(5, TimeUnit.SECONDS)
+                .until(() -> admin.getQueueInfo("medical_record_delete").getMessageCount() == 0);
         assertFalse(elasticRepository.existsById(1L));
     }
 

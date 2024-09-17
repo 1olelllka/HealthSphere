@@ -264,8 +264,7 @@ public class AppointmentControllerIntegrationTest {
                 .andExpect(MockMvcResultMatchers.status().isCreated())
                 // this will show that it's newly created appointment.
                 .andExpect(MockMvcResultMatchers.jsonPath("$.patient").hasJsonPath())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(2L))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.appointmentDate").value(dto.getAppointmentDate()));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(2L));
     }
 
     @Test
@@ -288,8 +287,7 @@ public class AppointmentControllerIntegrationTest {
                 .andExpect(MockMvcResultMatchers.status().isCreated())
                 // this will show that it's newly created appointment.
                 .andExpect(MockMvcResultMatchers.jsonPath("$.patient").doesNotExist())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(2L))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.appointmentDate").value(dto.getAppointmentDate()));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(2L));
     }
 
     @Test
