@@ -71,7 +71,9 @@ public class MedicalRecordController {
     public ResponseEntity<MedicalRecordDetailDto> getDetailedMedicalRecord(@PathVariable Long id) {
         MedicalRecordEntity medicalRecordEntity = medicalRecordService
                 .getDetailedMedicalRecordForPatient(id);
-        return new ResponseEntity<>(detailMapper.toDto(medicalRecordEntity), HttpStatus.OK);
+        MedicalRecordDetailDto result = detailMapper.toDto(medicalRecordEntity);
+        result.setPatient(patientMapper.toDto(medicalRecordEntity.getPatient()));
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @PostMapping("/patient/medical-records")

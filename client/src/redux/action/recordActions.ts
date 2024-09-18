@@ -74,7 +74,6 @@ export const setDetailedRecord = createAsyncThunk(
     }
   }
 );
-
 export const createPrescriptionForRecord = createAsyncThunk(
   "record/createPrescriptionForRecord",
   async (
@@ -162,6 +161,61 @@ export const updateMedicalRecord = createAsyncThunk(
             ?.message as string,
         });
       } else if (axiosError.response?.status == 404) {
+        return rejectWithValue({
+          status: 404,
+          message: (axiosError.response?.data as { message: string })
+            ?.message as string,
+        });
+      }
+      console.log(err);
+    }
+  }
+);
+
+export const deletePrescriptionForRecord = createAsyncThunk(
+  "record/deletePrescriptionForRecord",
+  async (
+    values: { prescriptionId: number; medicalRecordId: number },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await SERVER_API.delete(
+        `/prescriptions/${values.prescriptionId}`
+      );
+      if (response.status === 202) {
+        return values.medicalRecordId;
+      }
+    } catch (err) {
+      const axiosError = err as AxiosError;
+      if (axiosError.response?.status === 403) {
+        return rejectWithValue({
+          status: 403,
+          message: "You don't have permission to perform this action.",
+        });
+      }
+      console.log(err);
+    }
+  }
+);
+
+export const deleteMedicalRecord = createAsyncThunk(
+  "record/deleteMedicalRecord",
+  async (id: number, { rejectWithValue }) => {
+    try {
+      const response = await SERVER_API.delete(
+        `/patient/medical-records/${id}`
+      );
+      if (response.status === 202) {
+        return id;
+      }
+    } catch (err) {
+      const axiosError = err as AxiosError;
+      if (axiosError.response?.status === 403) {
+        return rejectWithValue({
+          status: 403,
+          message: "You don't have permission to perform this action.",
+        });
+      } else if (axiosError.response?.status === 404) {
         return rejectWithValue({
           status: 404,
           message: (axiosError.response?.data as { message: string })

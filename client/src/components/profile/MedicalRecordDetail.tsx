@@ -1,8 +1,12 @@
-import { setDetailedRecord } from "@/redux/action/recordActions";
+import {
+  deleteMedicalRecord,
+  deletePrescriptionForRecord,
+  setDetailedRecord,
+} from "@/redux/action/recordActions";
 import { AppDispatch, RootState } from "@/redux/store";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -23,6 +27,17 @@ import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { EditRecord } from "./EditRecord";
 import { CreatePrescription } from "./CreatePrescription";
 import { CreateMedicine } from "./CreateMedicine";
+import { Button } from "../ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
 
 export const MedicalRecordDetail = () => {
   const id = useParams().id;
@@ -30,6 +45,7 @@ export const MedicalRecordDetail = () => {
   const dispatch = useDispatch<AppDispatch>();
   const medicine_data = useSelector((state: RootState) => state.medicine);
   const medicine = medicine_data.data;
+  const navigate = useNavigate();
 
   useEffect(() => {
     const getDetailedRecord = async (id: number) => {
@@ -156,8 +172,78 @@ export const MedicalRecordDetail = () => {
                     diagnosis={data.diagnosis}
                   />
                 )}
+                {data.prescription && (
+                  <div className="mt-2.5">
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant={"destructive"}>
+                          Delete Prescription
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>
+                            Are you sure you want to delete this prescription?
+                          </DialogTitle>
+                        </DialogHeader>
+                        <DialogFooter>
+                          <DialogClose asChild>
+                            <Button variant={"outline"}>Cancel</Button>
+                          </DialogClose>
+                          <Button
+                            variant={"destructive"}
+                            onClick={() => {
+                              dispatch(
+                                deletePrescriptionForRecord({
+                                  prescriptionId: data.prescription
+                                    ?.id as number,
+                                  medicalRecordId: data.id,
+                                })
+                              );
+                            }}
+                          >
+                            Yes
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                )}
               </div>
             </Card>
+            <h1 className="text-3xl text-red-500 pt-10">Danger Zone</h1>
+            <div className="mt-3">
+              <Dialog>
+                <DialogTrigger>
+                  <Button variant={"destructive"}>Delete Record</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>
+                      Are you sure you want to delete this record?
+                    </DialogTitle>
+                    <DialogDescription>
+                      Please note, this action cannot be undone and all data
+                      will be lost.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button variant={"default"}>Close</Button>
+                    </DialogClose>
+                    <Button
+                      variant={"destructive"}
+                      onClick={() => {
+                        dispatch(deleteMedicalRecord(data.id));
+                        navigate(-1);
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         </div>
       )}

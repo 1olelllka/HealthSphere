@@ -9,10 +9,11 @@ import com._olelllka.HealthSphere_Backend.rest.exceptions.ValidationException;
 import com._olelllka.HealthSphere_Backend.service.AppointmentService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 @RequestMapping(path="/api/v1")
 public class AppointmentController {
 
+    private static final Logger log = LoggerFactory.getLogger(AppointmentController.class);
     private AppointmentService service;
     private AppointmentMapper mapper;
 
@@ -41,7 +43,6 @@ public class AppointmentController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('DOCTOR')")
     @GetMapping("/doctors/{doctorId}/appointments")
     public ResponseEntity<List<AppointmentDto>> getAllAppointmentsForDoctor(@PathVariable Long doctorId) {
         List<AppointmentEntity> entities = service.getAllAppointmentsForDoctor(doctorId);
@@ -56,10 +57,10 @@ public class AppointmentController {
     }
 
     @PostMapping("/patients/appointments")
-    public ResponseEntity<AppointmentDto> createAppointment(@RequestBody @Valid AppointmentDto dto,
-                                                            HttpServletRequest request,
-                                                            @RequestHeader(name="Authorization") String header,
-                                                            BindingResult bindingResult) {
+    public ResponseEntity<AppointmentDto> createAppointment(@Valid @RequestBody AppointmentDto dto,
+                                                            BindingResult bindingResult,
+                                                             @RequestHeader(name="Authorization") String header,
+                                                             HttpServletRequest request) {
         if (bindingResult.hasErrors()) {
             String msg = bindingResult.getAllErrors().stream().map(err -> err.getDefaultMessage()).collect(Collectors.joining(" "));
             throw new ValidationException(msg);
@@ -110,11 +111,5 @@ public class AppointmentController {
                 .build();
         AppointmentEntity updated = service.updateEntity(entity, id);
         return new ResponseEntity<>(mapper.toDto(updated), HttpStatus.OK);
-    }
-
-    @DeleteMapping("/patients/appointments/{id}")
-    public ResponseEntity deleteAppointmentById(@PathVariable Long id) {
-        service.deleteById(id);
-        return new ResponseEntity(null, HttpStatus.ACCEPTED);
     }
 }

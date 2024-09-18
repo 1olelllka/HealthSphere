@@ -1,6 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
   createPrescriptionForRecord,
+  deleteMedicalRecord,
+  deletePrescriptionForRecord,
   searchRecord,
   setDetailedRecord,
   setRecord,
@@ -22,7 +24,7 @@ export type MedicalRecord = {
   recordDate: string;
   diagnosis: string;
   treatment: string;
-  prescription: Prescription;
+  prescription: Prescription | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -147,6 +149,37 @@ const recordSlice = createSlice({
         }
       )
       .addCase(updateMedicalRecord.rejected, (state, action) => {
+        state.error = action.payload as { status: number; message: string };
+        return state;
+      });
+    builder
+      .addCase(deletePrescriptionForRecord.pending, (state) => {
+        state.error = null;
+        return state;
+      })
+      .addCase(deletePrescriptionForRecord.fulfilled, (state, action) => {
+        const record = state.content.filter(
+          (item) => item.id === action.payload
+        );
+        record[0].prescription = null;
+        return state;
+      })
+      .addCase(deletePrescriptionForRecord.rejected, (state, action) => {
+        state.error = action.payload as { status: number; message: string };
+        return state;
+      });
+    builder
+      .addCase(deleteMedicalRecord.pending, (state) => {
+        state.error = null;
+        return state;
+      })
+      .addCase(deleteMedicalRecord.fulfilled, (state, action) => {
+        state.content = state.content.filter(
+          (item) => item.id !== action.payload
+        );
+        return state;
+      })
+      .addCase(deleteMedicalRecord.rejected, (state, action) => {
         state.error = action.payload as { status: number; message: string };
         return state;
       });

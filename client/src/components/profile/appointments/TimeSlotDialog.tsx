@@ -8,6 +8,7 @@ import { Button } from "../../ui/button";
 import { useEffect, useState } from "react";
 import { SERVER_API } from "@/redux/api/utils";
 import { AxiosError } from "axios";
+import { useNavigate } from "react-router-dom";
 
 interface AppointmentState {
   id: number;
@@ -36,6 +37,7 @@ export const TimeSlotDialog = (props: {
   onClose: () => void;
 }) => {
   const [appointment, setAppointment] = useState<AppointmentState>();
+  const navigate = useNavigate();
   useEffect(() => {
     const getSpecificAppointment = async (id: number) => {
       try {
@@ -54,6 +56,28 @@ export const TimeSlotDialog = (props: {
     };
     getSpecificAppointment(props.id);
   }, [props.id]);
+
+  const createMedicalRecord = async (values: {
+    patient: { id: number };
+    diagnosis: string;
+    recordDate: string;
+  }) => {
+    try {
+      const response = await SERVER_API.post(
+        "/patient/medical-records",
+        values
+      );
+      if (response.status === 201) {
+        navigate(`/medical-records/${response.data.id}`);
+      }
+    } catch (err) {
+      const axiosErr = err as AxiosError;
+      if (axiosErr.response?.status == 403) {
+        console.log("You don't have permission to access this page.");
+      }
+      console.log(err);
+    }
+  };
 
   return (
     <>
@@ -91,7 +115,19 @@ export const TimeSlotDialog = (props: {
             Status: {appointment?.status}
           </h1>
           <DialogFooter>
-            <Button variant={"default"} onClick={props.onClose}>
+            <Button
+              variant={"default"}
+              onClick={() => {
+                createMedicalRecord({
+                  patient: { id: appointment?.patient?.id as number },
+                  diagnosis: "Edit Diagnosis in Edit Medical Record",
+                  recordDate: new Date().toISOString().substring(0, 10),
+                });
+              }}
+            >
+              Create the Medical Record
+            </Button>
+            <Button variant={"outline"} onClick={props.onClose}>
               Close{" "}
             </Button>
           </DialogFooter>

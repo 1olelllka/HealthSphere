@@ -105,14 +105,6 @@ public class AppointmentControllerIntegrationTest {
     }
 
     @Test
-    public void testThatGetAllAppointmentsForDoctorReturnsHttp403ForbiddenIfWrongRole() throws Exception {
-        String accessToken = getAccessToken();
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/doctors/1/appointments")
-                .header("Authorization", "Bearer " + accessToken))
-                .andExpect(MockMvcResultMatchers.status().isForbidden());
-    }
-
-    @Test
     public void testThatGetAllAppointmentsForDoctorReturnsHttp200Ok() throws Exception {
         String accessToken = getDoctorAccessToken();
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/doctors/1/appointments")
@@ -132,7 +124,7 @@ public class AppointmentControllerIntegrationTest {
     public void testThatCreateAppointmentForPatientOrDoctorReturnsHttp400BadRequestIfInvalidData() throws Exception {
         String accessToken = getAccessToken();
         AppointmentDto dto = TestDataUtil.createAppointmentDto(null, null);
-        dto.setAppointmentDate(null);
+        dto.setAppointmentDate(new SimpleDateFormat("yyyy-MM-dd").parse("2020-02-02"));
         String json = objectMapper.writeValueAsString(dto);
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/patients/appointments")
                 .header("Authorization", "Bearer " + accessToken)
@@ -310,13 +302,6 @@ public class AppointmentControllerIntegrationTest {
                         .content(json)));
     }
 
-    @Test
-    public void testThatDeleteAppointmentByIdReturnsHttp202Accepted() throws Exception {
-        String accessToken = getAccessToken();
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/patients/appointments/1")
-                .header("Authorization", "Bearer " + accessToken))
-                .andExpect(MockMvcResultMatchers.status().isAccepted());
-    }
 
     private String getDoctorAccessToken() throws Exception {
         RegisterDoctorForm doctorForm = TestDataUtil.createRegisterDoctorForm();

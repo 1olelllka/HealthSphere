@@ -99,5 +99,4 @@ public class PrescriptionsController {
         service.deletePrescription(id);
         return new ResponseEntity(null, HttpStatus.ACCEPTED);
     }
-
 }

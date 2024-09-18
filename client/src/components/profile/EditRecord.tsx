@@ -42,7 +42,7 @@ export const EditRecord = () => {
     defaultValues: {
       id: data.id,
       diagnosis: data.diagnosis,
-      treatment: data.treatment as string,
+      treatment: (data.treatment as string) || "",
       recordDate: data.recordDate as string,
     },
   });
@@ -51,7 +51,7 @@ export const EditRecord = () => {
     form.reset({
       id: data.id,
       diagnosis: data.diagnosis,
-      treatment: data.treatment as string,
+      treatment: (data.treatment as string) || "",
       recordDate: data.recordDate as string,
     });
   }, [data.diagnosis, data.treatment, data.recordDate, data.id, form]);
@@ -68,7 +68,7 @@ export const EditRecord = () => {
         </DialogTrigger>
         <DialogContent className="w-[450px]">
           <DialogHeader>
-            <DialogTitle>Edit Medicine</DialogTitle>
+            <DialogTitle>Edit Record</DialogTitle>
             <DialogDescription>
               Make changes to medicine here.
             </DialogDescription>

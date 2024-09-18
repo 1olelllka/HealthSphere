@@ -4,9 +4,11 @@ import com._olelllka.HealthSphere_Backend.domain.documents.MedicalRecordDocument
 import com._olelllka.HealthSphere_Backend.domain.dto.records.MedicalRecordDocumentDto;
 import com._olelllka.HealthSphere_Backend.domain.entity.DoctorEntity;
 import com._olelllka.HealthSphere_Backend.domain.entity.MedicalRecordEntity;
+import com._olelllka.HealthSphere_Backend.domain.entity.PrescriptionEntity;
 import com._olelllka.HealthSphere_Backend.repositories.DoctorRepository;
 import com._olelllka.HealthSphere_Backend.repositories.MedicalRecordElasticRepository;
 import com._olelllka.HealthSphere_Backend.repositories.MedicalRecordRepository;
+import com._olelllka.HealthSphere_Backend.repositories.PrescriptionRepository;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.AccessDeniedException;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.NotAuthorizedException;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.NotFoundException;
@@ -32,6 +34,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     private MedicalRecordElasticRepository elasticRepository;
     private MedicalRecordMessageProducer messageProducer;
     private DoctorRepository doctorRepository;
+    private PrescriptionRepository prescriptionRepository;
     private JwtService jwtService;
 
     @Autowired
@@ -39,11 +42,13 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                                     MedicalRecordElasticRepository elasticRepository,
                                     MedicalRecordMessageProducer messageProducer,
                                     DoctorRepository doctorRepository,
+                                    PrescriptionRepository prescriptionRepository,
                                     JwtService jwtService) {
         this.medicalRecordRepository = medicalRecordRepository;
         this.elasticRepository = elasticRepository;
         this.messageProducer = messageProducer;
         this.doctorRepository = doctorRepository;
+        this.prescriptionRepository = prescriptionRepository;
         this.jwtService = jwtService;
     }
 
@@ -114,6 +119,9 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         String email = jwtService.extractUsername(jwt);
         if (!Objects.equals(email, entity.getDoctor().getUser().getEmail())) {
             throw new AccessDeniedException("You are not allowed to perform this action.");
+        }
+        if (entity.getPrescription() != null) {
+            prescriptionRepository.deleteById(entity.getPrescription().getId());
         }
         medicalRecordRepository.deleteById(id);
         messageProducer.sendMedicalRecordDelete(id);

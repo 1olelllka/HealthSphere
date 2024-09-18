@@ -7,9 +7,28 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { DoctorAppointments } from "./appointments/DoctorAppointments";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/redux/store";
+import {
+  deleteDoctorProfile,
+  logoutProfile,
+} from "@/redux/action/profileActions";
+import { useNavigate } from "react-router-dom";
 
 export const Doctor = (props: { data: ProfileState["data"] }) => {
   const data = props.data;
+  const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   return (
     <>
       <div className="grid grid-cols-3 gap-10 pt-10">
@@ -76,6 +95,40 @@ export const Doctor = (props: { data: ProfileState["data"] }) => {
         </div>
       </div>
       <DoctorAppointments id={data.id} />
+      <div className="space-y-4">
+        <h1 className="text-3xl text-red-500 pt-10">Danger Zone</h1>
+        <Dialog>
+          <DialogTrigger>
+            <Button variant={"destructive"}>Delete Account</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                Are you sure you want to delete this account?
+              </DialogTitle>
+              <DialogDescription>
+                Please note, this action cannot be undone and all data will be
+                lost.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant={"default"}>Close</Button>
+              </DialogClose>
+              <Button
+                variant={"destructive"}
+                onClick={() => {
+                  dispatch(deleteDoctorProfile(data.id));
+                  dispatch(logoutProfile());
+                  navigate("/login");
+                }}
+              >
+                Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
     </>
   );
 };
