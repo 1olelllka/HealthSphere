@@ -33,6 +33,8 @@ export interface Profile {
   licenseNumber: string;
   experienceYears: number | undefined;
   clinicAddress: string;
+  allergies: string | null;
+  bloodType: string | null;
   createdAt: number;
   updatedAt: number;
 }
@@ -63,6 +65,8 @@ const initialState: ProfileState = {
     licenseNumber: "",
     experienceYears: undefined,
     clinicAddress: "",
+    allergies: null,
+    bloodType: null,
     createdAt: 0,
     updatedAt: 0,
   },
@@ -83,11 +87,25 @@ const profileSlice = createSlice({
         setProfile.fulfilled,
         (state, action: PayloadAction<Profile>) => {
           state.data = action.payload;
-          state.error = { status: 0, message: "" };
+          const bloodTypeMap: { [key: string]: string } = {
+            OPlus: "O+",
+            OMinus: "O-",
+            APlus: "A+",
+            AMinus: "A-",
+            BPlus: "B+",
+            BMinus: "B-",
+            ABPlus: "AB+",
+            ABMinus: "AB-",
+          };
+          state.data.bloodType =
+            bloodTypeMap[state.data.bloodType as keyof typeof bloodTypeMap] ||
+            "";
+          state.error = null;
           return state;
         }
       )
       .addCase(setProfile.rejected, (state, action) => {
+        localStorage.removeItem("persist:profile");
         state.error = action.payload as { status: number; message: string };
         return state;
       });
@@ -98,11 +116,26 @@ const profileSlice = createSlice({
       .addCase(
         patchPatientProfile.fulfilled,
         (state, action: PayloadAction<Profile>) => {
+          state.data.bloodType = action.payload.bloodType;
+          const bloodTypeMap: { [key: string]: string } = {
+            OPlus: "O+",
+            OMinus: "O-",
+            APlus: "A+",
+            AMinus: "A-",
+            BPlus: "B+",
+            BMinus: "B-",
+            ABPlus: "AB+",
+            ABMinus: "AB-",
+          };
+          state.data.bloodType =
+            bloodTypeMap[state.data.bloodType as keyof typeof bloodTypeMap] ||
+            "";
           state.data.address = action.payload.address;
           state.data.dateOfBirth = action.payload.dateOfBirth;
           state.data.firstName = action.payload.firstName;
           state.data.lastName = action.payload.lastName;
           state.data.phoneNumber = action.payload.phoneNumber;
+          state.data.allergies = action.payload.allergies;
           return state;
         }
       );

@@ -34,6 +34,7 @@ export const patchPatientProfile = createAsyncThunk(
     address: string;
     phoneNumber: string;
     dateOfBirth: string;
+    allergies?: string;
   }) => {
     try {
       const response = await SERVER_API.patch(

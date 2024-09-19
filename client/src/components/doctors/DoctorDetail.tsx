@@ -59,7 +59,7 @@ export const DoctorDetail = () => {
       {error?.status === 404 ? (
         <NotFoundPage />
       ) : (
-        <div className="flex flex-col pt-28 justify-center items-center">
+        <div className="flex flex-col pt-10 justify-center items-center">
           <div className="container">
             {profile.error && profile.error.status != 0 && (
               <Alert className="w-1/3 mx-auto" variant={"destructive"}>

@@ -22,6 +22,7 @@ import { Calendar } from "../ui/calendar";
 import { cn } from "@/lib/utils";
 import { Command, CommandGroup, CommandList } from "../ui/command";
 import { CommandItem } from "cmdk";
+import { ScrollToTop } from "../general/ScrollToTop";
 
 const schema = z.object({
   email: z.string().email({ message: "Email is invalid" }),
@@ -94,6 +95,7 @@ export const Register = () => {
 
   return (
     <>
+      <ScrollToTop />
       <div className="w-full flex justify-center">
         <div className="container">
           {error && (

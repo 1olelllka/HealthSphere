@@ -51,7 +51,7 @@ export const Navbar = () => {
               </a>
             </div>
             <div
-              className={`top-0 left-0 right-0 px-16 pt-5 pb-4 bg-primary border-b-2 border-gray-400 z-10 fixed transition-all duration-300 ease-in-out flex flex-row grid grid-cols-9 ${
+              className={`left-0 top-[100px] fixed transition-all duration-300 ease-in-out z-10 ${
                 fixed
                   ? "opacity-100 translate-y-0"
                   : "opacity-0 translate-y-[-20px]"

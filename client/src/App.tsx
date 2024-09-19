@@ -2,7 +2,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Home } from "./pages/HomePage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import "./index.css";
-import { Layout } from "./lib/Layout";
+import { Layout } from "./components/general/Layout";
 import { LoginPage } from "./pages/LoginPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { RegisterPage } from "./pages/RegisterPage";
@@ -11,6 +11,7 @@ import { DoctorsListPage } from "./pages/DoctorsListPage";
 import { DoctorDetailPage } from "./pages/DoctorDetailPage";
 import { PatientListPage } from "./pages/PatientListPage";
 import { PatientDetailPage } from "./pages/PatientDetailPage";
+import { AppointmentsPage } from "./pages/AppointmentsPage";
 
 const router = createBrowserRouter([
   {
@@ -29,6 +30,10 @@ const router = createBrowserRouter([
   {
     path: "/profile",
     element: <Layout children={<ProfilePage />} />,
+  },
+  {
+    path: "/appointments",
+    element: <Layout children={<AppointmentsPage />} />,
   },
   {
     path: "/medical-records/:id",

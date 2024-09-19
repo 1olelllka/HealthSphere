@@ -1,4 +1,3 @@
-import { ProfileState } from "@/redux/reducers/profileReducer";
 import { EditDoctor } from "./EditDoctor";
 import { Button } from "../ui/button";
 import {
@@ -6,7 +5,6 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { DoctorAppointments } from "./appointments/DoctorAppointments";
 import {
   Dialog,
   DialogClose,
@@ -17,16 +15,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "@/redux/store";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/redux/store";
 import {
   deleteDoctorProfile,
   logoutProfile,
 } from "@/redux/action/profileActions";
 import { useNavigate } from "react-router-dom";
 
-export const Doctor = (props: { data: ProfileState["data"] }) => {
-  const data = props.data;
+export const Doctor = () => {
+  const data = useSelector((state: RootState) => state.profile.data);
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   return (
@@ -94,7 +92,6 @@ export const Doctor = (props: { data: ProfileState["data"] }) => {
           <h1 className="text-xl text-slate-500">{data.clinicAddress}</h1>
         </div>
       </div>
-      <DoctorAppointments id={data.id} />
       <div className="space-y-4">
         <h1 className="text-3xl text-red-500 pt-10">Danger Zone</h1>
         <Dialog>

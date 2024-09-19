@@ -81,23 +81,28 @@ export const MedicalRecords = (props: { id: number }) => {
     to?: Date | undefined;
   }) => {
     console.log(values);
-    let url = window.location.href;
-    const params = new URLSearchParams();
+    const params = new URLSearchParams(window.location.search);
 
     if (values.diagnosis) {
-      params.append("diagnosis", values.diagnosis);
+      params.set("diagnosis", values.diagnosis);
+    } else {
+      params.delete("diagnosis");
     }
     if (values.from) {
-      params.append("from", values.from.toISOString());
+      params.set("from", values.from.toISOString());
+    } else {
+      params.delete("from");
     }
     if (values.to) {
-      params.append("to", values.to.toISOString());
+      params.set("to", values.to.toISOString());
+    } else {
+      params.delete("to");
     }
-
-    if (params.toString()) {
-      url += `?${params.toString()}`;
-    }
-    window.history.pushState({}, "", url);
+    window.history.replaceState(
+      {},
+      "",
+      `${window.location.pathname}?${params.toString()}`
+    );
     dispatch(searchRecord({ id: id, page: 0, ...values }));
   };
 
@@ -114,8 +119,8 @@ export const MedicalRecords = (props: { id: number }) => {
         <div className="pt-4">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} action="GET">
-              <div className="grid grid-cols-3 gap-10">
-                <div className="cols-span-1">
+              <div className="grid grid-cols-1 gap-2">
+                <div className="cols-span-1 w-1/3">
                   <FormField
                     control={form.control}
                     name="diagnosis"
@@ -131,85 +136,93 @@ export const MedicalRecords = (props: { id: number }) => {
                     )}
                   />
                 </div>
-                <div className="cols-span-1">
-                  <FormField
-                    control={form.control}
-                    name="from"
-                    render={({ field }) => (
-                      <FormItem>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
+                <div className="grid grid-cols-2 w-1/3 gap-2">
+                  <div className="cols-span-1">
+                    <FormField
+                      control={form.control}
+                      name="from"
+                      render={({ field }) => (
+                        <FormItem>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "w-full text-left font-normal",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value ? (
+                                  field.value.toDateString()
+                                ) : (
+                                  <span>From</span>
+                                )}
+                                <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-auto p-0"
+                              align="start"
                             >
-                              {field.value ? (
-                                field.value.toDateString()
-                              ) : (
-                                <span>From</span>
-                              )}
-                              <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={field.value}
-                              onSelect={field.onChange}
-                              disabled={(date) =>
-                                date > new Date() ||
-                                date < new Date("1900-01-01")
-                              }
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="cols-span-1">
-                  <FormField
-                    control={form.control}
-                    name="to"
-                    render={({ field }) => (
-                      <FormItem>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) =>
+                                  date > new Date() ||
+                                  date < new Date("1900-01-01")
+                                }
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="cols-span-1">
+                    <FormField
+                      control={form.control}
+                      name="to"
+                      render={({ field }) => (
+                        <FormItem>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "w-full pl-3 text-left font-normal",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value ? (
+                                  field.value.toDateString()
+                                ) : (
+                                  <span>To</span>
+                                )}
+                                <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-auto p-0"
+                              align="start"
                             >
-                              {field.value ? (
-                                field.value.toDateString()
-                              ) : (
-                                <span>To</span>
-                              )}
-                              <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={field.value}
-                              onSelect={field.onChange}
-                              disabled={(date) =>
-                                date > new Date() ||
-                                date < new Date("1900-01-01")
-                              }
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
-                      </FormItem>
-                    )}
-                  />
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) =>
+                                  date > new Date() ||
+                                  date < new Date("1900-01-01")
+                                }
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
               </div>
               <Button variant="outline" type="submit" className="mt-4">

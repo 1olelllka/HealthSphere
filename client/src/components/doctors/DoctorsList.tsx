@@ -59,7 +59,7 @@ export const DoctorsList = () => {
 
   return (
     <>
-      <div className="flex flex-col pt-28 justify-center items-center">
+      <div className="flex flex-col pt-10 justify-center items-center">
         <div className="container">
           {doctors.error && (
             <Alert className="w-1/3 mx-auto" variant="destructive">

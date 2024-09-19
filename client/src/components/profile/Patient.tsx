@@ -1,13 +1,6 @@
-import { ProfileState } from "@/redux/reducers/profileReducer";
 import { EditPatient } from "./EditPatient";
 import { Button } from "../ui/button";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
 import { MedicalRecords } from "./MedicalRecords";
-import { PatientAppointments } from "./appointments/PatientAppointments";
 import {
   Dialog,
   DialogContent,
@@ -15,112 +8,200 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "../ui/dialog";
-import { DialogClose } from "@radix-ui/react-dialog";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "@/redux/store";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/redux/store";
 import {
   deletePatientProfile,
   logoutProfile,
 } from "@/redux/action/profileActions";
 import { useNavigate } from "react-router-dom";
+import { FaMobileScreenButton, FaMessage, FaHouse } from "react-icons/fa6";
+import { BsThreeDots } from "react-icons/bs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { useState } from "react";
+import patient_female from "../../assets/patient_female.png";
 
-export const Patient = (props: { data: ProfileState["data"] }) => {
-  const data = props.data;
+export const Patient = () => {
+  const data = useSelector((state: RootState) => state.profile.data);
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
+  const [editDialogOpen, setEditDialogOpen] = useState<boolean>(false);
   return (
     <>
       <div className="grid grid-cols-3 gap-10 pt-10">
-        <div className="cols-span-1">
-          <img
-            src="https://cdn-icons-png.flaticon.com/512/1430/1430453.png"
-            className="rounded-full"
-          />
-        </div>
-        <div className="cols-span-1 space-y-5 bg-slate-50 p-10 rounded-3xl drop-shadow-lg">
-          <h1 className="text-2xl">Personal Information</h1>
-          <h1 className="text-4xl">
-            {data.firstName} {data.lastName}
-          </h1>
-          <h1 className="text-xl">
-            {new Date(data.dateOfBirth).toISOString().substring(0, 10)} |{" "}
-            {data.gender && (data.gender === "MALE" ? "Male" : "Female")}
-          </h1>
-          <div className="flex flex-row gap-4 pt-28">
-            <EditPatient />
-            <HoverCard>
-              <HoverCardTrigger>
-                <Button
-                  variant={"ghost"}
-                  className="[box-shadow:1px_1px_2px_var(--tw-shadow-color)] shadow-slate-400 font-semibold hover:bg-[#040D12] hover:text-white"
+        <div className="col-span-1 bg-slate-50 rounded-2xl drop-shadow-lg pb-10 flex flex-row">
+          <div>
+            <div className="flex flex-row p-11 gap-4">
+              {data.gender &&
+                (data.gender === "MALE" ? (
+                  <img
+                    src="https://cdn-icons-png.flaticon.com/512/1430/1430453.png"
+                    className="rounded-full border border-slate-200"
+                    width={75}
+                    height={75}
+                  />
+                ) : (
+                  <img
+                    src={patient_female}
+                    className="rounded-full border border-slate-200 mt-2"
+                    width={60}
+                  />
+                ))}
+
+              <h1 className="text-2xl pt-6 font-semibold">
+                {data.gender && (data.gender === "MALE" ? "Mr. " : "Mrs. ")}
+                {data.firstName} {data.lastName}
+              </h1>
+            </div>
+            <h1 className="text-xl pl-8 font-semibold pt-5">
+              Contact Details:
+            </h1>
+            <div className="flex flex-row gap-2 pl-8 pt-2">
+              <FaMobileScreenButton color="#93B1A6" size={20} />
+              {data.phoneNumber ? (
+                <h1 className="text-md text-slate-500 font-light">
+                  +{data.phoneNumber}
+                </h1>
+              ) : (
+                <h1 className="text-md text-slate-500 font-light">
+                  No phone number
+                </h1>
+              )}
+            </div>
+            <div className="flex flex-row gap-2 pl-8 pt-2">
+              <FaMessage color="#93B1A6" size={20} className="pt-1" />
+              <h1 className="text-md text-slate-500 font-light">
+                {data.user.email}
+              </h1>
+            </div>
+            <div className="flex flex-row gap-2 pl-8 pt-2">
+              <FaHouse color="#93B1A6" size={20} className="pt-1" />
+              <h1 className="text-md text-slate-500 font-light">
+                {data.address || "No address"}
+              </h1>
+            </div>
+          </div>
+          <div>
+            <DropdownMenu>
+              <DropdownMenuTrigger>
+                <BsThreeDots size={25} className="mt-4 cursor-pointer" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => setEditDialogOpen(true)}>
+                  Edit profile
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="text-red-500"
+                  onClick={() => setDeleteDialogOpen(true)}
                 >
-                  Show Additional Information
-                </Button>
-              </HoverCardTrigger>
-              <HoverCardContent>
-                <div className="flex flex-col">
-                  <h1>
-                    Registered:{" "}
-                    {new Date(data.createdAt).toISOString().substring(0, 10)}
-                  </h1>
-                  <h1>
-                    Last Update:{" "}
-                    {new Date(data.updatedAt).toISOString().substring(0, 10)}
-                  </h1>
-                </div>
-              </HoverCardContent>
-            </HoverCard>
+                  Delete profile
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
-        <div className="col-span-1 space-y-2 bg-slate-50 p-10 rounded-3xl drop-shadow-lg">
-          <h1 className="text-3xl">Contact Information</h1>
-          <h1 className="text-xl text-slate-500">{data.user.email}</h1>
-          {data.phoneNumber ? (
-            <h1 className="text-xl text-slate-500">+{data.phoneNumber}</h1>
-          ) : (
-            <h1 className="text-xl text-slate-500">No phone number</h1>
-          )}
-          <h1 className="text-xl text-slate-500">{data.address}</h1>
+        <div className="col-span-2 bg-slate-50 rounded-2xl drop-shadow-lg pl-16 h-64">
+          <h1 className="text-xl font-semibold pt-10">Overview:</h1>
+          <div className="grid grid-rows-2">
+            <div className="grid grid-cols-3">
+              <div className="cols-span-1">
+                <h1 className="text-sm pt-5 font-semibold text-slate-500">
+                  Gender:
+                </h1>
+                <h1 className="text-xl font-semibold">
+                  {data.gender && (data.gender === "MALE" ? "Male" : "Female")}
+                </h1>
+              </div>
+              <div className="col-span-1">
+                <h1 className="text-sm pt-5 font-semibold text-slate-500">
+                  Date of Birth:
+                </h1>
+                <h1 className="text-xl font-semibold">
+                  {new Date(data.dateOfBirth).toISOString().substring(0, 10)}
+                </h1>
+              </div>
+              <div className="col-span-1">
+                <h1 className="text-sm pt-5 font-semibold text-slate-500">
+                  BloodType:
+                </h1>
+                <h1 className="text-xl font-semibold">
+                  {data.bloodType || "Unknown"}
+                </h1>
+              </div>
+            </div>
+            <div className="grid grid-cols-3">
+              <div className="cols-span-1">
+                <h1 className="text-sm pt-5 font-semibold text-slate-500">
+                  Allergies:
+                </h1>
+                <h1 className="text-xl font-semibold">
+                  {data.allergies || "None"}
+                </h1>
+              </div>
+              <div className="cols-span-1">
+                <h1 className="text-sm pt-5 font-semibold text-slate-500">
+                  Registered since:
+                </h1>
+                <h1 className="text-xl font-semibold">
+                  {new Date(data.createdAt).toISOString().substring(0, 10)}
+                </h1>
+              </div>
+              <div className="cols-span-1">
+                <h1 className="text-sm pt-5 font-semibold text-slate-500">
+                  Last Updated:
+                </h1>
+                <h1 className="text-xl font-semibold">
+                  {new Date(data.updatedAt).toISOString().substring(0, 10)}
+                </h1>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <MedicalRecords id={data.id} />
-      <PatientAppointments id={data.id} />
-      <div className="space-y-4">
-        <h1 className="text-3xl text-red-500 pt-10">Danger Zone</h1>
-        <Dialog>
-          <DialogTrigger>
-            <Button variant={"destructive"}>Delete Account</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                Are you sure you want to delete this account?
-              </DialogTitle>
-              <DialogDescription>
-                Please note, this action cannot be undone and all data will be
-                lost.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button variant={"default"}>Close</Button>
-              </DialogClose>
-              <Button
-                variant={"destructive"}
-                onClick={() => {
-                  dispatch(deletePatientProfile(data.id));
-                  dispatch(logoutProfile());
-                  navigate("/login");
-                }}
-              >
-                Delete
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
+      <EditPatient
+        open={editDialogOpen}
+        onClose={() => setEditDialogOpen(false)}
+      />
+      <Dialog open={deleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Are you sure you want to delete this account?
+            </DialogTitle>
+            <DialogDescription>
+              Please note, this action cannot be undone and all data will be
+              lost.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant={"default"}
+              onClick={() => setDeleteDialogOpen(false)}
+            >
+              Close
+            </Button>
+            <Button
+              variant={"destructive"}
+              onClick={() => {
+                dispatch(deletePatientProfile(data.id));
+                dispatch(logoutProfile());
+                setDeleteDialogOpen(false);
+                navigate("/login");
+              }}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

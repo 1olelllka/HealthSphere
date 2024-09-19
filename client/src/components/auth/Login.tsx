@@ -15,6 +15,7 @@ import { Button } from "../ui/button";
 import { SERVER_API } from "@/redux/api/utils";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ScrollToTop } from "../general/ScrollToTop";
 
 const schema = z.object({
   email: z.string().email({ message: "Email is invalid" }),
@@ -54,6 +55,7 @@ export const Login = () => {
 
   return (
     <>
+      <ScrollToTop />
       <div className="w-full flex justify-center">
         <div className="container">
           {error && (
