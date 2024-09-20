@@ -19,6 +19,8 @@ import {
 import "react-datepicker/dist/react-datepicker.css";
 import { DeleteAppointmentDialog } from "./DeleteAppointmentDialog";
 import { PatchAppointmentDialog } from "./PatchAppointmentDialog";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 
 const localizer = momentLocalizer(moment);
 
@@ -31,6 +33,7 @@ export const MyAppointments = () => {
   const [selected, setSelected] = useState<AppointmentState>();
   const [patchOpen, setPatchOpen] = useState<boolean>(false);
   const [deleteOpen, setDeleteOpen] = useState<boolean>(false);
+  const navigate = useNavigate();
 
   const closeDialog = () => {
     setDialogOpen(false);
@@ -58,13 +61,19 @@ export const MyAppointments = () => {
     dialogOpen,
     patchOpen,
     deleteOpen,
+    profile,
   ]);
 
   return (
     <div className="flex justify-center">
       <div className="container">
         <div className="mt-10 bg-slate-50 p-10 rounded-3xl drop-shadow-lg">
-          <h1 className="text-4xl">My Schedule</h1>
+          <div className="flex flex-row gap-4">
+            <div className="bg-slate-200 p-1 rounded-lg hover:bg-slate-400 transition-color duration-300">
+              <ArrowLeft onClick={() => navigate(-1)} size={32} />
+            </div>
+            <h1 className="text-4xl">My Schedule</h1>
+          </div>
           {appointments && (
             <div className="pt-10 flex justify-center">
               <Calendar

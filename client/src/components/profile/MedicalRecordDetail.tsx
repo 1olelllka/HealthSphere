@@ -19,7 +19,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { InfoIcon } from "lucide-react";
+import { ArrowLeft, InfoIcon } from "lucide-react";
 import { ForbiddenPage } from "@/pages/ForbiddenPage";
 import { EditMedicine } from "./EditMedicine";
 import { setMedicineForPrescription } from "@/redux/action/medicineActions";
@@ -45,12 +45,12 @@ export const MedicalRecordDetail = () => {
   const dispatch = useDispatch<AppDispatch>();
   const medicine_data = useSelector((state: RootState) => state.medicine);
   const medicine = medicine_data.data;
+  const profile = useSelector((state: RootState) => state.profile.data);
   const navigate = useNavigate();
 
   useEffect(() => {
     const getDetailedRecord = async (id: number) => {
       dispatch(setDetailedRecord(id));
-      // TODO: when persisted state will be established, handle the frontend logic of access for doctors
     };
 
     getDetailedRecord(parseInt(id as string));
@@ -70,7 +70,11 @@ export const MedicalRecordDetail = () => {
       {record.error && record.error.status == 403 ? (
         <ForbiddenPage message={record.error.message} />
       ) : (
-        <div className="flex flex-col pt-28 justify-center items-center">
+        <div
+          className={`flex flex-col pt-20 justify-center items-center ${
+            profile.user.role === "ROLE_PATIENT" && "pb-40"
+          }`}
+        >
           <div className="container">
             {medicine_data.error && medicine_data.error.status == 400 && (
               <Alert className="w-1/3 mx-auto" variant="destructive">
@@ -92,7 +96,12 @@ export const MedicalRecordDetail = () => {
                 </AlertDescription>
               </Alert>
             )}
-            <h1 className="text-3xl">Medical record #{id}</h1>
+            <div className="flex flex-row gap-4">
+              <div className="bg-slate-50 p-1 rounded-lg hover:bg-slate-200 transition-color duration-300">
+                <ArrowLeft onClick={() => navigate(-1)} size={32} />
+              </div>
+              <h1 className="text-3xl mt-1">Medical record</h1>
+            </div>
             <Card className="mt-10">
               <div className="grid grid-cols-2">
                 <div className="col-span-1">
@@ -162,88 +171,94 @@ export const MedicalRecordDetail = () => {
                   </div>
                 )}
               </div>
-              <div className="grid grid-cols-2 w-[300px] pl-6 pb-4">
-                <EditRecord />
-                {!data.prescription && (
-                  <CreatePrescription
-                    id={data.id}
-                    patientId={data.patient?.id}
-                    recordDate={data.recordDate}
-                    diagnosis={data.diagnosis}
-                  />
-                )}
-                {data.prescription && (
-                  <div className="mt-2.5">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant={"destructive"}>
-                          Delete Prescription
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>
-                            Are you sure you want to delete this prescription?
-                          </DialogTitle>
-                        </DialogHeader>
-                        <DialogFooter>
-                          <DialogClose asChild>
-                            <Button variant={"outline"}>Cancel</Button>
-                          </DialogClose>
-                          <Button
-                            variant={"destructive"}
-                            onClick={() => {
-                              dispatch(
-                                deletePrescriptionForRecord({
-                                  prescriptionId: data.prescription
-                                    ?.id as number,
-                                  medicalRecordId: data.id,
-                                })
-                              );
-                            }}
-                          >
-                            Yes
+              {profile.user.role === "ROLE_DOCTOR" && (
+                <div className="grid grid-cols-2 w-[300px] pl-6 pb-4">
+                  <EditRecord />
+                  {!data.prescription && (
+                    <CreatePrescription
+                      id={data.id}
+                      patientId={data.patient?.id}
+                      recordDate={data.recordDate}
+                      diagnosis={data.diagnosis}
+                    />
+                  )}
+                  {data.prescription && (
+                    <div className="mt-2.5">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant={"destructive"}>
+                            Delete Prescription
                           </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                )}
-              </div>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>
+                              Are you sure you want to delete this prescription?
+                            </DialogTitle>
+                          </DialogHeader>
+                          <DialogFooter>
+                            <DialogClose asChild>
+                              <Button variant={"outline"}>Cancel</Button>
+                            </DialogClose>
+                            <Button
+                              variant={"destructive"}
+                              onClick={() => {
+                                dispatch(
+                                  deletePrescriptionForRecord({
+                                    prescriptionId: data.prescription
+                                      ?.id as number,
+                                    medicalRecordId: data.id,
+                                  })
+                                );
+                              }}
+                            >
+                              Yes
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  )}
+                </div>
+              )}
             </Card>
-            <h1 className="text-3xl text-red-500 pt-10">Danger Zone</h1>
-            <div className="mt-3">
-              <Dialog>
-                <DialogTrigger>
-                  <Button variant={"destructive"}>Delete Record</Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>
-                      Are you sure you want to delete this record?
-                    </DialogTitle>
-                    <DialogDescription>
-                      Please note, this action cannot be undone and all data
-                      will be lost.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <DialogFooter>
-                    <DialogClose asChild>
-                      <Button variant={"default"}>Close</Button>
-                    </DialogClose>
-                    <Button
-                      variant={"destructive"}
-                      onClick={() => {
-                        dispatch(deleteMedicalRecord(data.id));
-                        navigate(-1);
-                      }}
-                    >
-                      Delete
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </div>
+            {profile.user.role === "ROLE_DOCTOR" && (
+              <>
+                <h1 className="text-3xl text-red-500 pt-10">Danger Zone</h1>
+                <div className="mt-3">
+                  <Dialog>
+                    <DialogTrigger>
+                      <Button variant={"destructive"}>Delete Record</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>
+                          Are you sure you want to delete this record?
+                        </DialogTitle>
+                        <DialogDescription>
+                          Please note, this action cannot be undone and all data
+                          will be lost.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <DialogFooter>
+                        <DialogClose asChild>
+                          <Button variant={"default"}>Close</Button>
+                        </DialogClose>
+                        <Button
+                          variant={"destructive"}
+                          onClick={() => {
+                            dispatch(deleteMedicalRecord(data.id));
+                            navigate(-1);
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

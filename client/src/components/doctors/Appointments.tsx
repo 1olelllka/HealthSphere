@@ -24,6 +24,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from "../ui/form";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useParams } from "react-router-dom";
 
 const localizer = momentLocalizer(moment);
 
@@ -34,7 +35,8 @@ const schema = z.object({
   reason: z.string().optional(),
 });
 
-export const Appointments = (props: { id: number }) => {
+export const Appointments = () => {
+  const id = parseInt(useParams().id ?? "0", 10);
   const dispatch = useDispatch<AppDispatch>();
   const data = useSelector((state: RootState) => state.appointment);
   const [openDialog, setOpenDialog] = useState<boolean>(false);
@@ -43,7 +45,7 @@ export const Appointments = (props: { id: number }) => {
     resolver: zodResolver(schema),
     defaultValues: {
       appointmentDate: selectedDate ?? new Date(),
-      doctorId: props.id,
+      doctorId: id,
       status: "SCHEDULED",
       reason: "",
     },
@@ -72,8 +74,8 @@ export const Appointments = (props: { id: number }) => {
     const getAppointmentsForDoctor = async (doctorId: number) => {
       dispatch(setAppointmentsForDoctor(doctorId));
     };
-    getAppointmentsForDoctor(props.id);
-  }, [dispatch, props.id]);
+    getAppointmentsForDoctor(id);
+  }, [dispatch, id]);
 
   return (
     <div className="mt-10 bg-slate-50 p-10 rounded-3xl drop-shadow-lg">
@@ -122,7 +124,7 @@ export const Appointments = (props: { id: number }) => {
             <DialogTitle>Create an appointment</DialogTitle>
           </DialogHeader>
           <Form {...form}>
-            <form>
+            <form action="POST">
               <div className="grid gap-8 grid-cols-3">
                 <div className="grid gap-4 py-4 col-span-2">
                   <FormField
@@ -181,8 +183,8 @@ export const Appointments = (props: { id: number }) => {
                 </Button>
                 <Button
                   variant={"default"}
-                  type="submit"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
                     if (!form.getFieldState("appointmentDate").invalid) {
                       onSubmit(form.getValues());
                       setOpenDialog(false);

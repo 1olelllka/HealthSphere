@@ -47,8 +47,7 @@ export const Doctor = () => {
                   <img
                     src="https://cdn-icons-png.flaticon.com/512/3774/3774299.png"
                     className="rounded-full border border-slate-200"
-                    width={75}
-                    height={75}
+                    width={60}
                   />
                 ) : (
                   <img

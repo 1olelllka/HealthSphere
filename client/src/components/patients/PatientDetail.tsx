@@ -1,6 +1,6 @@
 import { MedicalRecords } from "../profile/MedicalRecords";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Patient } from "@/redux/reducers/patientsReducer";
 import { SERVER_API } from "@/redux/api/utils";
 import { AxiosError } from "axios";
@@ -8,11 +8,13 @@ import { NotFoundPage } from "@/pages/NotFoundPage";
 import { Appointments } from "./Appointments";
 import patient_female from "../../assets/patient_female.png";
 import { FaHouse, FaMessage, FaMobileScreenButton } from "react-icons/fa6";
+import { ArrowLeft } from "lucide-react";
 
 export const PatientDetail = () => {
   const id = useParams().id;
   const [data, setData] = useState<Patient>();
   const [err, setErr] = useState<{ status: number; message: string }>();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const getDetail = async (id: number) => {
@@ -54,6 +56,9 @@ export const PatientDetail = () => {
       ) : (
         <div className="flex justify-center">
           <div className="container">
+            <div className="w-[3.3%] mt-10 bg-slate-50 p-1 rounded-lg hover:bg-slate-200 transition-color duration-300">
+              <ArrowLeft onClick={() => navigate("/")} size={32} />
+            </div>
             <div className="grid grid-cols-3 gap-10 pt-10">
               <div className="col-span-1 bg-slate-50 rounded-2xl drop-shadow-lg pb-10 flex flex-row">
                 <div>

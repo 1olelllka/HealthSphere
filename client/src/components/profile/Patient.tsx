@@ -44,8 +44,7 @@ export const Patient = () => {
                   <img
                     src="https://cdn-icons-png.flaticon.com/512/1430/1430453.png"
                     className="rounded-full border border-slate-200"
-                    width={75}
-                    height={75}
+                    width={60}
                   />
                 ) : (
                   <img

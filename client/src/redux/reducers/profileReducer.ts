@@ -107,6 +107,7 @@ const profileSlice = createSlice({
       .addCase(setProfile.rejected, (state, action) => {
         state.data = initialState.data;
         localStorage.removeItem("persist:profile");
+        console.log(action.payload);
         state.error = action.payload as { status: number; message: string };
         return state;
       });

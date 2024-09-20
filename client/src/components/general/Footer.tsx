@@ -48,6 +48,14 @@ export const Footer = () => {
                   FAQs
                 </h6>
               </Link>
+              <Link
+                to="https://www.apache.org/licenses/LICENSE-2.0"
+                target="_blank"
+              >
+                <h6 className="text-sm font-light text-gray-400 hover:text-gray-300">
+                  License
+                </h6>
+              </Link>
             </div>
           </div>
         </div>

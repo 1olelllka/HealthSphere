@@ -9,6 +9,7 @@ import {
   FaRightFromBracket,
   FaUserDoctor,
   FaRegCalendarDays,
+  FaUserGroup,
 } from "react-icons/fa6";
 import { IoIosArrowForward, IoIosArrowBack } from "react-icons/io";
 import { Link, useNavigate } from "react-router-dom";
@@ -46,13 +47,13 @@ export const MainNavbar = () => {
       link: "/appointments",
     },
     {
+      icon: <FaRightFromBracket color="#93B1A6" onClick={logout} />,
+      text: "Logout",
+    },
+    {
       icon: <FaUserDoctor color="#93B1A6" />,
       text: "Doctors",
       link: "/doctors",
-    },
-    {
-      icon: <FaRightFromBracket color="#93B1A6" onClick={logout} />,
-      text: "Logout",
     },
   ];
 
@@ -87,20 +88,17 @@ export const MainNavbar = () => {
 
   return (
     <div className="relative flex flex-row h-[70vh]">
-      {/* Sidebar */}
       <div
         className={`fixed left-0 h-[70vh] rounded-r-lg bg-white z-10 transition-all duration-300 flex flex-col items-center ${
           isVisible ? "w-[180px]" : "w-[60px]"
         } overflow-hidden`}
       >
-        {/* GiHealthNormal Icon at the top */}
         <div className="p-4">
           <Link to="/">
             <GiHealthNormal className="text-4xl text-red-500" />
           </Link>
         </div>
 
-        {/* Menu items centered in the remaining height */}
         <nav className="flex-1 flex flex-col justify-center items-center w-full">
           {profile.firstName.length === 0 ? (
             <ul
@@ -155,6 +153,25 @@ export const MainNavbar = () => {
                   </Link>
                 </div>
               ))}
+              {profile.user.role === "ROLE_DOCTOR" && (
+                <div className="flex justify-center items-center">
+                  <Link
+                    to={"/patients"}
+                    className="flex flex-row items-center w-full justify-center"
+                  >
+                    <li className="text-xl cursor-pointer p-4 flex justify-center">
+                      <FaUserGroup color="#93B1A6" className="ml-1" />
+                    </li>
+                    <span
+                      className={`transition-all duration-300 text-black text-sm ${
+                        isVisible ? "opacity-100" : "opacity-0"
+                      } ml-4`}
+                    >
+                      Patients
+                    </span>
+                  </Link>
+                </div>
+              )}
             </ul>
           )}
         </nav>

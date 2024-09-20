@@ -9,6 +9,8 @@ import { useEffect, useState } from "react";
 import { SERVER_API } from "@/redux/api/utils";
 import { AxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
 
 interface AppointmentState {
   id: number;
@@ -37,6 +39,7 @@ export const TimeSlotDialog = (props: {
   onClose: () => void;
 }) => {
   const [appointment, setAppointment] = useState<AppointmentState>();
+  const profile = useSelector((state: RootState) => state.profile.data);
   const navigate = useNavigate();
   useEffect(() => {
     const getSpecificAppointment = async (id: number) => {
@@ -115,18 +118,20 @@ export const TimeSlotDialog = (props: {
             Status: {appointment?.status}
           </h1>
           <DialogFooter>
-            <Button
-              variant={"default"}
-              onClick={() => {
-                createMedicalRecord({
-                  patient: { id: appointment?.patient?.id as number },
-                  diagnosis: "Edit Diagnosis in Edit Medical Record",
-                  recordDate: new Date().toISOString().substring(0, 10),
-                });
-              }}
-            >
-              Create the Medical Record
-            </Button>
+            {profile.user.role === "ROLE_DOCTOR" && (
+              <Button
+                variant={"default"}
+                onClick={() => {
+                  createMedicalRecord({
+                    patient: { id: appointment?.patient?.id as number },
+                    diagnosis: "Edit Diagnosis in Edit Medical Record",
+                    recordDate: new Date().toISOString().substring(0, 10),
+                  });
+                }}
+              >
+                Create the Medical Record
+              </Button>
+            )}
             <Button variant={"outline"} onClick={props.onClose}>
               Close{" "}
             </Button>
