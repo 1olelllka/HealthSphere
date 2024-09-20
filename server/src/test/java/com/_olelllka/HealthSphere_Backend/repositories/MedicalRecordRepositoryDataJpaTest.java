@@ -55,6 +55,7 @@ public class MedicalRecordRepositoryDataJpaTest {
                 .firstName("Doctor")
                 .lastName("Last Name Doctor")
                 .licenseNumber("1234123412341234")
+                .gender(Gender.MALE)
                 .build();
         MedicalRecordEntity medicalRecord = MedicalRecordEntity
                 .builder()

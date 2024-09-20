@@ -13,6 +13,10 @@ export type Patient = {
   gender: string | null;
   address: string | null;
   phoneNumber: string | null;
+  bloodType: string | null;
+  allergies: string | null;
+  createdAt: number;
+  updatedAt: number;
 };
 type Result = {
   content: Patient[];
@@ -42,6 +46,10 @@ const initialState: Result = {
       gender: null,
       address: null,
       phoneNumber: null,
+      bloodType: null,
+      allergies: null,
+      createdAt: 0,
+      updatedAt: 0,
     },
   ],
   last: false,

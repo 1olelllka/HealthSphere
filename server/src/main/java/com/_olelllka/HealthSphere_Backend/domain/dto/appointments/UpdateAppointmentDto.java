@@ -2,7 +2,6 @@ package com._olelllka.HealthSphere_Backend.domain.dto.appointments;
 
 import com._olelllka.HealthSphere_Backend.domain.entity.Status;
 import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

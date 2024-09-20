@@ -32,6 +32,9 @@ public class PatientEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Gender gender;
+    @Enumerated(EnumType.STRING)
+    private BloodType bloodType;
+    private String allergies;
     private String address;
     private String phoneNumber;
     @CreationTimestamp

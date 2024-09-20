@@ -5,28 +5,33 @@ import { Provider } from "react-redux";
 import { persistor, store } from "./redux/store";
 import axios from "axios";
 import { PersistGate } from "redux-persist/integration/react";
-// import { PersistGate } from "redux-persist/integration/react";
 
 export const AppContainer = () => {
   const [error, setError] = useState<boolean>(false);
 
+  const checkServerHealth = async () => {
+    try {
+      console.log("Checking server health...");
+      await axios.get("http://localhost:8000/actuator/health", {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      console.log("Server is healthy!");
+      setError(false); // Reset error state on success
+    } catch (err) {
+      console.log(err);
+      setError(true); // Set error state to true
+    }
+  };
+
   useEffect(() => {
-    const checkServerHealth = async () => {
-      try {
-        console.log("Checking server health...");
-        await axios.get("http://localhost:8000/actuator/health", {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        console.log("Server is healthy!");
-      } catch (err) {
-        console.log(err);
-        setError(true); // ! change it to true
-      }
-    };
     checkServerHealth();
+
+    const intervalId = setInterval(checkServerHealth, 1000 * 35); // Check every minute
+
+    return () => clearInterval(intervalId); // Cleanup function to clear the interval
   }, []);
 
   return (

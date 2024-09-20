@@ -50,6 +50,7 @@ public class AppointmentRepositoryDataJpaTest {
                 .firstName("FIRST NAME")
                 .lastName("LAST NAME")
                 .licenseNumber("12312")
+                .gender(Gender.MALE)
                 .build();
         DoctorEntity savedDoctor = doctorRepository.save(doctor);
         PatientEntity savedPatient = patientRepository.save(patient);
@@ -80,6 +81,7 @@ public class AppointmentRepositoryDataJpaTest {
         DoctorEntity doctor = DoctorEntity.builder()
                 .firstName("FIRST NAME")
                 .lastName("LAST NAME")
+                .gender(Gender.MALE)
                 .licenseNumber("12312")
                 .build();
         DoctorEntity savedDoctor = doctorRepository.save(doctor);

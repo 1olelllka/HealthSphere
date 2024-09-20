@@ -3,7 +3,6 @@ package com._olelllka.HealthSphere_Backend.service.impl;
 import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDocumentDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterDoctorForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterPatientForm;
-import com._olelllka.HealthSphere_Backend.domain.dto.doctors.SpecializationDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.patients.PatientListDto;
 import com._olelllka.HealthSphere_Backend.domain.entity.*;
 import com._olelllka.HealthSphere_Backend.mapper.impl.SpecializationMapper;
@@ -70,9 +69,10 @@ public class UserServiceImpl implements UserService {
                 .dateOfBirth(registerPatientForm.getDateOfBirth())
                 .gender(registerPatientForm.getGender())
                 .build();
-        patientRepository.save(patient);
+        PatientEntity patientResult = patientRepository.save(patient);
         UserEntity result = userRepository.save(user);
         PatientListDto listDto = PatientListDto.builder()
+                .id(patientResult.getId())
                         .firstName(registerPatientForm.getFirstName())
                         .lastName(registerPatientForm.getLastName())
                         .email(result.getEmail())
@@ -98,6 +98,7 @@ public class UserServiceImpl implements UserService {
                 .licenseNumber(registerDoctorForm.getLicenseNumber())
                 .clinicAddress(registerDoctorForm.getClinicAddress())
                 .phoneNumber(registerDoctorForm.getPhoneNumber())
+                .gender(registerDoctorForm.getGender())
                 .specializations(specializations)
                 .build();
         DoctorEntity doctorEntity = doctorRepository.save(doctor);

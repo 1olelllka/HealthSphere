@@ -1,6 +1,7 @@
 package com._olelllka.HealthSphere_Backend.domain.dto.doctors;
 
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.UserDto;
+import com._olelllka.HealthSphere_Backend.domain.entity.Gender;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,6 +22,7 @@ public class DoctorDetailDto {
     private List<SpecializationDto> specializations;
     private String licenseNumber;
     private Long experienceYears;
+    private Gender gender;
     private String phoneNumber;
     private String clinicAddress;
     private Date createdAt;

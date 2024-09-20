@@ -97,9 +97,10 @@ public class UserServiceImplUnitTest {
                 .email(registerPatientForm.getEmail())
                         .role(Role.ROLE_PATIENT)
                                 .build();
+        PatientEntity patientResult = PatientEntity.builder().id(1L).build();
         // when
         when(userRepository.save(any())).thenReturn(user);
-        when(patientRepository.save(any())).thenReturn(null);
+        when(patientRepository.save(any())).thenReturn(patientResult);
         when(passwordEncoder.encode("password123")).thenReturn("encrypted");
         UserEntity result = userService.register(registerPatientForm);
         // then

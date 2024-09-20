@@ -41,6 +41,9 @@ public class DoctorEntity {
     private Long experienceYears;
     private String phoneNumber;
     private String clinicAddress;
+    @Column(nullable = false)
+    @Enumerated(value = EnumType.STRING)
+    private Gender gender;
     @CreationTimestamp
     @Column(updatable = false, name="created_at")
     private Date createdAt;

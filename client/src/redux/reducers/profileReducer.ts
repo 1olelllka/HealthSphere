@@ -105,6 +105,7 @@ const profileSlice = createSlice({
         }
       )
       .addCase(setProfile.rejected, (state, action) => {
+        state.data = initialState.data;
         localStorage.removeItem("persist:profile");
         state.error = action.payload as { status: number; message: string };
         return state;
@@ -145,16 +146,23 @@ const profileSlice = createSlice({
       })
       .addCase(
         patchDoctorProfile.fulfilled,
-        (state, action: PayloadAction<ProfileState>) => {
-          state.data.clinicAddress = action.payload.data.clinicAddress;
-          state.data.firstName = action.payload.data.firstName;
-          state.data.lastName = action.payload.data.lastName;
-          state.data.phoneNumber = action.payload.data.phoneNumber;
-          state.data.experienceYears = action.payload.data.experienceYears;
-          state.data.specializations = action.payload.data.specializations;
+        (state, action: PayloadAction<Profile>) => {
+          state.data.clinicAddress = action.payload.clinicAddress;
+          state.data.firstName = action.payload.firstName;
+          state.data.lastName = action.payload.lastName;
+          state.data.phoneNumber = action.payload.phoneNumber;
+          state.data.experienceYears = action.payload.experienceYears;
+          state.data.specializations = action.payload.specializations;
           return state;
         }
-      );
+      )
+      .addCase(patchDoctorProfile.rejected, (state, action) => {
+        state.error = action.payload as { status: number; message: string };
+        if (state.error.status != 400) {
+          state.data = initialState.data;
+        }
+        return state;
+      });
     builder
       .addCase(deletePatientProfile.pending, () => {
         console.log("Deleting patient profile...");

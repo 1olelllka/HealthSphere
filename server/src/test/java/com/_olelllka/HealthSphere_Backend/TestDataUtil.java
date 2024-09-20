@@ -48,6 +48,7 @@ public class TestDataUtil {
                 .clinicAddress("West 12 St.")
                 .firstName("First Name")
                 .lastName("Last Name")
+                .gender(Gender.FEMALE)
                 .specializations(List.of())
                 .build();
     }

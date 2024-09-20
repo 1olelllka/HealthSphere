@@ -83,6 +83,7 @@ public class UserController {
                         .clinicAddress(registerDoctorForm.getClinicAddress())
                         .phoneNumber(registerDoctorForm.getPhoneNumber())
                         .licenseNumber(registerDoctorForm.getLicenseNumber())
+                        .gender(registerDoctorForm.getGender())
                         .build(), HttpStatus.CREATED
         );
     }

@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 @RequestMapping(path="/api/v1")
 public class AppointmentController {
 
-    private static final Logger log = LoggerFactory.getLogger(AppointmentController.class);
     private AppointmentService service;
     private AppointmentMapper mapper;
 

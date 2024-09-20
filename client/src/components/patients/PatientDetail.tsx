@@ -1,6 +1,4 @@
 import { MedicalRecords } from "../profile/MedicalRecords";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "@/redux/store";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Patient } from "@/redux/reducers/patientsReducer";
@@ -8,18 +6,33 @@ import { SERVER_API } from "@/redux/api/utils";
 import { AxiosError } from "axios";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { Appointments } from "./Appointments";
+import patient_female from "../../assets/patient_female.png";
+import { FaHouse, FaMessage, FaMobileScreenButton } from "react-icons/fa6";
 
 export const PatientDetail = () => {
   const id = useParams().id;
   const [data, setData] = useState<Patient>();
   const [err, setErr] = useState<{ status: number; message: string }>();
-  const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     const getDetail = async (id: number) => {
       try {
         const response = await SERVER_API.get("/patients/" + id);
         if (response.status === 200) {
+          const bloodTypeMap: { [key: string]: string } = {
+            OPlus: "O+",
+            OMinus: "O-",
+            APlus: "A+",
+            AMinus: "A-",
+            BPlus: "B+",
+            BMinus: "B-",
+            ABPlus: "AB+",
+            ABMinus: "AB-",
+          };
+          response.data.bloodType =
+            bloodTypeMap[
+              response.data.bloodType as keyof typeof bloodTypeMap
+            ] || "";
           setData(response.data);
         }
       } catch (err) {
@@ -32,48 +45,136 @@ export const PatientDetail = () => {
       }
     };
     getDetail(parseInt(id ?? "0", 10));
-  }, [dispatch, id]);
+  }, [id]);
 
   return (
     <>
       {err && err.status === 404 ? (
         <NotFoundPage />
       ) : (
-        <div className="flex flex-col pt-28 justify-center items-center">
+        <div className="flex justify-center">
           <div className="container">
             <div className="grid grid-cols-3 gap-10 pt-10">
-              <div className="cols-span-1">
-                <img
-                  src="https://cdn-icons-png.flaticon.com/512/1430/1430453.png"
-                  className="rounded-full"
-                />
-              </div>
-              <div className="cols-span-1 space-y-5 bg-slate-50 p-10 rounded-3xl drop-shadow-lg">
-                <h1 className="text-2xl">Personal Information</h1>
-                <h1 className="text-4xl">
-                  {data?.firstName} {data?.lastName}
-                </h1>
-                <h1 className="text-xl">
-                  {data?.dateOfBirth &&
-                    new Date(data?.dateOfBirth)
-                      .toISOString()
-                      .substring(0, 10)}{" "}
-                  |{" "}
-                  {data?.gender &&
-                    (data?.gender === "MALE" ? "Male" : "Female")}
-                </h1>
-              </div>
-              <div className="col-span-1 space-y-2 bg-slate-50 p-10 rounded-3xl drop-shadow-lg">
-                <h1 className="text-3xl">Contact Information</h1>
-                <h1 className="text-xl text-slate-500">{data?.user?.email}</h1>
-                {data?.phoneNumber ? (
-                  <h1 className="text-xl text-slate-500">
-                    +{data?.phoneNumber}
+              <div className="col-span-1 bg-slate-50 rounded-2xl drop-shadow-lg pb-10 flex flex-row">
+                <div>
+                  <div className="flex flex-row p-11 gap-4">
+                    {data?.gender &&
+                      (data.gender === "MALE" ? (
+                        <img
+                          src="https://cdn-icons-png.flaticon.com/512/1430/1430453.png"
+                          className="rounded-full border border-slate-200"
+                          width={75}
+                          height={75}
+                        />
+                      ) : (
+                        <img
+                          src={patient_female}
+                          className="rounded-full border border-slate-200 mt-2"
+                          width={60}
+                        />
+                      ))}
+
+                    <h1 className="text-2xl pt-6 font-semibold">
+                      {data?.gender &&
+                        (data.gender === "MALE" ? "Mr. " : "Mrs. ")}
+                      {data?.firstName} {data?.lastName}
+                    </h1>
+                  </div>
+                  <h1 className="text-xl pl-8 font-semibold pt-5">
+                    Contact Details:
                   </h1>
-                ) : (
-                  <h1 className="text-xl text-slate-500">No phone number</h1>
-                )}
-                <h1 className="text-xl text-slate-500">{data?.address}</h1>
+                  <div className="flex flex-row gap-2 pl-8 pt-2">
+                    <FaMobileScreenButton color="#93B1A6" size={20} />
+                    {data?.phoneNumber ? (
+                      <h1 className="text-md text-slate-500 font-light">
+                        +{data.phoneNumber}
+                      </h1>
+                    ) : (
+                      <h1 className="text-md text-slate-500 font-light">
+                        No phone number
+                      </h1>
+                    )}
+                  </div>
+                  <div className="flex flex-row gap-2 pl-8 pt-2">
+                    <FaMessage color="#93B1A6" size={20} className="pt-1" />
+                    <h1 className="text-md text-slate-500 font-light">
+                      {data?.user.email}
+                    </h1>
+                  </div>
+                  <div className="flex flex-row gap-2 pl-8 pt-2">
+                    <FaHouse color="#93B1A6" size={20} className="pt-1" />
+                    <h1 className="text-md text-slate-500 font-light">
+                      {data?.address || "No address"}
+                    </h1>
+                  </div>
+                </div>
+              </div>
+              <div className="col-span-2 bg-slate-50 rounded-2xl drop-shadow-lg pl-16 h-64">
+                <h1 className="text-xl font-semibold pt-10">Overview:</h1>
+                <div className="grid grid-rows-2">
+                  <div className="grid grid-cols-3">
+                    <div className="cols-span-1">
+                      <h1 className="text-sm pt-5 font-semibold text-slate-500">
+                        Gender:
+                      </h1>
+                      <h1 className="text-xl font-semibold">
+                        {data?.gender &&
+                          (data.gender === "MALE" ? "Male" : "Female")}
+                      </h1>
+                    </div>
+                    <div className="col-span-1">
+                      <h1 className="text-sm pt-5 font-semibold text-slate-500">
+                        Date of Birth:
+                      </h1>
+                      <h1 className="text-xl font-semibold">
+                        {data?.dateOfBirth &&
+                          new Date(data.dateOfBirth)
+                            .toISOString()
+                            .substring(0, 10)}
+                      </h1>
+                    </div>
+                    <div className="col-span-1">
+                      <h1 className="text-sm pt-5 font-semibold text-slate-500">
+                        BloodType:
+                      </h1>
+                      <h1 className="text-xl font-semibold">
+                        {data?.bloodType || "Unknown"}
+                      </h1>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3">
+                    <div className="cols-span-1">
+                      <h1 className="text-sm pt-5 font-semibold text-slate-500">
+                        Allergies:
+                      </h1>
+                      <h1 className="text-xl font-semibold">
+                        {data?.allergies || "None"}
+                      </h1>
+                    </div>
+                    <div className="cols-span-1">
+                      <h1 className="text-sm pt-5 font-semibold text-slate-500">
+                        Registered since:
+                      </h1>
+                      <h1 className="text-xl font-semibold">
+                        {data?.createdAt &&
+                          new Date(data.createdAt)
+                            .toISOString()
+                            .substring(0, 10)}
+                      </h1>
+                    </div>
+                    <div className="cols-span-1">
+                      <h1 className="text-sm pt-5 font-semibold text-slate-500">
+                        Last Updated:
+                      </h1>
+                      <h1 className="text-xl font-semibold">
+                        {data?.updatedAt &&
+                          new Date(data.updatedAt)
+                            .toISOString()
+                            .substring(0, 10)}
+                      </h1>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             <MedicalRecords id={data?.id as number} />

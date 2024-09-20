@@ -1,6 +1,5 @@
 package com._olelllka.HealthSphere_Backend.domain.dto.patients;
 
-import com._olelllka.HealthSphere_Backend.domain.dto.auth.UserDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

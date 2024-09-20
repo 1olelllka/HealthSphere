@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { SERVER_API } from "../api/utils";
 import { Spezialization } from "../reducers/profileReducer";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
 export const setProfile = createAsyncThunk(
   "profile/setProfile",
@@ -57,16 +57,19 @@ export const patchPatientProfile = createAsyncThunk(
 
 export const patchDoctorProfile = createAsyncThunk(
   "profile/patchDoctorProfile",
-  async (values: {
-    id: number;
-    firstName: string;
-    lastName: string;
-    clinicAddress: string;
-    phoneNumber: string;
-    experienceYears: number;
-    licenseNumber: string;
-    specializations?: Spezialization[] | null;
-  }) => {
+  async (
+    values: {
+      id: number;
+      firstName: string;
+      lastName: string;
+      clinicAddress: string;
+      phoneNumber: string;
+      experienceYears: number;
+      licenseNumber: string;
+      specializations?: Spezialization[] | null;
+    },
+    { rejectWithValue }
+  ) => {
     try {
       const response = await SERVER_API.patch("/doctors/" + values.id, values, {
         headers: {
@@ -77,7 +80,18 @@ export const patchDoctorProfile = createAsyncThunk(
         return response.data;
       }
     } catch (err) {
-      console.log(err);
+      const error = err as AxiosError;
+      if (error.response?.status === 403) {
+        return rejectWithValue({
+          status: 403,
+          message: "You are not allowed to perform this action",
+        });
+      } else if (error.response?.status == 400) {
+        return rejectWithValue({
+          status: 400,
+          message: (error.response.data as { message: string }).message,
+        });
+      }
     }
   }
 );

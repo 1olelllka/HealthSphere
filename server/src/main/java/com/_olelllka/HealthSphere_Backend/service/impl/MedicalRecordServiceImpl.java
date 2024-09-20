@@ -4,18 +4,15 @@ import com._olelllka.HealthSphere_Backend.domain.documents.MedicalRecordDocument
 import com._olelllka.HealthSphere_Backend.domain.dto.records.MedicalRecordDocumentDto;
 import com._olelllka.HealthSphere_Backend.domain.entity.DoctorEntity;
 import com._olelllka.HealthSphere_Backend.domain.entity.MedicalRecordEntity;
-import com._olelllka.HealthSphere_Backend.domain.entity.PrescriptionEntity;
 import com._olelllka.HealthSphere_Backend.repositories.DoctorRepository;
 import com._olelllka.HealthSphere_Backend.repositories.MedicalRecordElasticRepository;
 import com._olelllka.HealthSphere_Backend.repositories.MedicalRecordRepository;
 import com._olelllka.HealthSphere_Backend.repositories.PrescriptionRepository;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.AccessDeniedException;
-import com._olelllka.HealthSphere_Backend.rest.exceptions.NotAuthorizedException;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.NotFoundException;
 import com._olelllka.HealthSphere_Backend.service.JwtService;
 import com._olelllka.HealthSphere_Backend.service.MedicalRecordService;
 import com._olelllka.HealthSphere_Backend.service.rabbitmq.MedicalRecordMessageProducer;
-import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +23,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Service
-@Log
 public class MedicalRecordServiceImpl implements MedicalRecordService {
 
 
@@ -72,9 +68,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     public MedicalRecordEntity patchMedicalRecordForPatient(Long id, MedicalRecordEntity updated, String jwt) {
         return medicalRecordRepository.findById(id).map(record -> {
             String email = jwtService.extractUsername(jwt);
-            log.info(email);
             if (!Objects.equals(record.getDoctor().getUser().getEmail(), email)) {
-                log.info(record.getDoctor().getUser().getEmail());
                 throw new AccessDeniedException("You are not allowed to perform this action");
             }
             Optional.ofNullable(updated.getDiagnosis()).ifPresent(record::setDiagnosis);

@@ -2,13 +2,11 @@ import { AppDispatch, RootState } from "@/redux/store";
 import { Button } from "../ui/button";
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogFooter,
   DialogTitle,
   DialogDescription,
-  DialogClose,
 } from "../ui/dialog";
 import { Input } from "../ui/input";
 import {
@@ -35,7 +33,7 @@ const schema = z.object({
   lastName: z.string().min(1, { message: "Last name is required" }),
   clinicAddress: z.string().min(1, { message: "Address is required" }),
   phoneNumber: z.string().min(1, { message: "Phone number is required" }),
-  experienceYears: z.number(),
+  experienceYears: z.string(),
   licenseNumber: z.string().min(1, { message: "License number is requried" }),
   specializations: z
     .array(
@@ -48,7 +46,7 @@ const schema = z.object({
     .nullable(),
 });
 
-export const EditDoctor = () => {
+export const EditDoctor = (props: { open: boolean; onClose: () => void }) => {
   const data = useSelector((state: RootState) => state.profile.data);
   const dispatch = useDispatch<AppDispatch>();
 
@@ -65,7 +63,7 @@ export const EditDoctor = () => {
       clinicAddress: data.clinicAddress,
       phoneNumber: data.phoneNumber,
       licenseNumber: data.licenseNumber,
-      experienceYears: data.experienceYears,
+      experienceYears: data.experienceYears?.toString(),
       specializations: data.specializations,
     },
   });
@@ -74,22 +72,14 @@ export const EditDoctor = () => {
     const updatedValues = {
       ...values,
       specializations: selectedSpecializations,
+      experienceYears: parseInt(values.experienceYears as string),
     };
-    console.log(updatedValues);
     dispatch(patchDoctorProfile(updatedValues));
-    console.log(data);
+    props.onClose();
   };
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button
-          variant={"ghost"}
-          className="[box-shadow:1px_1px_2px_var(--tw-shadow-color)] shadow-slate-400 font-semibold hover:bg-[#040D12] hover:text-white"
-        >
-          Edit data
-        </Button>
-      </DialogTrigger>
+    <Dialog open={props.open}>
       <DialogContent className="sm:max-w-[700px] max-h-[700px]">
         <DialogHeader>
           <DialogTitle>Edit profile</DialogTitle>
@@ -212,14 +202,14 @@ export const EditDoctor = () => {
               </div>
             </div>
             <DialogFooter>
-              <DialogClose asChild>
-                <Button type="button" variant="destructive">
-                  Close
-                </Button>
-              </DialogClose>
-              <DialogClose asChild>
-                <Button type="submit">Save changes</Button>
-              </DialogClose>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={() => props.onClose()}
+              >
+                Close
+              </Button>
+              <Button type="submit">Save changes</Button>
             </DialogFooter>
           </form>
         </Form>

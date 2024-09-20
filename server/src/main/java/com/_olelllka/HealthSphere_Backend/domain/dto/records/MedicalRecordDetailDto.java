@@ -1,7 +1,5 @@
 package com._olelllka.HealthSphere_Backend.domain.dto.records;
 
-import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDetailDto;
-import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorListDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.patients.PatientDto;
 import com._olelllka.HealthSphere_Backend.domain.entity.PrescriptionEntity;
 import jakarta.validation.constraints.NotBlank;

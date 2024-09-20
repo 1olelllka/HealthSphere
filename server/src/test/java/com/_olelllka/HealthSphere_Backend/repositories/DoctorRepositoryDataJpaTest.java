@@ -1,6 +1,7 @@
 package com._olelllka.HealthSphere_Backend.repositories;
 
 import com._olelllka.HealthSphere_Backend.domain.entity.DoctorEntity;
+import com._olelllka.HealthSphere_Backend.domain.entity.Gender;
 import com._olelllka.HealthSphere_Backend.domain.entity.Role;
 import com._olelllka.HealthSphere_Backend.domain.entity.UserEntity;
 import org.junit.jupiter.api.AfterEach;
@@ -36,6 +37,7 @@ public class DoctorRepositoryDataJpaTest {
                 .firstName("First Name")
                 .lastName("Last Name")
                 .licenseNumber("123434132")
+                .gender(Gender.MALE)
                 .user(user).build();
         doctorRepository.save(doctor);
         userRepository.save(user);

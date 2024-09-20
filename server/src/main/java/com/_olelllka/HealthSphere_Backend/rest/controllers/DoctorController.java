@@ -11,11 +11,9 @@ import com._olelllka.HealthSphere_Backend.mapper.impl.DoctorListMapper;
 import com._olelllka.HealthSphere_Backend.service.DoctorService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,7 +24,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(path="/api/v1")
-@Log
 public class DoctorController {
 
     private DoctorService doctorService;
