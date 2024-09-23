@@ -1,7 +1,10 @@
 package com._olelllka.HealthSphere_Backend.configuration;
 
+import com._olelllka.HealthSphere_Backend.domain.dto.ErrorMessage;
 import com._olelllka.HealthSphere_Backend.service.JwtService;
 import com._olelllka.HealthSphere_Backend.service.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,11 +24,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private JwtService jwtService;
     private UserService userService;
+    private ObjectMapper objectMapper;
 
     @Autowired
     public JwtAuthFilter(JwtService jwtService, UserService userService) {
         this.jwtService = jwtService;
         this.userService = userService;
+        this.objectMapper = new ObjectMapper();
     }
 
     @Override
@@ -35,7 +40,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
         String jwt = request.getHeader("Authorization").substring(7);
-        String username = jwtService.extractUsername(jwt);
+        String username = "";
+        try {
+            username = jwtService.extractUsername(jwt);
+        } catch (ExpiredJwtException ex) {
+            ErrorMessage errorMessage = ErrorMessage.builder().message("Your Session expired. Log in to proceed.").build();
+            response.setContentType("application/json");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write(objectMapper.writeValueAsString(errorMessage));
+            return;
+        }
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userService.getUserByUsername(username);
             if (jwtService.isTokenValid(jwt, userDetails.getUsername())) {

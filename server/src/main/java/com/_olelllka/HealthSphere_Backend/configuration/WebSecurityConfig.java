@@ -1,9 +1,13 @@
 package com._olelllka.HealthSphere_Backend.configuration;
 
+import com._olelllka.HealthSphere_Backend.service.JwtService;
+import com._olelllka.HealthSphere_Backend.service.SHA256;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -21,6 +25,12 @@ public class WebSecurityConfig {
 
     final AuthenticationProvider provider;
     final JwtAuthFilter jwtAuthFilter;
+
+    @Autowired
+    private JwtService jwtService;
+
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -53,6 +63,9 @@ public class WebSecurityConfig {
                             .invalidateHttpSession(true)
                             .clearAuthentication(true)
                             .logoutSuccessHandler(((request, response, authentication) -> {
+                                String jwt = request.getHeader("Authorization").substring(7);
+                                String email = jwtService.extractUsername(jwt);
+                                redisTemplate.delete("profile::" + SHA256.generateSha256Hash(email));
                                 response.setStatus(HttpServletResponse.SC_OK);
                             }));
                 });
