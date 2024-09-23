@@ -80,20 +80,20 @@ public class DoctorController {
         return new ResponseEntity<>(detailMapper.toDto(doctor), HttpStatus.OK);
     }
 
-    @PatchMapping("/doctors/{id}")
+    @PatchMapping("/doctors/me")
     @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<DoctorDetailDto> patchDoctorByMyEmail(@RequestBody DoctorDetailDto doctor,
-                                                                @PathVariable Long id) {
+                                                                @RequestHeader(name="Authorization") String header) {
         DoctorEntity doctorEntity = detailMapper.toEntity(doctor);
-        DoctorEntity patchedDoctor = doctorService.patchDoctor(id, doctorEntity);
+        DoctorEntity patchedDoctor = doctorService.patchDoctor(header.substring(7), doctorEntity);
         return new ResponseEntity<>(detailMapper.toDto(patchedDoctor), HttpStatus.OK);
     }
 
-    @DeleteMapping("/doctors/{id}")
+    @DeleteMapping("/doctors/me")
     @PreAuthorize("hasRole('DOCTOR')")
-    public ResponseEntity deleteDoctorByMyEmail(@PathVariable Long id,
+    public ResponseEntity deleteDoctorByMyEmail(@RequestHeader(name="Authorization") String header,
                                                 HttpServletRequest request) throws ServletException {
-        doctorService.deleteDoctorById(id);
+        doctorService.deleteDoctor(header.substring(7));
         request.logout();
         return new ResponseEntity(HttpStatus.ACCEPTED);
     }

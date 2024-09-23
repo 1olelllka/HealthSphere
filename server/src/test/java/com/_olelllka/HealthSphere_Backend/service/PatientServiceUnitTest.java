@@ -7,6 +7,7 @@ import com._olelllka.HealthSphere_Backend.domain.entity.UserEntity;
 import com._olelllka.HealthSphere_Backend.repositories.PatientElasticRepository;
 import com._olelllka.HealthSphere_Backend.repositories.PatientRepository;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.NotFoundException;
+import com._olelllka.HealthSphere_Backend.service.impl.PatientHelperCachingService;
 import com._olelllka.HealthSphere_Backend.service.impl.PatientServiceImpl;
 import com._olelllka.HealthSphere_Backend.service.rabbitmq.PatientMessageProducer;
 import org.junit.jupiter.api.Test;
@@ -36,22 +37,11 @@ public class PatientServiceUnitTest {
     @Mock
     private JwtService jwtService;
     @Mock
+    private PatientHelperCachingService cachingService;
+    @Mock
     private PatientMessageProducer messageProducer;
     @InjectMocks
     private PatientServiceImpl patientService;
-
-    @Test
-    public void testThatGetPatientThrowsNotFoundErrorIFNotFound() {
-        // given
-        String jwt = "jwt-token";
-        // when
-        when(jwtService.extractUsername(jwt)).thenReturn("username");
-        when(patientRepository.findByEmail("username")).thenReturn(Optional.empty());
-        // then
-        assertThrows(NotFoundException.class, () -> patientService.getPatient(jwt));
-        verify(jwtService, times(1)).extractUsername(jwt);
-        verify(patientRepository, times(1)).findByEmail("username");
-    }
 
     @Test
     public void testThatGetPatientReturnsCorrectUser() {
@@ -59,7 +49,7 @@ public class PatientServiceUnitTest {
         String jwt = "jwt-token";
         PatientEntity patient = PatientEntity.builder().firstName("First Name").build();
         when(jwtService.extractUsername(jwt)).thenReturn("username");
-        when(patientRepository.findByEmail("username")).thenReturn(Optional.of(patient));
+        when(cachingService.getPatientByUsername("username")).thenReturn(patient);
         PatientEntity result = patientService.getPatient(jwt);
         // then
         assertAll(
@@ -70,7 +60,6 @@ public class PatientServiceUnitTest {
     @Test
     public void testThatGetAllPatientsWithoutParamsReturnsPageOfResults() {
         // given
-        String params = "";
         PatientDocument patientDocument = PatientDocument.builder().build();
         Pageable pageable = PageRequest.of(0, 1);
         // when
@@ -100,39 +89,38 @@ public class PatientServiceUnitTest {
     }
 
     @Test
-    public void testThatPatchPatientReturnsNotFoundException() {
+    public void testThatPatchPatientDoesNotExecuteFurtherCodeIfCachingFails() {
         // given
-        Long id = 1L;
+        String jwt = "jwt";
+        String email = "email";
+        PatientEntity updatedEntity = PatientEntity.builder()
+                .user(UserEntity.builder().email("email").build())
+                .firstName("Updated Name").build();
         // when
-        when(patientRepository.findById(id)).thenReturn(Optional.empty());
+        when(jwtService.extractUsername(jwt)).thenReturn(email);
+        when(cachingService.patchPatientByEmail(email, updatedEntity)).thenThrow(NotFoundException.class);
         // then
-        assertThrows(NotFoundException.class, () -> patientService.patchPatient(id, null));
-        verify(patientRepository, times(1)).findById(id);
-        verify(patientRepository, never()).save(any());
+        assertThrows(NotFoundException.class, () -> patientService.patchPatient(jwt, updatedEntity));
         verify(messageProducer, never()).sendMessageCreatePatient(any(PatientListDto.class));
     }
 
     @Test
     public void testThatPatchPatientWorksWell() {
         // given
-        Long id = 1L;
-        PatientEntity originalEntity = PatientEntity.builder()
-                .user(UserEntity.builder().email("email").build())
-                .firstName("First Name").build();
+        String jwt = "jwt";
+        String email = "email";
         PatientEntity updatedEntity = PatientEntity.builder()
                 .user(UserEntity.builder().email("email").build())
                 .firstName("Updated Name").build();
         // when
-        when(patientRepository.findById(id)).thenReturn(Optional.of(originalEntity));
-        when(patientRepository.save(updatedEntity)).thenReturn(updatedEntity);
-        PatientEntity result = patientService.patchPatient(id, updatedEntity);
+        when(jwtService.extractUsername(jwt)).thenReturn(email);
+        when(cachingService.patchPatientByEmail(email, updatedEntity)).thenReturn(updatedEntity);
+        PatientEntity result = patientService.patchPatient(jwt, updatedEntity);
         // then
         assertAll(
                 () -> assertNotNull(result),
                 () -> assertEquals(result.getFirstName(), updatedEntity.getFirstName())
         );
-        verify(patientRepository, times(1)).findById(id);
-        verify(patientRepository, times(1)).save(updatedEntity);
         verify(messageProducer, times(1)).sendMessageCreatePatient(any(PatientListDto.class));
     }
 
@@ -149,11 +137,16 @@ public class PatientServiceUnitTest {
     @Test
     public void testThatDeletePatientWorksWell() {
         // given
-        Long id = 1L;
+        String jwt = "jwt";
+        String email = "email";
+        PatientEntity patient = PatientEntity.builder()
+                .id(1L).build();
         // when
-        patientService.deleteById(id);
+        when(jwtService.extractUsername(jwt)).thenReturn(email);
+        when(cachingService.getPatientByUsername(email)).thenReturn(patient);
+        patientService.deletePatient(jwt);
         // then
-        verify(patientRepository, times(1)).deleteById(1L);
+        verify(patientRepository, times(1)).deleteById(anyLong());
         verify(messageProducer, times(1)).sendMessageDeletePatient(1L);
     }
 }

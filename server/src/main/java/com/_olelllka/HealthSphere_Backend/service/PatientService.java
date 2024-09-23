@@ -8,9 +8,9 @@ import org.springframework.data.domain.Pageable;
 public interface PatientService {
     PatientEntity getPatient(String jwt);
 
-    PatientEntity patchPatient(Long accessToken, PatientEntity updatedPatientEntity);
+    PatientEntity patchPatient(String accessToken, PatientEntity updatedPatientEntity);
 
-    void deleteById(Long id);
+    void deletePatient(String jwt);
 
     PatientEntity getPatientById(Long id);
 

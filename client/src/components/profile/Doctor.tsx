@@ -196,7 +196,7 @@ export const Doctor = () => {
             <Button
               variant={"destructive"}
               onClick={() => {
-                dispatch(deleteDoctorProfile(data.id));
+                dispatch(deleteDoctorProfile());
                 dispatch(logoutProfile());
                 setDeleteDialogOpen(false);
                 navigate("/login");

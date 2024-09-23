@@ -12,10 +12,9 @@ import com._olelllka.HealthSphere_Backend.service.rabbitmq.PatientMessageProduce
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 @Service
 public class PatientServiceImpl implements PatientService {
@@ -24,54 +23,53 @@ public class PatientServiceImpl implements PatientService {
     private PatientElasticRepository elasticRepository;
     private PatientMessageProducer messageProducer;
     private JwtService jwtService;
+    private PatientHelperCachingService patientHelperCachingService;
+    private RedisTemplate<String, String> redisTemplate;
 
     @Autowired
     public PatientServiceImpl(PatientRepository patientRepository,
                               JwtService jwtService,
                               PatientElasticRepository elasticRepository,
+                              PatientHelperCachingService patientHelperCachingService,
+                              RedisTemplate<String, String> redisTemplate,
                               PatientMessageProducer messageProducer) {
         this.patientRepository = patientRepository;
         this.jwtService = jwtService;
         this.elasticRepository = elasticRepository;
+        this.patientHelperCachingService = patientHelperCachingService;
         this.messageProducer = messageProducer;
+        this.redisTemplate = redisTemplate;
     }
 
     @Override
     public PatientEntity getPatient(String jwt) {
         String username = jwtService.extractUsername(jwt);
-        Optional<PatientEntity> patient = patientRepository.findByEmail(username);
-        return patient.orElseThrow(() -> new NotFoundException("User with such username was not found."));
+        return patientHelperCachingService.getPatientByUsername(username);
     }
 
     @Override
     @Transactional
-    public PatientEntity patchPatient(Long id, PatientEntity updatedPatientEntity) {
-        return patientRepository.findById(id)
-                .map(patient -> {
-                    Optional.ofNullable(updatedPatientEntity.getAddress()).ifPresent(patient::setAddress);
-                    Optional.ofNullable(updatedPatientEntity.getFirstName()).ifPresent(patient::setFirstName);
-                    Optional.ofNullable(updatedPatientEntity.getLastName()).ifPresent(patient::setLastName);
-                    Optional.ofNullable(updatedPatientEntity.getPhoneNumber()).ifPresent(patient::setPhoneNumber);
-                    Optional.ofNullable(updatedPatientEntity.getDateOfBirth()).ifPresent(patient::setDateOfBirth);
-                    Optional.ofNullable(updatedPatientEntity.getBloodType()).ifPresent(patient::setBloodType);
-                    Optional.ofNullable(updatedPatientEntity.getAllergies()).ifPresent(patient::setAllergies);
-                    PatientEntity result = patientRepository.save(patient);
-                    PatientListDto patientListDto = PatientListDto.builder()
-                            .firstName(patient.getFirstName())
-                            .lastName(patient.getLastName())
-                            .email(patient.getUser().getEmail())
-                            .id(patient.getId())
-                            .build();
-                    messageProducer.sendMessageCreatePatient(patientListDto);
-                    return result;
-                }).orElseThrow(() -> new NotFoundException("Patient with such email was not found."));
+    public PatientEntity patchPatient(String jwt, PatientEntity updatedPatientEntity) {
+        String email = jwtService.extractUsername(jwt);
+        PatientEntity result =  patientHelperCachingService.patchPatientByEmail(email, updatedPatientEntity);
+        PatientListDto patientListDto = PatientListDto.builder()
+                .firstName(result.getFirstName())
+                .lastName(result.getLastName())
+                .email(result.getUser().getEmail())
+                .id(result.getId())
+                .build();
+        messageProducer.sendMessageCreatePatient(patientListDto);
+        return result;
     }
 
     @Override
     @Transactional
-    public void deleteById(Long id) {
-        patientRepository.deleteById(id);
-        messageProducer.sendMessageDeletePatient(id);
+    public void deletePatient(String jwt) {
+        String email = jwtService.extractUsername(jwt);
+        PatientEntity patient = patientHelperCachingService.getPatientByUsername(email);
+        patientHelperCachingService.deletePatientByEmail(email);
+        patientRepository.deleteById(patient.getId());
+        messageProducer.sendMessageDeletePatient(patient.getId());
     }
 
     @Override

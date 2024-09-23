@@ -9,8 +9,10 @@ import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterPatientForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.UserDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.patients.PatientDto;
 import com._olelllka.HealthSphere_Backend.repositories.PatientElasticRepository;
-import com._olelllka.HealthSphere_Backend.service.UserService;
+import com._olelllka.HealthSphere_Backend.service.SHA256;
+import com._olelllka.HealthSphere_Backend.service.impl.UserServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redis.testcontainers.RedisStackContainer;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -22,6 +24,7 @@ import org.springframework.amqp.rabbit.listener.RabbitListenerEndpointRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -53,6 +56,9 @@ public class PatientControllerIntegrationTest {
     @Container
     static RabbitMQContainer container = TestContainers.rabbitMQContainer;
 
+    @Container
+    static RedisStackContainer redis = TestContainers.redis;
+
     @DynamicPropertySource
     static void configure(DynamicPropertyRegistry registry) {
         registry.add("spring.rabbitmq.host", container::getHost);
@@ -60,14 +66,16 @@ public class PatientControllerIntegrationTest {
         registry.add("spring.rabbitmq.username", container::getAdminUsername);
         registry.add("spring.rabbitmq.password", container::getAdminPassword);
         registry.add("spring.elasticsearch.uris", elasticsearchContainer::getHttpHostAddress);
+        registry.add("spring.redis.host", redis::getHost);
+        registry.add("spring.redis.port", () -> redis.getFirstMappedPort());
     }
 
     @BeforeAll
     static void setUp() {
         container.start();
         elasticsearchContainer.start();
+        redis.start();
     }
-
     @AfterAll
     static void tearDown() {
         container.stop();
@@ -76,6 +84,7 @@ public class PatientControllerIntegrationTest {
 
     @BeforeEach
     void initEach() throws ParseException {
+        redisTemplate.getConnectionFactory().getConnection().flushAll();
         patientElasticRepository.deleteAll();
         RegisterPatientForm register = TestDataUtil.createRegisterForm();
         listenerRegistry.getListenerContainer("doctor.post").start();
@@ -84,23 +93,26 @@ public class PatientControllerIntegrationTest {
 
 
     private MockMvc mockMvc;
-    private UserService userService;
+    private UserServiceImpl userService;
     private ObjectMapper objectMapper;
     private PatientElasticRepository patientElasticRepository;
     private RabbitListenerEndpointRegistry listenerRegistry;
     private RabbitAdmin admin;
+    private RedisTemplate<String, String> redisTemplate;
 
     @Autowired
     public PatientControllerIntegrationTest(MockMvc mockMvc,
-                                            UserService userService,
+                                            UserServiceImpl userService,
                                             PatientElasticRepository patientElasticRepository,
                                             RabbitListenerEndpointRegistry listenerRegistry,
+                                            RedisTemplate<String, String> redisTemplate,
                                             RabbitAdmin admin) {
         this.mockMvc = mockMvc;
         this.objectMapper = new ObjectMapper();
         this.userService = userService;
         this.patientElasticRepository = patientElasticRepository;
         this.listenerRegistry = listenerRegistry;
+        this.redisTemplate = redisTemplate;
         this.admin = admin;
     }
 
@@ -118,6 +130,7 @@ public class PatientControllerIntegrationTest {
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.firstName").value("First Name"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.lastName").value("Last Name"));
+        assertTrue(redisTemplate.hasKey("profile::" + SHA256.generateSha256Hash("patient2@email.com")));
     }
 
     @Test
@@ -178,7 +191,7 @@ public class PatientControllerIntegrationTest {
         PatientDto patientDto = TestDataUtil.createPatientDto(null);
         patientDto.setDateOfBirth(new SimpleDateFormat("dd-MM-yyyy").parse("11-11-2030"));
         String patientDtoJson = objectMapper.writeValueAsString(patientDto);
-        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patients/1")
+        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patients/me")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(patientDtoJson)
                         .header("Authorization", "Bearer " + accessToken))
@@ -194,7 +207,7 @@ public class PatientControllerIntegrationTest {
         patientDto.setFirstName("UPDATED");
         String patientDtoJson = objectMapper.writeValueAsString(patientDto);
         listenerRegistry.getListenerContainer("patient.post").start();
-        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patients/1")
+        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patients/me")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(patientDtoJson)
                         .header("Authorization", "Bearer " + accessToken))
@@ -202,25 +215,27 @@ public class PatientControllerIntegrationTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.firstName").value("UPDATED"));
         Awaitility.await().atMost(5, TimeUnit.SECONDS)
                 .until(() -> admin.getQueueInfo("patient_index_queue").getMessageCount() == 0);
+        assertTrue(redisTemplate.hasKey("profile::" + SHA256.generateSha256Hash("patient2@email.com")));
     }
 
     @Test
-    public void testThatDeleteByIdReturnsHttp403IfNotAuthorized() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/patients/1"))
+    public void testThatDeletePatientReturnsHttp403IfNotAuthorized() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/patients/me"))
                 .andExpect(MockMvcResultMatchers.status().isForbidden());
     }
 
     @Test
-    public void testThatDeleteByIdReturnsHttp202Accepted() throws Exception {
+    public void testThatDeletePatientReturnsHttp202Accepted() throws Exception {
         listenerRegistry.stop();
         String accessToken = getPatientAccessToken();
         listenerRegistry.getListenerContainer("patient.delete").start();
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/patients/1")
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/patients/me")
                 .header("Authorization", "Bearer " +accessToken))
                 .andExpect(MockMvcResultMatchers.status().isAccepted());
         Awaitility.await().atMost(5, TimeUnit.SECONDS)
                 .until(() -> admin.getQueueInfo("patient_index_delete_queue").getMessageCount() == 0);
         assertFalse(patientElasticRepository.existsById(1L));
+        assertFalse(redisTemplate.hasKey("profile::" + SHA256.generateSha256Hash("patient2@email.com")));
     }
 
     private String getPatientAccessToken() throws Exception {

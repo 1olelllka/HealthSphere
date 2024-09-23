@@ -11,6 +11,7 @@ import com._olelllka.HealthSphere_Backend.service.PatientService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -60,8 +61,8 @@ public class PatientController {
     }
 
     @PreAuthorize("hasRole('PATIENT')")
-    @PatchMapping("/patients/{id}")
-    public ResponseEntity<PatientDto> patchPatient(@PathVariable Long id,
+    @PatchMapping("/patients/me")
+    public ResponseEntity<PatientDto> patchPatient(@RequestHeader(name="Authorization") String header,
                                                    @Valid @RequestBody PatientDto updated,
                                                    BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -69,15 +70,15 @@ public class PatientController {
             throw new ValidationException(msg);
         }
         PatientEntity updatedPatientEntity = mapper.toEntity(updated);
-        PatientEntity patient = patientService.patchPatient(id, updatedPatientEntity);
+        PatientEntity patient = patientService.patchPatient(header.substring(7), updatedPatientEntity);
         return new ResponseEntity<>(mapper.toDto(patient), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('PATIENT')")
-    @DeleteMapping("/patients/{id}")
-    public ResponseEntity deletePatient(@PathVariable Long id,
+    @DeleteMapping("/patients/me")
+    public ResponseEntity deletePatient(@RequestHeader(name="Authorization") String header,
                                         HttpServletRequest request) throws Exception{
-        patientService.deleteById(id);
+        patientService.deletePatient(header.substring(7));
         request.logout();
         return new ResponseEntity(null, HttpStatus.ACCEPTED);
     }

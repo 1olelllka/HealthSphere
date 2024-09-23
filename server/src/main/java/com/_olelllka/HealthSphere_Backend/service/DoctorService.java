@@ -12,9 +12,9 @@ public interface DoctorService {
 
     DoctorEntity getDoctorById(Long id);
 
-    DoctorEntity patchDoctor(Long jwt, DoctorEntity doctor);
+    DoctorEntity patchDoctor(String jwt, DoctorEntity doctor);
 
     Page<DoctorDocument> getAllDoctorsByParam(String params, Pageable pageable);
 
-    void deleteDoctorById(Long id);
+    void deleteDoctor(String jwt);
 }

@@ -190,7 +190,7 @@ export const Patient = () => {
             <Button
               variant={"destructive"}
               onClick={() => {
-                dispatch(deletePatientProfile(data.id));
+                dispatch(deletePatientProfile());
                 dispatch(logoutProfile());
                 setDeleteDialogOpen(false);
                 navigate("/login");

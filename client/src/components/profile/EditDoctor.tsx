@@ -28,7 +28,6 @@ import { useState } from "react";
 import { Specialization } from "@/redux/reducers/specializationReducer";
 
 const schema = z.object({
-  id: z.number(),
   firstName: z.string().min(1, { message: "First name is required" }),
   lastName: z.string().min(1, { message: "Last name is required" }),
   clinicAddress: z.string().min(1, { message: "Address is required" }),
@@ -57,7 +56,6 @@ export const EditDoctor = (props: { open: boolean; onClose: () => void }) => {
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
-      id: data.id,
       firstName: data.firstName,
       lastName: data.lastName,
       clinicAddress: data.clinicAddress,

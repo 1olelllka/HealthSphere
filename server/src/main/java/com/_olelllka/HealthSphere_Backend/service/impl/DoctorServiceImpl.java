@@ -16,8 +16,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 @Service
 public class DoctorServiceImpl implements DoctorService {
 
@@ -26,18 +24,21 @@ public class DoctorServiceImpl implements DoctorService {
     private JwtService jwtService;
     private DoctorMessageProducer messageProducer;
     private SpecializationMapper specializationMapper;
+    private DoctorHelperCachingService cachingService;
 
     @Autowired
     public DoctorServiceImpl(DoctorRepository repository,
                              JwtService jwtService,
                              DoctorMessageProducer messageProducer,
                              DoctorElasticRepository elasticRepository,
+                             DoctorHelperCachingService cachingService,
                              SpecializationMapper specializationMapper) {
         this.repository = repository;
         this.jwtService = jwtService;
         this.messageProducer = messageProducer;
         this.elasticRepository = elasticRepository;
         this.specializationMapper = specializationMapper;
+        this.cachingService = cachingService;
     }
 
     @Override
@@ -48,7 +49,7 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     public DoctorEntity getDoctorByEmail(String jwt) {
         String email = jwtService.extractUsername(jwt);
-        return repository.findByUserEmail(email).orElseThrow(() -> new NotFoundException("Doctor with such email was not found."));
+        return cachingService.getDoctorByEmail(email);
     }
 
     @Override
@@ -58,28 +59,20 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Transactional
     @Override
-    public DoctorEntity patchDoctor(Long id, DoctorEntity updatedDoctor) {
-        return repository.findById(id).map(doctor -> {
-            Optional.ofNullable(updatedDoctor.getFirstName()).ifPresent(doctor::setFirstName);
-            Optional.ofNullable(updatedDoctor.getLastName()).ifPresent(doctor::setLastName);
-            Optional.ofNullable(updatedDoctor.getExperienceYears()).ifPresent(doctor::setExperienceYears);
-            Optional.ofNullable(updatedDoctor.getPhoneNumber()).ifPresent(doctor::setPhoneNumber);
-            Optional.ofNullable(updatedDoctor.getClinicAddress()).ifPresent(doctor::setClinicAddress);
-            Optional.ofNullable(updatedDoctor.getLicenseNumber()).ifPresent(doctor::setLicenseNumber);
-            Optional.ofNullable(updatedDoctor.getSpecializations()).ifPresent(doctor::setSpecializations);
-            DoctorEntity result = repository.save(doctor);
-            DoctorDocumentDto dto = DoctorDocumentDto.builder()
-                            .id(result.getId())
-                            .firstName(result.getFirstName())
-                            .lastName(result.getLastName())
-                            .clinicAddress(doctor.getClinicAddress())
-                            .experienceYears(doctor.getExperienceYears())
-                    .specializations(doctor.getSpecializations()
-                            .stream().map(specializationMapper::toDto).toList())
-                            .build();
-            messageProducer.sendDoctorToIndex(dto);
-            return result;
-        }).orElseThrow(() -> new NotFoundException("Doctor with such email was not found."));
+    public DoctorEntity patchDoctor(String jwt, DoctorEntity updatedDoctor) {
+        String email = jwtService.extractUsername(jwt);
+        DoctorEntity result = cachingService.updateDoctorByEmail(email, updatedDoctor);
+        DoctorDocumentDto dto = DoctorDocumentDto.builder()
+                .id(result.getId())
+                .firstName(result.getFirstName())
+                .lastName(result.getLastName())
+                .clinicAddress(result.getClinicAddress())
+                .experienceYears(result.getExperienceYears())
+                .specializations(result.getSpecializations()
+                        .stream().map(specializationMapper::toDto).toList())
+                .build();
+        messageProducer.sendDoctorToIndex(dto);
+        return result;
     }
 
     @Override
@@ -89,8 +82,11 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     @Transactional
-    public void deleteDoctorById(Long id) {
-        repository.deleteById(id);
-        messageProducer.deleteDoctorFromIndex(id);
+    public void deleteDoctor(String jwt) {
+        String email = jwtService.extractUsername(jwt);
+        DoctorEntity doctor = cachingService.getDoctorByEmail(email);
+        cachingService.deleteDoctorByEmail(email);
+        repository.deleteById(doctor.getId());
+        messageProducer.deleteDoctorFromIndex(doctor.getId());
     }
 }

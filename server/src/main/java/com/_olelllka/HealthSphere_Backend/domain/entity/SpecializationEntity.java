@@ -9,13 +9,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Entity
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Table(name="specialization")
-public class SpecializationEntity {
+public class SpecializationEntity implements Serializable {
 
     @Id
     private Long id;

@@ -10,17 +10,19 @@ spring:
   elasticsearch:
     uris: http://localhost:9200
   rabbitmq:
-#    host: localhost
-#    port: 5672
-#    username: myuser
-#    password: secret
     listener:
       simple:
         auto-startup: false
-
 logging:
   level:
     org:
       springframework:
         amqp: DEBUG
         rabbit: DEBUG
+        testcontainers: DEBUG
+        boot:
+          autoconfigure:
+            data:
+              redis: DEBUG
+        data:
+          redis: DEBUG

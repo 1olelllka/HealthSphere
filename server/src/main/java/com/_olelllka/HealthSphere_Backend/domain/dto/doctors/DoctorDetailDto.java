@@ -2,11 +2,13 @@ package com._olelllka.HealthSphere_Backend.domain.dto.doctors;
 
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.UserDto;
 import com._olelllka.HealthSphere_Backend.domain.entity.Gender;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
@@ -14,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class DoctorDetailDto {
+public class DoctorDetailDto implements Serializable {
     private Long id;
     private UserDto user;
     private String firstName;

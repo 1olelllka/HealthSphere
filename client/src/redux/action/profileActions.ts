@@ -12,7 +12,7 @@ export const setProfile = createAsyncThunk(
         return doctorResponse.data;
       }
     } catch (err) {
-      console.log(err);
+      console.log("DOCTOR ERROR:", err);
       try {
         const patientResponse = await SERVER_API.get("/patients/me");
         if (patientResponse.status === 200) {
@@ -28,7 +28,6 @@ export const setProfile = createAsyncThunk(
 export const patchPatientProfile = createAsyncThunk(
   "profile/patchPatientProfile",
   async (values: {
-    id: number;
     firstName: string;
     lastName: string;
     address: string;
@@ -37,15 +36,11 @@ export const patchPatientProfile = createAsyncThunk(
     allergies?: string;
   }) => {
     try {
-      const response = await SERVER_API.patch(
-        "/patients/" + values.id,
-        values,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await SERVER_API.patch("/patients/me", values, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
       if (response.status === 200) {
         return response.data;
       }
@@ -59,7 +54,6 @@ export const patchDoctorProfile = createAsyncThunk(
   "profile/patchDoctorProfile",
   async (
     values: {
-      id: number;
       firstName: string;
       lastName: string;
       clinicAddress: string;
@@ -71,7 +65,7 @@ export const patchDoctorProfile = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const response = await SERVER_API.patch("/doctors/" + values.id, values, {
+      const response = await SERVER_API.patch("/doctors/me", values, {
         headers: {
           "Content-Type": "application/json",
         },
@@ -118,9 +112,9 @@ export const logoutProfile = createAsyncThunk(
 
 export const deletePatientProfile = createAsyncThunk(
   "profile/deletePatientProfile",
-  async (id: number) => {
+  async () => {
     try {
-      const response = await SERVER_API.delete("/patients/" + id);
+      const response = await SERVER_API.delete("/patients/me");
       if (response.status === 202) {
         return "deleted";
       }
@@ -132,9 +126,9 @@ export const deletePatientProfile = createAsyncThunk(
 
 export const deleteDoctorProfile = createAsyncThunk(
   "profile/deleteDoctorProfile",
-  async (id: number) => {
+  async () => {
     try {
-      const response = await SERVER_API.delete("/doctors/" + id);
+      const response = await SERVER_API.delete("/doctors/me");
       if (response.status === 202) {
         return "deleted";
       }
