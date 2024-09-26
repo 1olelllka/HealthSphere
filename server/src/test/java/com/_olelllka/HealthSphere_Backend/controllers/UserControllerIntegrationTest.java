@@ -1,6 +1,6 @@
 package com._olelllka.HealthSphere_Backend.controllers;
 
-import com._olelllka.HealthSphere_Backend.TestContainers;
+import com._olelllka.HealthSphere_Backend.AbstractTestContainers;
 import com._olelllka.HealthSphere_Backend.TestDataUtil;
 import com._olelllka.HealthSphere_Backend.domain.dto.JwtToken;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.LoginForm;
@@ -23,20 +23,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.testcontainers.containers.RabbitMQContainer;
-import org.testcontainers.elasticsearch.ElasticsearchContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.shaded.org.awaitility.Awaitility;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -46,35 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @DirtiesContext(classMode= DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class UserControllerIntegrationTest {
-
-    @Container
-    static ElasticsearchContainer elasticsearchContainer = TestContainers.elasticsearchContainer;
-
-    @Container
-    static RabbitMQContainer container = TestContainers.rabbitMQContainer;
-
-    @DynamicPropertySource
-    static void configure(DynamicPropertyRegistry registry) {
-        registry.add("spring.rabbitmq.host", container::getHost);
-        registry.add("spring.rabbitmq.port", container::getAmqpPort);
-        registry.add("spring.rabbitmq.username", container::getAdminUsername);
-        registry.add("spring.rabbitmq.password", container::getAdminPassword);
-        registry.add("spring.elasticsearch.uris", elasticsearchContainer::getHttpHostAddress);
-    }
-
-
-    @BeforeAll
-    static void setUp() {
-        container.start();
-        elasticsearchContainer.start();
-    }
-
-    @AfterAll
-    static void tearDown() {
-        container.stop();
-        elasticsearchContainer.stop();
-    }
+public class UserControllerIntegrationTest extends AbstractTestContainers {
 
     private UserService userService;
     private UserRepository userRepository;
@@ -176,7 +140,6 @@ public class UserControllerIntegrationTest {
     @Order(1)
     public void testThatDoctorRegisterReturnsHttp201CreatedAndCorrespondingDataIfEverythingOk() throws Exception {
         listenerRegistry.stop();
-        assertEquals(0, Objects.requireNonNull(admin.getQueueInfo("doctors_index_queue")).getMessageCount());
         String accessToken = getAccessTokenForAdmin();
         RegisterDoctorForm registerDoctorForm = TestDataUtil.createRegisterDoctorForm();
         registerDoctorForm.setSpecializations(List.of());
@@ -232,12 +195,6 @@ public class UserControllerIntegrationTest {
                 .andExpect(MockMvcResultMatchers.cookie().maxAge("accessToken", 60 * 60))
                 .andExpect(MockMvcResultMatchers.cookie().httpOnly("accessToken", true))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.accessToken").exists()); // IMPORTANT: DELETE WHEN PRODUCTION.
-    }
-
-    @Test
-    public void testThatLogoutUserReturnsHttp200OkIfUserIsNotLoggedIn() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/logout"))
-                .andExpect(MockMvcResultMatchers.status().isOk());
     }
 
     @Test

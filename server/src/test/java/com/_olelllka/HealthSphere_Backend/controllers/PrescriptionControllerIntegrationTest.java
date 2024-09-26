@@ -1,6 +1,6 @@
 package com._olelllka.HealthSphere_Backend.controllers;
 
-import com._olelllka.HealthSphere_Backend.TestContainers;
+import com._olelllka.HealthSphere_Backend.AbstractTestContainers;
 import com._olelllka.HealthSphere_Backend.TestDataUtil;
 import com._olelllka.HealthSphere_Backend.domain.dto.JwtToken;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.LoginForm;
@@ -22,15 +22,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.testcontainers.containers.RabbitMQContainer;
-import org.testcontainers.elasticsearch.ElasticsearchContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -41,24 +36,7 @@ import java.util.List;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @AutoConfigureMockMvc
 @Testcontainers
-public class PrescriptionControllerIntegrationTest {
-
-    @Container
-    static ElasticsearchContainer elasticsearchContainer = TestContainers.elasticsearchContainer;
-
-    @Container
-    static RabbitMQContainer container = TestContainers.rabbitMQContainer;
-
-    @DynamicPropertySource
-    static void configure(DynamicPropertyRegistry registry) {
-        registry.add("spring.rabbitmq.host", container::getHost);
-        registry.add("spring.rabbitmq.port", container::getAmqpPort);
-        registry.add("spring.rabbitmq.username", container::getAdminUsername);
-        registry.add("spring.rabbitmq.password", container::getAdminPassword);
-        registry.add("spring.elasticsearch.uris", elasticsearchContainer::getHttpHostAddress);
-    }
-
-
+public class PrescriptionControllerIntegrationTest extends AbstractTestContainers {
 
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
@@ -77,19 +55,6 @@ public class PrescriptionControllerIntegrationTest {
         this.objectMapper = new ObjectMapper();
         this.listenerRegistry = listenerRegistry;
     }
-
-    @BeforeAll
-    static void setUp() {
-        container.start();
-        elasticsearchContainer.start();
-    }
-
-    @AfterAll
-    static void tearDown() {
-        container.stop();
-        elasticsearchContainer.stop();
-    }
-
 
     @BeforeEach
     void initEach() {

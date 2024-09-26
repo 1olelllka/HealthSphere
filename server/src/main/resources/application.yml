@@ -25,6 +25,8 @@ spring:
     port: 6379
   cache:
     type: redis
+  api-docs:
+    enabled: true
 
 server:
   port: 8000
@@ -36,3 +38,5 @@ management:
           allowed-origins: http://localhost:5173
           allowed-methods: GET,POST,PUT,PATCH,DELETE,OPTIONS
           allow-credentials: true
+springdoc:
+  show-actuator: true

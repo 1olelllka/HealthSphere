@@ -1,14 +1,12 @@
 package com._olelllka.HealthSphere_Backend.controllers;
 
-import com._olelllka.HealthSphere_Backend.TestContainers;
+import com._olelllka.HealthSphere_Backend.AbstractTestContainers;
 import com._olelllka.HealthSphere_Backend.TestDataUtil;
 import com._olelllka.HealthSphere_Backend.domain.dto.JwtToken;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.LoginForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterPatientForm;
 import com._olelllka.HealthSphere_Backend.service.UserService;
 import jakarta.servlet.http.Cookie;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,15 +14,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.testcontainers.containers.RabbitMQContainer;
-import org.testcontainers.elasticsearch.ElasticsearchContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -33,22 +26,7 @@ import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @AutoConfigureMockMvc
 @Testcontainers
-public class SpecializationControllerIntegrationTest {
-
-    @Container
-    static ElasticsearchContainer elasticsearchContainer = TestContainers.elasticsearchContainer;
-
-    @Container
-    static RabbitMQContainer container = TestContainers.rabbitMQContainer;
-
-    @DynamicPropertySource
-    static void configure(DynamicPropertyRegistry registry) {
-        registry.add("spring.rabbitmq.host", container::getHost);
-        registry.add("spring.rabbitmq.port", container::getAmqpPort);
-        registry.add("spring.rabbitmq.username", container::getAdminUsername);
-        registry.add("spring.rabbitmq.password", container::getAdminPassword);
-        registry.add("spring.elasticsearch.uris", elasticsearchContainer::getHttpHostAddress);
-    }
+public class SpecializationControllerIntegrationTest extends AbstractTestContainers {
 
     private UserService userService;
     private MockMvc mockMvc;
@@ -60,18 +38,6 @@ public class SpecializationControllerIntegrationTest {
         this.mockMvc = mockMvc;
         this.userService = userService;
         this.objectMapper = new ObjectMapper();
-    }
-
-    @BeforeAll
-    static void setUp() {
-        container.start();
-        elasticsearchContainer.start();
-    }
-
-    @AfterAll
-    static void tearDown() {
-        container.stop();
-        elasticsearchContainer.stop();
     }
 
     @Test

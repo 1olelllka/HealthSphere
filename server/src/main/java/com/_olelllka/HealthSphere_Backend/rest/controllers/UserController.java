@@ -1,6 +1,8 @@
 package com._olelllka.HealthSphere_Backend.rest.controllers;
 
+import com._olelllka.HealthSphere_Backend.domain.dto.ErrorMessage;
 import com._olelllka.HealthSphere_Backend.domain.dto.JwtToken;
+import com._olelllka.HealthSphere_Backend.domain.dto.appointments.AppointmentDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterDoctorForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.RegisterPatientForm;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.LoginForm;
@@ -9,6 +11,12 @@ import com._olelllka.HealthSphere_Backend.rest.exceptions.NotAuthorizedException
 import com._olelllka.HealthSphere_Backend.rest.exceptions.ValidationException;
 import com._olelllka.HealthSphere_Backend.service.JwtService;
 import com._olelllka.HealthSphere_Backend.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -30,6 +38,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(path="/api/v1")
+@Tag(name="Users", description = "Login, register, logout users. Applicable for both doctors and patients.")
 public class UserController {
 
     private UserService userService;
@@ -45,6 +54,23 @@ public class UserController {
         this.jwtService = jwtService;
     }
 
+    @Operation(summary = "Create an appointment")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Created successfully",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = RegisterPatientForm.class)
+                    )}
+            ),
+            @ApiResponse(responseCode = "403", description = "Access Denied",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = "400", description = "Validation Errors",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = "409", description = "Patient or Doctor with such email already exists",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))})
+    })
     @PostMapping("/register/patient")
     public ResponseEntity<RegisterPatientForm> registerUser(@RequestBody @Valid RegisterPatientForm registerPatientForm,
                                                             BindingResult bindingResult) {
@@ -65,6 +91,23 @@ public class UserController {
         );
     }
 
+    @Operation(summary = "Create an appointment")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Created successfully",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = RegisterDoctorForm.class)
+                    )}
+            ),
+            @ApiResponse(responseCode = "403", description = "Access Denied",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = "400", description = "Validation Errors",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = "409", description = "Patient or Doctor with such email exists",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))})
+    })
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/register/doctor")
     public ResponseEntity<RegisterDoctorForm> registerDoctor(@RequestBody @Valid RegisterDoctorForm registerDoctorForm,
@@ -88,6 +131,23 @@ public class UserController {
         );
     }
 
+    @Operation(summary = "Create an appointment")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Logged in successfully",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = AppointmentDto.class)
+                    )}
+            ),
+            @ApiResponse(responseCode = "403", description = "Access Denied. Password may be incorrect",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = "400", description = "Validation Errors",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = "404", description = "Patient or Doctor with email specified in json was not found",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))})
+    })
     @PostMapping("/login")
     public ResponseEntity<JwtToken> loginUser(@RequestBody @Valid LoginForm loginForm,
                                               BindingResult bindingResult,
@@ -115,6 +175,21 @@ public class UserController {
         }
         return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
     }
+
+    @Operation(summary = "Get a jwt token from cookie.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Retrieved successfully",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = JwtToken.class)
+                    )}
+            ),
+            @ApiResponse(responseCode = "403", description = "Access Denied or no cookies at all.",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = "401", description = "No such cookie.",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))}),
+    })
     @GetMapping("/get-jwt")
     public ResponseEntity<JwtToken> getJwtToken(HttpServletRequest request) {
         Cookie accessToken = Arrays.stream(request.getCookies())

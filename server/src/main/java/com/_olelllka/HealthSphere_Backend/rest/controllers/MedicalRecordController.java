@@ -1,14 +1,21 @@
 package com._olelllka.HealthSphere_Backend.rest.controllers;
 
 import com._olelllka.HealthSphere_Backend.domain.documents.MedicalRecordDocument;
+import com._olelllka.HealthSphere_Backend.domain.dto.ErrorMessage;
 import com._olelllka.HealthSphere_Backend.domain.dto.records.MedicalRecordDetailDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.records.MedicalRecordListDto;
 import com._olelllka.HealthSphere_Backend.domain.entity.MedicalRecordEntity;
 import com._olelllka.HealthSphere_Backend.mapper.impl.*;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.ValidationException;
 import com._olelllka.HealthSphere_Backend.service.MedicalRecordService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.extern.java.Log;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +30,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(path="/api/v1")
-@Log
+@Tag(name="Medical Records", description = "Search and manage medical records from patient's and doctor's sides. Requires authorization.")
 public class MedicalRecordController {
 
     private MedicalRecordService medicalRecordService;
@@ -50,7 +57,7 @@ public class MedicalRecordController {
 
     @GetMapping("/patient/{id}/medical-records")
     public ResponseEntity<Page<MedicalRecordListDto>> getAllMedicalRecords(@PathVariable Long id,
-                                                                           Pageable pageable,
+                                                                           @ParameterObject Pageable pageable,
                                                                            @RequestParam(name="diagnosis", required = false) String diagnosis,
                                                                            @RequestParam(name = "from", required = false)
                                                                                String from,
@@ -67,6 +74,20 @@ public class MedicalRecordController {
         }
     }
 
+    @Operation(summary = "Get detailed medical record.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Retrieved successfully",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = MedicalRecordDetailDto.class)
+                    )}
+            ),
+            @ApiResponse(responseCode = "403", description = "Access Denied",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = "404", description = "Not Found",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))}),
+    })
     @GetMapping("/patient/medical-records/{id}")
     public ResponseEntity<MedicalRecordDetailDto> getDetailedMedicalRecord(@PathVariable Long id) {
         MedicalRecordEntity medicalRecordEntity = medicalRecordService
@@ -76,6 +97,23 @@ public class MedicalRecordController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
+    @Operation(summary = "Create medical record (only for doctors).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Created successfully",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = MedicalRecordDetailDto.class)
+                    )}
+            ),
+            @ApiResponse(responseCode = "403", description = "Access Denied",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = "400", description = "Validation Error",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = "404", description = "Not Found",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))}),
+    })
     @PostMapping("/patient/medical-records")
     @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<MedicalRecordDetailDto> createMedicalRecord(@RequestHeader(name="Authorization") String header,
@@ -96,6 +134,23 @@ public class MedicalRecordController {
         return new ResponseEntity<>(detailMapper.toDto(created), HttpStatus.CREATED);
     }
 
+    @Operation(summary = "Update medical record (only for doctors).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Updated successfully",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = MedicalRecordDetailDto.class)
+                    )}
+            ),
+            @ApiResponse(responseCode = "403", description = "Access Denied",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = "400", description = "Validation Error",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = "404", description = "Not Found",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))}),
+    })
     @PatchMapping("/patient/medical-records/{id}")
     @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<MedicalRecordDetailDto> patchDetailedMedicalRecord(@PathVariable Long id,
@@ -111,6 +166,16 @@ public class MedicalRecordController {
         return new ResponseEntity<>(detailMapper.toDto(updated), HttpStatus.OK);
     }
 
+    @Operation(summary = "Delete medical record (only for doctors).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202", description = "Deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Not Found.",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = "403", description = "Access Denied",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))})
+    })
     @DeleteMapping("/patient/medical-records/{id}")
     @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity deleteMedicalRecordById(@PathVariable Long id,

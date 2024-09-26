@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class HealthSphereBackendApplicationTests {
+class HealthSphereBackendApplicationTests extends AbstractTestContainers{
 
 	@Test
 	void contextLoads() {

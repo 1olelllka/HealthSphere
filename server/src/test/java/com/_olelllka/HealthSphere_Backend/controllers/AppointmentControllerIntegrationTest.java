@@ -1,6 +1,6 @@
 package com._olelllka.HealthSphere_Backend.controllers;
 
-import com._olelllka.HealthSphere_Backend.TestContainers;
+import com._olelllka.HealthSphere_Backend.AbstractTestContainers;
 import com._olelllka.HealthSphere_Backend.TestDataUtil;
 import com._olelllka.HealthSphere_Backend.domain.dto.JwtToken;
 import com._olelllka.HealthSphere_Backend.domain.dto.appointments.AppointmentDto;
@@ -14,8 +14,6 @@ import com._olelllka.HealthSphere_Backend.service.AppointmentService;
 import com._olelllka.HealthSphere_Backend.service.UserService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,15 +22,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.testcontainers.containers.RabbitMQContainer;
-import org.testcontainers.elasticsearch.ElasticsearchContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -45,35 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @AutoConfigureMockMvc
 @Testcontainers
-public class AppointmentControllerIntegrationTest {
-
-    @Container
-    static RabbitMQContainer rabbitMQContainer = TestContainers.rabbitMQContainer;
-
-    @Container
-    static ElasticsearchContainer elasticsearchContainer = TestContainers.elasticsearchContainer;
-
-    @DynamicPropertySource
-    static void configure(DynamicPropertyRegistry registry) {
-        registry.add("spring.rabbitmq.host", rabbitMQContainer::getHost);
-        registry.add("spring.rabbitmq.port", rabbitMQContainer::getAmqpPort);
-        registry.add("spring.rabbitmq.username", rabbitMQContainer::getAdminUsername);
-        registry.add("spring.rabbitmq.password", rabbitMQContainer::getAdminPassword);
-        registry.add("spring.elasticsearch.uris", elasticsearchContainer::getHttpHostAddress);
-    }
-
-    @BeforeAll
-    static void setUp() {
-        elasticsearchContainer.start();
-        rabbitMQContainer.start();
-    }
-
-    @AfterAll
-    static void tearDown() {
-        elasticsearchContainer.stop();
-        rabbitMQContainer.stop();
-    }
-
+public class AppointmentControllerIntegrationTest extends AbstractTestContainers {
 
     private MockMvc mockMvc;
     private AppointmentService service;

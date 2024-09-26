@@ -1,6 +1,6 @@
 package com._olelllka.HealthSphere_Backend.controllers;
 
-import com._olelllka.HealthSphere_Backend.TestContainers;
+import com._olelllka.HealthSphere_Backend.AbstractTestContainers;
 import com._olelllka.HealthSphere_Backend.TestDataUtil;
 import com._olelllka.HealthSphere_Backend.domain.dto.*;
 import com._olelllka.HealthSphere_Backend.domain.dto.auth.LoginForm;
@@ -12,10 +12,7 @@ import com._olelllka.HealthSphere_Backend.repositories.PatientElasticRepository;
 import com._olelllka.HealthSphere_Backend.service.SHA256;
 import com._olelllka.HealthSphere_Backend.service.impl.UserServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redis.testcontainers.RedisStackContainer;
 import jakarta.servlet.http.Cookie;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,15 +24,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.testcontainers.containers.RabbitMQContainer;
-import org.testcontainers.elasticsearch.ElasticsearchContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 
 import java.text.ParseException;
@@ -48,39 +40,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(SpringExtension.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @AutoConfigureMockMvc
-public class PatientControllerIntegrationTest {
-
-    @Container
-    static ElasticsearchContainer elasticsearchContainer = TestContainers.elasticsearchContainer;
-
-    @Container
-    static RabbitMQContainer container = TestContainers.rabbitMQContainer;
-
-    @Container
-    static RedisStackContainer redis = TestContainers.redis;
-
-    @DynamicPropertySource
-    static void configure(DynamicPropertyRegistry registry) {
-        registry.add("spring.rabbitmq.host", container::getHost);
-        registry.add("spring.rabbitmq.port", container::getAmqpPort);
-        registry.add("spring.rabbitmq.username", container::getAdminUsername);
-        registry.add("spring.rabbitmq.password", container::getAdminPassword);
-        registry.add("spring.elasticsearch.uris", elasticsearchContainer::getHttpHostAddress);
-        registry.add("spring.redis.host", redis::getHost);
-        registry.add("spring.redis.port", () -> redis.getFirstMappedPort());
-    }
-
-    @BeforeAll
-    static void setUp() {
-        container.start();
-        elasticsearchContainer.start();
-        redis.start();
-    }
-    @AfterAll
-    static void tearDown() {
-        container.stop();
-        elasticsearchContainer.stop();
-    }
+public class PatientControllerIntegrationTest extends AbstractTestContainers {
 
     @BeforeEach
     void initEach() throws ParseException {

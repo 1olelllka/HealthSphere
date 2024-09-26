@@ -1,5 +1,6 @@
 package com._olelllka.HealthSphere_Backend.rest.controllers;
 
+import com._olelllka.HealthSphere_Backend.domain.dto.ErrorMessage;
 import com._olelllka.HealthSphere_Backend.domain.dto.appointments.AppointmentDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.appointments.UpdateAppointmentDto;
 import com._olelllka.HealthSphere_Backend.domain.entity.AppointmentEntity;
@@ -7,10 +8,15 @@ import com._olelllka.HealthSphere_Backend.domain.entity.Status;
 import com._olelllka.HealthSphere_Backend.mapper.impl.AppointmentMapper;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.ValidationException;
 import com._olelllka.HealthSphere_Backend.service.AppointmentService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +28,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(path="/api/v1")
+@Tag(name="Appointments", description = "Manage appointments for doctor and patient. Requires authorization.")
 public class AppointmentController {
 
     private AppointmentService service;
@@ -35,6 +42,20 @@ public class AppointmentController {
     }
 
 
+    @Operation(summary = "Get all appointments for specific patient.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Got all appointments patient has",
+            content = {@Content(mediaType = "application/json",
+                    array =
+                        @ArraySchema(schema =
+                            @Schema(implementation = AppointmentDto.class)
+                        )
+            )}
+            ),
+            @ApiResponse(responseCode = "403", description = "Access Denied",
+            content = {@Content(mediaType = "application/json",
+            schema = @Schema(implementation = ErrorMessage.class))})
+    })
     @GetMapping("/patients/{patientId}/appointments")
     public ResponseEntity<List<AppointmentDto>> getAllAppointmentsForPatient(@PathVariable Long patientId) {
         List<AppointmentEntity> entities =  service.getAllAppointmentsForPatient(patientId);
@@ -42,6 +63,20 @@ public class AppointmentController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
+    @Operation(summary = "Get all appointments for specific doctor.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Got all appointments doctor has",
+                    content = {@Content(mediaType = "application/json",
+                            array =
+                            @ArraySchema(schema =
+                            @Schema(implementation = AppointmentDto.class)
+                            )
+                    )}
+            ),
+            @ApiResponse(responseCode = "403", description = "Access Denied",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))})
+    })
     @GetMapping("/doctors/{doctorId}/appointments")
     public ResponseEntity<List<AppointmentDto>> getAllAppointmentsForDoctor(@PathVariable Long doctorId) {
         List<AppointmentEntity> entities = service.getAllAppointmentsForDoctor(doctorId);
@@ -49,12 +84,43 @@ public class AppointmentController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
+    @Operation(summary = "Get details about specific appointment")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Got details about appointment",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = AppointmentDto.class)
+                    )}
+            ),
+            @ApiResponse(responseCode = "403", description = "Access Denied",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = "404", description = "Appointment with such id was not found.",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))})
+    })
     @GetMapping("/patients/appointments/{id}")
     public ResponseEntity<AppointmentDto> getAppointmentById(@PathVariable Long id) {
         AppointmentEntity appointment = service.getAppointmentById(id);
         return new ResponseEntity<>(mapper.toDto(appointment), HttpStatus.OK);
     }
 
+    @Operation(summary = "Create an appointment")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Created successfully",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = AppointmentDto.class)
+                    )}
+            ),
+            @ApiResponse(responseCode = "403", description = "Access Denied",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = "400", description = "Validation Errors",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = "404", description = "Patient or Doctor with id specified in json was not found",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))})
+    })
     @PostMapping("/patients/appointments")
     public ResponseEntity<AppointmentDto> createAppointment(@Valid @RequestBody AppointmentDto dto,
                                                             BindingResult bindingResult,
@@ -74,6 +140,29 @@ public class AppointmentController {
         return new ResponseEntity<>(mapper.toDto(created), HttpStatus.CREATED);
     }
 
+    @Operation(summary = "Update an appointment")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Updated successfully",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = AppointmentDto.class)
+                    )}
+            ),
+            @ApiResponse(responseCode = "201", description = "Rescheduled appointment successfully",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = AppointmentDto.class)
+                    )}
+            ),
+            @ApiResponse(responseCode = "202", description = "Canceled appointment"),
+            @ApiResponse(responseCode = "403", description = "Access Denied",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = "400", description = "Validation Errors",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = "404", description = "Patient or Doctor with id specified in json was not found",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))})
+    })
     @PatchMapping("/patients/appointments/{id}")
     public ResponseEntity<AppointmentDto> updateAppointment(@RequestBody @Valid UpdateAppointmentDto dto,
                                                             @PathVariable Long id,
