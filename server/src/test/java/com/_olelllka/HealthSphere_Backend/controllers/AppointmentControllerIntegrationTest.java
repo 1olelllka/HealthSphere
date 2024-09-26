@@ -278,7 +278,7 @@ public class AppointmentControllerIntegrationTest extends AbstractTestContainers
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginFormJson))
                 .andReturn().getResponse().getCookie("accessToken");
-        String token = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/get-jwt")
+        String token = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/jwt")
                         .cookie(cookieToken))
                 .andReturn().getResponse().getContentAsString();
         return objectMapper.readValue(token, JwtToken.class).getAccessToken();
@@ -294,7 +294,7 @@ public class AppointmentControllerIntegrationTest extends AbstractTestContainers
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginFormJson))
                 .andReturn().getResponse().getCookie("accessToken");
-        String token = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/get-jwt")
+        String token = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/jwt")
                         .cookie(cookieToken))
                 .andReturn().getResponse().getContentAsString();
         String accessToken = objectMapper.readValue(token, JwtToken.class).getAccessToken();

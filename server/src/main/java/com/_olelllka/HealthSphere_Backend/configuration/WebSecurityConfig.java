@@ -51,7 +51,7 @@ public class WebSecurityConfig {
                             .requestMatchers(HttpMethod.DELETE, "/api/v1/doctors/me", "/api/v1/patient/medical-records/*", "/api/v1/prescriptions/**").hasRole("DOCTOR")
                             .requestMatchers(HttpMethod.PATCH, "/api/v1/doctors/me", "/api/v1/patient/medical-records/*", "/api/v1/prescriptions/**").hasRole("DOCTOR")
                             .requestMatchers(HttpMethod.GET, "/api/v1/doctors/me").hasRole("DOCTOR")
-                            .requestMatchers(HttpMethod.GET, "/api/v1/get-jwt", "/actuator/health/**", "/api/v1/doctors", "/api/v1/doctors/**").permitAll()
+                            .requestMatchers(HttpMethod.GET, "/api/v1/jwt", "/actuator/health/**", "/api/v1/doctors", "/api/v1/doctors/**").permitAll()
                             .anyRequest()
                             .authenticated();
                 })

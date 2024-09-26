@@ -190,7 +190,7 @@ public class UserController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = ErrorMessage.class))}),
     })
-    @GetMapping("/get-jwt")
+    @GetMapping("/jwt")
     public ResponseEntity<JwtToken> getJwtToken(HttpServletRequest request) {
         Cookie accessToken = Arrays.stream(request.getCookies())
                 .filter(cookie -> "accessToken".equals(cookie.getName()))
