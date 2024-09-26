@@ -4,9 +4,13 @@ import com._olelllka.HealthSphere_Backend.domain.entity.SpecializationEntity;
 import com._olelllka.HealthSphere_Backend.repositories.SpecializationRepository;
 import com._olelllka.HealthSphere_Backend.service.SpecializationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.interceptor.SimpleKey;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class SpecializationServiceImpl implements SpecializationService {
@@ -19,7 +23,8 @@ public class SpecializationServiceImpl implements SpecializationService {
     }
 
     @Override
-    public Page<SpecializationEntity> getAllSpecializations(Pageable pageable) {
-        return repository.findAll(pageable);
+    @Cacheable(value = "specializations", keyGenerator = "sha256KeyGenerator")
+    public List<SpecializationEntity> getAllSpecializations() {
+        return repository.findAll();
     }
 }

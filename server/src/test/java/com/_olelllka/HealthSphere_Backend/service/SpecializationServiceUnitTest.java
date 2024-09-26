@@ -8,9 +8,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -26,14 +25,13 @@ public class SpecializationServiceUnitTest {
     @Test
     public void testThatGetAllSpecializationsReturnsPageOfResults() {
         // given
-        Pageable pageable = PageRequest.of(1, 1);
         // when
-        when(repository.findAll(pageable)).thenReturn(Page.empty());
-        Page<SpecializationEntity> result = service.getAllSpecializations(pageable);
+        when(repository.findAll()).thenReturn(List.of());
+        List<SpecializationEntity> result = service.getAllSpecializations();
         // then
         assertAll(
                 () -> assertNotNull(result),
-                () -> assertEquals(result, Page.empty())
+                () -> assertEquals(result.size(), 0)
         );
     }
 

@@ -11,7 +11,7 @@ import java.util.Arrays;
 public class SHA256KeyGenerator implements KeyGenerator {
     @Override
     public Object generate(Object target, Method method, Object... params) {
-            Object obj = Arrays.stream(params).findFirst().orElseThrow(() -> new RuntimeException("No Arguments found."));
+            Object obj = Arrays.stream(params).findFirst().orElse("withoutParams");
             String key = obj.toString();
             return SHA256.generateSha256Hash(key);
     }

@@ -50,7 +50,10 @@ public class RedisConfig {
     public CacheManager cacheManager(JedisConnectionFactory jedisConnectionFactory) {
         return RedisCacheManager.RedisCacheManagerBuilder.fromConnectionFactory(jedisConnectionFactory)
                 .withCacheConfiguration("profile",
-                        RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(60))).build();
+                        RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(60)))
+                .withCacheConfiguration("specializations",
+                        RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofDays(1)))
+                .build();
     }
 
     @Bean

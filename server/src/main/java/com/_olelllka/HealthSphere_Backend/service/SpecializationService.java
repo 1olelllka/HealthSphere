@@ -4,6 +4,8 @@ import com._olelllka.HealthSphere_Backend.domain.entity.SpecializationEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 public interface SpecializationService {
-    Page<SpecializationEntity> getAllSpecializations(Pageable pageable);
+    List<SpecializationEntity> getAllSpecializations();
 }

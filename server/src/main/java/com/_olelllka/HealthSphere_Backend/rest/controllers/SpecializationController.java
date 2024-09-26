@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping(path="/api/v1")
 @Tag(name="Specializations", description = "Search for specializations. Requires authorization")
@@ -31,9 +33,9 @@ public class SpecializationController {
 
     @GetMapping("/specializations")
     @Operation(summary = "Get all specializations")
-    public ResponseEntity<Page<SpecializationDto>> getAllSpecializations(Pageable pageable) {
-        Page<SpecializationEntity> entities = service.getAllSpecializations(pageable);
-        Page<SpecializationDto> result = entities.map(mapper::toDto);
+    public ResponseEntity<List<SpecializationDto>> getAllSpecializations() {
+        List<SpecializationEntity> entities = service.getAllSpecializations();
+        List<SpecializationDto> result = entities.stream().map(mapper::toDto).toList();
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 }

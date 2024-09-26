@@ -51,8 +51,7 @@ public class SpecializationControllerIntegrationTest extends AbstractTestContain
         String accessToken = getAccessToken();
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/specializations")
                 .header("Authorization", "Bearer " + accessToken))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.content").exists());
+                .andExpect(MockMvcResultMatchers.status().isOk());
     }
 
     private String getAccessToken() throws Exception {
