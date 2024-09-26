@@ -19,6 +19,11 @@ export const setAppointmentsForDoctor = createAsyncThunk(
           status: 403,
           message: "You don't have permission to access this page.",
         });
+      } else if (axiosError.response?.status === 401) {
+        return rejectWithValue({
+          status: 401,
+          message: (axiosError.response.data as { message: string }).message,
+        });
       }
       console.log(err);
     }
@@ -41,6 +46,11 @@ export const setAppointmentsForPatient = createAsyncThunk(
         return rejectWithValue({
           status: 403,
           message: "You don't have permission to access this page.",
+        });
+      } else if (axiosError.response?.status === 401) {
+        return rejectWithValue({
+          status: 401,
+          message: (axiosError.response.data as { message: string }).message,
         });
       }
       console.log(err);
@@ -94,6 +104,11 @@ export const createAppointment = createAsyncThunk(
           status: 403,
           message: "You don't have permission to perform this action.",
         });
+      } else if (axiosError.response?.status === 401) {
+        return rejectWithValue({
+          status: 401,
+          message: (axiosError.response.data as { message: string }).message,
+        });
       }
     }
   }
@@ -141,6 +156,11 @@ export const patchAppointment = createAsyncThunk(
           status: 404,
           message: (axiosError.response?.data as { message: string }).message,
         });
+      } else if (axiosError.response?.status === 401) {
+        return rejectWithValue({
+          status: 401,
+          message: (axiosError.response.data as { message: string }).message,
+        });
       }
     }
   }
@@ -160,6 +180,11 @@ export const deleteAppointment = createAsyncThunk(
         return rejectWithValue({
           status: 403,
           message: "You don't have permission to access this page.",
+        });
+      } else if (axiosError.response?.status === 401) {
+        return rejectWithValue({
+          status: 401,
+          message: (axiosError.response.data as { message: string }).message,
         });
       }
     }

@@ -18,6 +18,11 @@ export const setMedicineForPrescription = createAsyncThunk(
           status: 404,
           message: "Prescription with such id was not found.",
         });
+      } else if (axiosError.response?.status === 401) {
+        return rejectWithValue({
+          status: 401,
+          message: (axiosError.response.data as { message: string }).message,
+        });
       }
     }
   }
@@ -47,6 +52,11 @@ export const addMedicineToPrescription = createAsyncThunk(
         return rejectWithValue({
           status: 404,
           message: "Prescription with such id was not found.",
+        });
+      } else if (axiosError.response?.status === 401) {
+        return rejectWithValue({
+          status: 401,
+          message: (axiosError.response.data as { message: string }).message,
         });
       }
       console.log(err);
@@ -78,6 +88,11 @@ export const updateMedicineForPrescription = createAsyncThunk(
           message: (axiosError.response?.data as { message: string })
             ?.message as string,
         });
+      } else if (axiosError.response?.status === 401) {
+        return rejectWithValue({
+          status: 401,
+          message: (axiosError.response.data as { message: string }).message,
+        });
       }
     }
   }
@@ -97,6 +112,11 @@ export const deleteMedicineFromPrescription = createAsyncThunk(
         return rejectWithValue({
           status: 403,
           message: "You are not allowed to delete this medicine.",
+        });
+      } else if (axiosError.response?.status === 401) {
+        return rejectWithValue({
+          status: 401,
+          message: (axiosError.response.data as { message: string }).message,
         });
       }
     }

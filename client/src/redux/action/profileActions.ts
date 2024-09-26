@@ -19,7 +19,21 @@ export const setProfile = createAsyncThunk(
           return patientResponse.data;
         }
       } catch (err) {
+        const error = err as AxiosError;
+        if (error.response?.status === 401) {
+          return rejectWithValue({
+            status: 401,
+            message: (error.response?.data as { message: string }).message,
+          });
+        }
         console.log(err);
+      }
+      const error = err as AxiosError;
+      if (error.response?.status === 401) {
+        return rejectWithValue({
+          status: 401,
+          message: (error.response?.data as { message: string }).message,
+        });
       }
     }
     return rejectWithValue({ status: 403, message: "Forbidden" });
@@ -27,14 +41,17 @@ export const setProfile = createAsyncThunk(
 );
 export const patchPatientProfile = createAsyncThunk(
   "profile/patchPatientProfile",
-  async (values: {
-    firstName: string;
-    lastName: string;
-    address: string;
-    phoneNumber: string;
-    dateOfBirth: string;
-    allergies?: string;
-  }) => {
+  async (
+    values: {
+      firstName: string;
+      lastName: string;
+      address: string;
+      phoneNumber: string;
+      dateOfBirth: string;
+      allergies?: string;
+    },
+    { rejectWithValue }
+  ) => {
     try {
       const response = await SERVER_API.patch("/patients/me", values, {
         headers: {
@@ -45,6 +62,18 @@ export const patchPatientProfile = createAsyncThunk(
         return response.data;
       }
     } catch (err) {
+      const error = err as AxiosError;
+      if (error.response?.status === 400) {
+        return rejectWithValue({
+          status: 400,
+          message: (error.response.data as { message: string }).message,
+        });
+      } else if (error.response?.status === 401) {
+        return rejectWithValue({
+          status: 401,
+          message: (error.response?.data as { message: string }).message,
+        });
+      }
       console.log(err);
     }
   }
@@ -85,6 +114,11 @@ export const patchDoctorProfile = createAsyncThunk(
           status: 400,
           message: (error.response.data as { message: string }).message,
         });
+      } else if (error.response?.status === 401) {
+        return rejectWithValue({
+          status: 401,
+          message: (error.response?.data as { message: string }).message,
+        });
       }
     }
   }
@@ -112,13 +146,20 @@ export const logoutProfile = createAsyncThunk(
 
 export const deletePatientProfile = createAsyncThunk(
   "profile/deletePatientProfile",
-  async () => {
+  async (_, { rejectWithValue }) => {
     try {
       const response = await SERVER_API.delete("/patients/me");
       if (response.status === 202) {
         return "deleted";
       }
     } catch (err) {
+      const error = err as AxiosError;
+      if (error.response?.status === 401) {
+        return rejectWithValue({
+          status: 401,
+          message: (error.response?.data as { message: string }).message,
+        });
+      }
       console.log(err);
     }
   }
@@ -126,13 +167,20 @@ export const deletePatientProfile = createAsyncThunk(
 
 export const deleteDoctorProfile = createAsyncThunk(
   "profile/deleteDoctorProfile",
-  async () => {
+  async (_, { rejectWithValue }) => {
     try {
       const response = await SERVER_API.delete("/doctors/me");
       if (response.status === 202) {
         return "deleted";
       }
     } catch (err) {
+      const error = err as AxiosError;
+      if (error.response?.status === 401) {
+        return rejectWithValue({
+          status: 401,
+          message: (error.response?.data as { message: string }).message,
+        });
+      }
       console.log(err);
     }
   }

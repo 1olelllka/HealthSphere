@@ -81,7 +81,6 @@ const profileSlice = createSlice({
     builder
       .addCase(setProfile.pending, (state) => {
         state.error = null;
-        console.log("Loading profile...");
       })
       .addCase(
         setProfile.fulfilled,
@@ -112,8 +111,9 @@ const profileSlice = createSlice({
         return state;
       });
     builder
-      .addCase(patchPatientProfile.pending, () => {
-        console.log("Updating patient profile...");
+      .addCase(patchPatientProfile.pending, (state) => {
+        state.error = null;
+        return state;
       })
       .addCase(
         patchPatientProfile.fulfilled,
@@ -140,10 +140,18 @@ const profileSlice = createSlice({
           state.data.allergies = action.payload.allergies;
           return state;
         }
-      );
+      )
+      .addCase(patchPatientProfile.rejected, (state, action) => {
+        state.error = action.payload as { status: number; message: string };
+        if (state.error.status != 400) {
+          state.data = initialState.data;
+        }
+        return state;
+      });
     builder
-      .addCase(patchDoctorProfile.pending, () => {
-        console.log("Updating doctor profile...");
+      .addCase(patchDoctorProfile.pending, (state) => {
+        state.error = null;
+        return state;
       })
       .addCase(
         patchDoctorProfile.fulfilled,
@@ -165,19 +173,29 @@ const profileSlice = createSlice({
         return state;
       });
     builder
-      .addCase(deletePatientProfile.pending, () => {
-        console.log("Deleting patient profile...");
+      .addCase(deletePatientProfile.pending, (state) => {
+        state.error = null;
+        return state;
       })
       .addCase(deletePatientProfile.fulfilled, (state) => {
         state = initialState;
         return state;
+      })
+      .addCase(deletePatientProfile.rejected, (state, action) => {
+        state.error = action.payload as { status: number; message: string };
+        return state;
       });
     builder
-      .addCase(deleteDoctorProfile.pending, () => {
-        console.log("Deleting doctor profile...");
+      .addCase(deleteDoctorProfile.pending, (state) => {
+        state.error = null;
+        return state;
       })
       .addCase(deleteDoctorProfile.fulfilled, (state) => {
         state = initialState;
+        return state;
+      })
+      .addCase(deleteDoctorProfile.rejected, (state, action) => {
+        state.error = action.payload as { status: number; message: string };
         return state;
       });
     builder

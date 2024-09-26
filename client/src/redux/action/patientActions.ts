@@ -19,6 +19,11 @@ export const getAllPatients = createAsyncThunk(
           status: 403,
           message: "Forbidden",
         });
+      } else if (axiosError.response?.status === 401) {
+        return rejectWithValue({
+          status: 401,
+          message: (axiosError.response.data as { message: string }).message,
+        });
       }
     }
   }

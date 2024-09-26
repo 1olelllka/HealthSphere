@@ -7,6 +7,7 @@ import { Patient } from "./Patient";
 import { ForbiddenPage } from "@/pages/ForbiddenPage";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { UnauthorizedPage } from "@/pages/UnauthorizedPage";
 
 export const Profile = () => {
   const { data, error } = useSelector((state: RootState) => state.profile);
@@ -24,6 +25,8 @@ export const Profile = () => {
     <>
       {error && error.status == 403 ? (
         <ForbiddenPage />
+      ) : error && error.status === 401 ? (
+        <UnauthorizedPage message={error.message} />
       ) : (
         <div className="flex flex-col pt-10 justify-center items-center relative">
           <div className="container">

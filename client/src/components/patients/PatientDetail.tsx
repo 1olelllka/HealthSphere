@@ -9,6 +9,7 @@ import { Appointments } from "./Appointments";
 import patient_female from "../../assets/patient_female.png";
 import { FaHouse, FaMessage, FaMobileScreenButton } from "react-icons/fa6";
 import { ArrowLeft } from "lucide-react";
+import { UnauthorizedPage } from "@/pages/UnauthorizedPage";
 
 export const PatientDetail = () => {
   const id = useParams().id;
@@ -53,6 +54,8 @@ export const PatientDetail = () => {
     <>
       {err && err.status === 404 ? (
         <NotFoundPage />
+      ) : err && err.status === 401 ? (
+        <UnauthorizedPage message={err.message} />
       ) : (
         <div className="flex justify-center">
           <div className="container">

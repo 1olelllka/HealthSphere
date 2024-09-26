@@ -4,7 +4,7 @@ import { AxiosError } from "axios";
 
 export const setRecord = createAsyncThunk(
   "record/setRecord",
-  async (values: { id: number; page: number }) => {
+  async (values: { id: number; page: number }, { rejectWithValue }) => {
     try {
       const response = await SERVER_API.get(
         `patient/${values.id}/medical-records?page=${values.page}`
@@ -13,20 +13,29 @@ export const setRecord = createAsyncThunk(
         return response.data;
       }
     } catch (err) {
-      console.log(err);
+      const axiosError = err as AxiosError;
+      if (axiosError.response?.status === 401) {
+        return rejectWithValue({
+          status: 401,
+          message: (axiosError.response.data as { message: string }).message,
+        });
+      }
     }
   }
 );
 
 export const searchRecord = createAsyncThunk(
   "record/searchRecord",
-  async (values: {
-    id: number;
-    diagnosis?: string | undefined;
-    from?: Date | undefined;
-    to?: Date | undefined;
-    page: number;
-  }) => {
+  async (
+    values: {
+      id: number;
+      diagnosis?: string | undefined;
+      from?: Date | undefined;
+      to?: Date | undefined;
+      page: number;
+    },
+    { rejectWithValue }
+  ) => {
     let from = "";
     let to = "";
     let diagnosis = "";
@@ -47,7 +56,13 @@ export const searchRecord = createAsyncThunk(
         return response.data;
       }
     } catch (err) {
-      console.log(err);
+      const axiosError = err as AxiosError;
+      if (axiosError.response?.status === 401) {
+        return rejectWithValue({
+          status: 401,
+          message: (axiosError.response.data as { message: string }).message,
+        });
+      }
     }
   }
 );
@@ -66,7 +81,13 @@ export const setDetailedRecord = createAsyncThunk(
         });
       }
     } catch (err) {
-      console.log(err);
+      const axiosError = err as AxiosError;
+      if (axiosError.response?.status === 401) {
+        return rejectWithValue({
+          status: 401,
+          message: (axiosError.response.data as { message: string }).message,
+        });
+      }
       return rejectWithValue({
         status: 403,
         message: "Forbidden",
@@ -120,6 +141,11 @@ export const createPrescriptionForRecord = createAsyncThunk(
           message: (axiosError.response?.data as { message: string })
             ?.message as string,
         });
+      } else if (axiosError.response?.status === 401) {
+        return rejectWithValue({
+          status: 401,
+          message: (axiosError.response.data as { message: string }).message,
+        });
       }
     }
   }
@@ -166,6 +192,11 @@ export const updateMedicalRecord = createAsyncThunk(
           message: (axiosError.response?.data as { message: string })
             ?.message as string,
         });
+      } else if (axiosError.response?.status === 401) {
+        return rejectWithValue({
+          status: 401,
+          message: (axiosError.response.data as { message: string }).message,
+        });
       }
       console.log(err);
     }
@@ -191,6 +222,11 @@ export const deletePrescriptionForRecord = createAsyncThunk(
         return rejectWithValue({
           status: 403,
           message: "You don't have permission to perform this action.",
+        });
+      } else if (axiosError.response?.status === 401) {
+        return rejectWithValue({
+          status: 401,
+          message: (axiosError.response.data as { message: string }).message,
         });
       }
       console.log(err);
@@ -220,6 +256,11 @@ export const deleteMedicalRecord = createAsyncThunk(
           status: 404,
           message: (axiosError.response?.data as { message: string })
             ?.message as string,
+        });
+      } else if (axiosError.response?.status === 401) {
+        return rejectWithValue({
+          status: 401,
+          message: (axiosError.response.data as { message: string }).message,
         });
       }
       console.log(err);

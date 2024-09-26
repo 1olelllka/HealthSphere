@@ -38,6 +38,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
+import { UnauthorizedPage } from "@/pages/UnauthorizedPage";
 
 export const MedicalRecordDetail = () => {
   const id = useParams().id;
@@ -69,6 +70,8 @@ export const MedicalRecordDetail = () => {
     <>
       {record.error && record.error.status == 403 ? (
         <ForbiddenPage message={record.error.message} />
+      ) : record.error && record.error.status === 401 ? (
+        <UnauthorizedPage message={record.error.message} />
       ) : (
         <div
           className={`flex flex-col pt-20 justify-center items-center ${

@@ -25,6 +25,7 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useParams } from "react-router-dom";
+import { UnauthorizedPage } from "@/pages/UnauthorizedPage";
 
 const localizer = momentLocalizer(moment);
 
@@ -78,125 +79,133 @@ export const Appointments = () => {
   }, [dispatch, id]);
 
   return (
-    <div className="mt-10 bg-slate-50 p-10 rounded-3xl drop-shadow-lg">
-      <h1 className="text-4xl">Appointments</h1>
-      {data.error && data.error.status === 400 && (
-        <Alert className="w-1/3 mx-auto mt-10" variant={"destructive"}>
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{data.error.message}</AlertDescription>
-        </Alert>
-      )}
-      {appointments && (
-        <div className="pt-10 flex justify-center">
-          <Calendar
-            localizer={localizer}
-            events={appointments}
-            startAccessor="appointmentDate"
-            defaultView="work_week"
-            views={{ work_week: true }}
-            endAccessor="endDate"
-            selectable={true}
-            eventPropGetter={() => {
-              const style: React.CSSProperties = {
-                backgroundColor: "#5C8374",
-                borderRadius: "5px",
-                color: "white",
-                border: "1px solid #183D3D",
-              };
-              return {
-                style: style,
-              };
-            }}
-            step={30}
-            min={new Date(1970, 1, 1, 9, 0, 0)}
-            max={new Date(1970, 1, 1, 18, 0, 0)}
-            style={{ width: "80%", height: 600, textAlign: "center" }}
-            onSelectSlot={(slotInfo) => {
-              setOpenDialog(true);
-              setSelectedDate(slotInfo.start);
-            }}
-          />
+    <>
+      {data.error && data.error.status === 401 ? (
+        <UnauthorizedPage message={data.error.message} />
+      ) : (
+        <div className="mt-10 bg-slate-50 p-10 rounded-3xl drop-shadow-lg">
+          <h1 className="text-4xl">Appointments</h1>
+          {data.error && data.error.status === 400 && (
+            <Alert className="w-1/3 mx-auto mt-10" variant={"destructive"}>
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{data.error.message}</AlertDescription>
+            </Alert>
+          )}
+          {appointments && (
+            <div className="pt-10 flex justify-center">
+              <Calendar
+                localizer={localizer}
+                events={appointments}
+                startAccessor="appointmentDate"
+                defaultView="work_week"
+                views={{ work_week: true }}
+                endAccessor="endDate"
+                selectable={true}
+                eventPropGetter={() => {
+                  const style: React.CSSProperties = {
+                    backgroundColor: "#5C8374",
+                    borderRadius: "5px",
+                    color: "white",
+                    border: "1px solid #183D3D",
+                  };
+                  return {
+                    style: style,
+                  };
+                }}
+                step={30}
+                min={new Date(1970, 1, 1, 9, 0, 0)}
+                max={new Date(1970, 1, 1, 18, 0, 0)}
+                style={{ width: "80%", height: 600, textAlign: "center" }}
+                onSelectSlot={(slotInfo) => {
+                  setOpenDialog(true);
+                  setSelectedDate(slotInfo.start);
+                }}
+              />
+            </div>
+          )}
+          <Dialog open={openDialog}>
+            <DialogContent className="w-[455px]">
+              <DialogHeader>
+                <DialogTitle>Create an appointment</DialogTitle>
+              </DialogHeader>
+              <Form {...form}>
+                <form>
+                  <div className="grid gap-8 grid-cols-3">
+                    <div className="grid gap-4 py-4 col-span-2">
+                      <FormField
+                        control={form.control}
+                        name="appointmentDate"
+                        render={() => (
+                          <FormItem>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <FormLabel className="text-right">Date</FormLabel>
+                              <Label className="col-span-3 border-2 border-slate-300 rounded-lg p-2 font-normal w-[335px]">
+                                {selectedDate
+                                  ? `${selectedDate.getFullYear()}/${String(
+                                      selectedDate.getMonth() + 1
+                                    ).padStart(2, "0")}/${String(
+                                      selectedDate.getDate()
+                                    ).padStart(2, "0")} ${String(
+                                      selectedDate.getHours()
+                                    ).padStart(2, "0")}:${String(
+                                      selectedDate.getMinutes()
+                                    ).padStart(2, "0")}`
+                                  : ""}
+                              </Label>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="reason"
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <FormLabel className="text-right">
+                                Reason
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  placeholder="Briefly describe the reason (Optional)"
+                                  className="col-span-3 w-[335px]"
+                                />
+                              </FormControl>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      variant={"outline"}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setOpenDialog(false);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant={"default"}
+                      type="submit"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        onSubmit(form.getValues());
+                        setOpenDialog(false);
+                      }}
+                    >
+                      Create
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
         </div>
       )}
-      <Dialog open={openDialog}>
-        <DialogContent className="w-[455px]">
-          <DialogHeader>
-            <DialogTitle>Create an appointment</DialogTitle>
-          </DialogHeader>
-          <Form {...form}>
-            <form>
-              <div className="grid gap-8 grid-cols-3">
-                <div className="grid gap-4 py-4 col-span-2">
-                  <FormField
-                    control={form.control}
-                    name="appointmentDate"
-                    render={() => (
-                      <FormItem>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <FormLabel className="text-right">Date</FormLabel>
-                          <Label className="col-span-3 border-2 border-slate-300 rounded-lg p-2 font-normal w-[335px]">
-                            {selectedDate
-                              ? `${selectedDate.getFullYear()}/${String(
-                                  selectedDate.getMonth() + 1
-                                ).padStart(2, "0")}/${String(
-                                  selectedDate.getDate()
-                                ).padStart(2, "0")} ${String(
-                                  selectedDate.getHours()
-                                ).padStart(2, "0")}:${String(
-                                  selectedDate.getMinutes()
-                                ).padStart(2, "0")}`
-                              : ""}
-                          </Label>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="reason"
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <FormLabel className="text-right">Reason</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="Briefly describe the reason (Optional)"
-                              className="col-span-3 w-[335px]"
-                            />
-                          </FormControl>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button
-                  variant={"outline"}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setOpenDialog(false);
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant={"default"}
-                  type="submit"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    onSubmit(form.getValues());
-                    setOpenDialog(false);
-                  }}
-                >
-                  Create
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-    </div>
+    </>
   );
 };

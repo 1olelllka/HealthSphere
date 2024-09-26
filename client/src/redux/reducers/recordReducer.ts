@@ -94,6 +94,10 @@ const recordSlice = createSlice({
       .addCase(setRecord.fulfilled, (state, action: PayloadAction<Result>) => {
         state = action.payload;
         return state;
+      })
+      .addCase(setRecord.rejected, (state, aciton) => {
+        state.error = aciton.payload as { status: number; message: string };
+        return state;
       });
     builder
       .addCase(searchRecord.pending, (state) => {
@@ -105,10 +109,14 @@ const recordSlice = createSlice({
           state = action.payload;
           return state;
         }
-      );
+      )
+      .addCase(searchRecord.rejected, (state, action) => {
+        state.error = action.payload as { status: number; message: string };
+        return state;
+      });
     builder
-      .addCase(setDetailedRecord.pending, () => {
-        console.log("Loading detailed record...");
+      .addCase(setDetailedRecord.pending, (state) => {
+        state.error = null;
       })
       .addCase(
         setDetailedRecord.fulfilled,

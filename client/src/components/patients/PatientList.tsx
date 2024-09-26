@@ -19,6 +19,7 @@ import {
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getAllPatients } from "@/redux/action/patientActions";
 import { ForbiddenPage } from "@/pages/ForbiddenPage";
+import { UnauthorizedPage } from "@/pages/UnauthorizedPage";
 
 const schema = z.object({
   params: z.string().optional(),
@@ -60,6 +61,8 @@ export const PatientList = () => {
     <>
       {patients.error && patients.error.status === 403 ? (
         <ForbiddenPage />
+      ) : patients.error && patients.error.status === 401 ? (
+        <UnauthorizedPage message={patients.error.message} />
       ) : (
         <div className="flex flex-col pt-28 justify-center items-center">
           <div className="container">
