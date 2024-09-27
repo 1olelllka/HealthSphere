@@ -14,7 +14,7 @@ const tokenFetcher = axios.create({
 
 SERVER_API.interceptors.request.use(async (req) => {
   try {
-    const response = await tokenFetcher.get("/get-jwt");
+    const response = await tokenFetcher.get("/jwt");
     const accessToken = response.data?.accessToken;
     if (accessToken) {
       req.headers = req.headers || {};
