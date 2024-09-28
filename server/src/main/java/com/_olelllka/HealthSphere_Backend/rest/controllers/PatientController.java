@@ -67,20 +67,19 @@ public class PatientController {
         return new ResponseEntity<>(mapper.toDto(patient), HttpStatus.OK);
     }
 
-//    @Operation(summary = "Get all patients (available only for doctors)")
-//    @ApiResponses(value = {
-//            @ApiResponse(responseCode = "200", description = "Got all patients",
-//                    content = {@Content(mediaType = "application/json",
-//                            array =
-//                            @ArraySchema(schema =
-//                            @Schema(implementation = AppointmentDto.class)
-//                            )
-//                    )}
-//            ),
-//            @ApiResponse(responseCode = "403", description = "Access Denied",
-//                    content = {@Content(mediaType = "application/json",
-//                            schema = @Schema(implementation = ErrorMessage.class))})
-//    })
+    @Operation(summary = "Get all of the patients (available only for doctors)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Got all of the patients",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = Page.class)
+                    )),
+            @ApiResponse(responseCode = "403", description = "Access Denied",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class)
+                    ))
+    })
     @PreAuthorize("hasRole('DOCTOR')")
     @GetMapping("/patients")
     public ResponseEntity<Page<PatientListDto>> getAllOfThePatients(@RequestParam(required = false, name = "search") String params,

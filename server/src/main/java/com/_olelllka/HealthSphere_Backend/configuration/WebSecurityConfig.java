@@ -50,7 +50,7 @@ public class WebSecurityConfig {
                     authorize
                             .requestMatchers(HttpMethod.POST, "/api/v1/login", "/api/v1/register/patient")
                             .permitAll()
-                            .requestMatchers("/swagger-ui/**", "/v3/api-docs/**")
+                            .requestMatchers("/apiDocs/**", "/swagger-ui/**","/v3/api-docs/**")
                             .permitAll()
                             .requestMatchers(HttpMethod.POST, "/api/v1/register/doctor").hasRole("ADMIN")
                             .requestMatchers(HttpMethod.GET, "/api/v1/patient/me").hasRole("PATIENT")

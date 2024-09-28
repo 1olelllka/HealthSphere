@@ -55,6 +55,19 @@ public class MedicalRecordController {
         this.doctorMapper = doctorMapper;
     }
 
+    @Operation(summary = "Get all of the medical records for specific user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Got all of the medical records",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = Page.class)
+                    )),
+            @ApiResponse(responseCode = "403", description = "Access Denied",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ErrorMessage.class)
+            ))
+    })
     @GetMapping("/patient/{id}/medical-records")
     public ResponseEntity<Page<MedicalRecordListDto>> getAllMedicalRecords(@PathVariable Long id,
                                                                            @ParameterObject Pageable pageable,

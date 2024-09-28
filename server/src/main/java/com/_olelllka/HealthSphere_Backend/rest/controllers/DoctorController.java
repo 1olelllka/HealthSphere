@@ -2,7 +2,6 @@ package com._olelllka.HealthSphere_Backend.rest.controllers;
 
 import com._olelllka.HealthSphere_Backend.domain.documents.DoctorDocument;
 import com._olelllka.HealthSphere_Backend.domain.dto.ErrorMessage;
-import com._olelllka.HealthSphere_Backend.domain.dto.appointments.AppointmentDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorDetailDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.doctors.DoctorListDto;
 import com._olelllka.HealthSphere_Backend.domain.dto.doctors.SpecializationDto;
