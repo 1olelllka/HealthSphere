@@ -70,7 +70,6 @@ public class WebSecurityConfig {
                 .logout((logout) -> {
                     logout
                             .logoutUrl("/api/v1/logout")
-                            .deleteCookies("JSESSIONID", "accessToken")
                             .invalidateHttpSession(true)
                             .clearAuthentication(true)
                             .logoutSuccessHandler(((request, response, authentication) -> {
@@ -78,7 +77,8 @@ public class WebSecurityConfig {
                                 String email = jwtService.extractUsername(jwt);
                                 redisTemplate.delete("profile::" + SHA256.generateSha256Hash(email));
                                 response.setStatus(HttpServletResponse.SC_OK);
-                            }));
+                            }))
+                            .deleteCookies("JSESSIONID", "accessToken");
                 });
 
         return http.build();
