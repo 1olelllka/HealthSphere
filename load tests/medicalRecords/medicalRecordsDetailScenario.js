@@ -65,16 +65,19 @@ export default function () {
       r.json().accessToken !== undefined,
   });
 
-  // Get profile
+  // Get medical record
   const accessToken = jwtResponse.json().accessToken;
-  const profileResponse = http.get(`http://localhost:8000/api/v1/doctors/me`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
+  const medicalRecordsResponse = http.get(
+    "http://localhost:8000/api/v1/patient/medical-records/1",
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+  check(medicalRecordsResponse, {
+    "medical records fetch successful": (r) => r.status === 200,
   });
-  check(profileResponse, {
-    "profile fetch successful": (r) => r.status === 200,
-    "profile data present": (r) => r.json().user.email === "test@email.com",
-  });
+
   sleep(1);
 }

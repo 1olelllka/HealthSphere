@@ -1,5 +1,8 @@
+// checking will include the login process
+
 import http from "k6/http";
-import { sleep, check } from "k6";
+import { check, sleep } from "k6";
+
 export const options = {
   thresholds: {
     http_req_failed: [{ threshold: "rate<0.01", abortOnFail: true }],
@@ -30,7 +33,7 @@ export const options = {
       executor: "ramping-vus",
       stages: [
         { duration: "10s", target: 200 },
-        { duration: "50s", target: 300 },
+        { duration: "50s", target: 1000 },
         { duration: "10s", target: 70 },
       ],
     },
@@ -38,7 +41,6 @@ export const options = {
 };
 
 export default function () {
-  // log in
   const loginResponse = http.post(
     `http://localhost:8000/api/v1/login`,
     JSON.stringify({
@@ -64,17 +66,27 @@ export default function () {
     "access token present in JWT response": (r) =>
       r.json().accessToken !== undefined,
   });
-
-  // Get profile
   const accessToken = jwtResponse.json().accessToken;
-  const profileResponse = http.get(`http://localhost:8000/api/v1/doctors/me`, {
+
+  // get doctor detail
+  const response = http.get(`http://localhost:8000/api/v1/patients/22`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
   });
-  check(profileResponse, {
-    "profile fetch successful": (r) => r.status === 200,
-    "profile data present": (r) => r.json().user.email === "test@email.com",
+  check(response, { "doctor fetch successful": (r) => r.status === 200 });
+  // get appointments
+  const appointmentsResponse = http.get(
+    `http://localhost:8000/api/v1/patients/22/appointments`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+  check(appointmentsResponse, {
+    "appointments fetch successful": (r) => r.status === 200,
   });
+
   sleep(1);
 }
