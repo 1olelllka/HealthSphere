@@ -17,7 +17,7 @@ import {
 import { Popover } from "@radix-ui/react-popover";
 import { PopoverContent, PopoverTrigger } from "../ui/popover";
 import { cn } from "@/lib/utils";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Info } from "lucide-react";
 import { Calendar } from "../ui/calendar";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
@@ -247,6 +247,14 @@ export const MedicalRecords = (props: { id: number }) => {
                   </CardHeader>
                 </Card>
               ))}
+              {records.content.length === 0 && (
+                <div className="pt-2 flex flex-row gap-4 justify-center">
+                  <Info size={40} className="text-slate-500" />
+                  <h1 className="text-2xl font-semibold text-slate-500 pt-2">
+                    No records found
+                  </h1>
+                </div>
+              )}
             </div>
             <Pagination className="pt-10">
               <PaginationContent>
