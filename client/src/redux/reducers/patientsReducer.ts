@@ -30,6 +30,7 @@ type Result = {
     status: number;
     message: string;
   } | null;
+  loading: boolean;
 };
 
 const initialState: Result = {
@@ -59,6 +60,7 @@ const initialState: Result = {
   pageNumber: 0,
   number: 0,
   error: null,
+  loading: false,
 };
 
 const patientsSlice = createSlice({
@@ -69,16 +71,20 @@ const patientsSlice = createSlice({
     builder
       .addCase(getAllPatients.pending, (state) => {
         state.error = null;
+        state.loading = true;
+        return state;
       })
       .addCase(
         getAllPatients.fulfilled,
         (state, action: PayloadAction<Result>) => {
           state = action.payload;
+          state.loading = false;
           return state;
         }
       )
       .addCase(getAllPatients.rejected, (state, action) => {
         state.error = action.payload as { status: number; message: string };
+        state.loading = false;
         return state;
       });
   },

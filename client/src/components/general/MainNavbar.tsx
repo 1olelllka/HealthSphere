@@ -1,5 +1,5 @@
 import { GiHealthNormal } from "react-icons/gi";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FaUserPlus,
   FaClipboardQuestion,
@@ -15,13 +15,20 @@ import { IoIosArrowForward, IoIosArrowBack } from "react-icons/io";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
-import { logoutProfile } from "@/redux/action/profileActions";
+import { logoutProfile, setProfile } from "@/redux/action/profileActions";
 
 export const MainNavbar = () => {
   const [isVisible, setIsVisible] = useState<boolean>(false);
-  const profile = useSelector((state: RootState) => state.profile.data);
+  const { data, error } = useSelector((state: RootState) => state.profile);
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const getProfile = async () => {
+      dispatch(setProfile());
+    };
+    getProfile();
+  }, [dispatch]);
 
   const logout = () => {
     dispatch(logoutProfile());
@@ -100,7 +107,7 @@ export const MainNavbar = () => {
         </div>
 
         <nav className="flex-1 flex flex-col justify-center items-center w-full">
-          {profile.firstName.length === 0 ? (
+          {error ? (
             <ul
               className={`transition-all duration-300 absolute ${
                 isVisible ? "left-2" : "left-[-8px]"
@@ -153,7 +160,7 @@ export const MainNavbar = () => {
                   </Link>
                 </div>
               ))}
-              {profile.user.role === "ROLE_DOCTOR" && (
+              {data.user.role === "ROLE_DOCTOR" && (
                 <div className="flex justify-center items-center">
                   <Link
                     to={"/patients"}

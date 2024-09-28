@@ -22,6 +22,7 @@ import { PatchAppointmentDialog } from "./PatchAppointmentDialog";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { UnauthorizedPage } from "@/pages/UnauthorizedPage";
+import { LoadingPage } from "@/pages/LoadingPage";
 
 const localizer = momentLocalizer(moment);
 
@@ -69,6 +70,8 @@ export const MyAppointments = () => {
     <>
       {data.error && data.error.status === 401 ? (
         <UnauthorizedPage message={data.error.message} />
+      ) : data.loading ? (
+        <LoadingPage />
       ) : (
         <div className="flex justify-center">
           <div className="container">

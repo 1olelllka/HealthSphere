@@ -46,14 +46,12 @@ export const Doctor = () => {
                 (data.gender === "MALE" ? (
                   <img
                     src="https://cdn-icons-png.flaticon.com/512/3774/3774299.png"
-                    className="rounded-full border border-slate-200"
-                    width={60}
+                    className="rounded-full border border-slate-200 max-w-[60px] max-h-[60px] mt-2"
                   />
                 ) : (
                   <img
                     src={female_doctor}
-                    className="rounded-full border border-slate-200 mt-2"
-                    width={60}
+                    className="rounded-full border border-slate-200 max-w-[60px] max-h-[60px] mt-2"
                   />
                 ))}
 

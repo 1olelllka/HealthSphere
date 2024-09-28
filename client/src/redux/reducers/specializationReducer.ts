@@ -1,30 +1,17 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { setSpecialization } from "../action/specializationActions";
 
-type Result = {
-  content: Specialization[];
-  last: boolean;
-  first: boolean;
-  totalElements: number;
-  pageNumber: number;
-};
 export type Specialization = {
   id: number;
   specializationName: string;
 };
 
-const initialState = {
-  content: [
-    {
-      id: 0,
-      specializationName: "",
-    },
-  ],
-  last: false,
-  first: false,
-  totalElements: 0,
-  pageNumber: 0,
-};
+const initialState = [
+  {
+    id: 0,
+    specializationName: "",
+  },
+];
 
 const specializationSlice = createSlice({
   name: "specialization",
@@ -37,7 +24,7 @@ const specializationSlice = createSlice({
       })
       .addCase(
         setSpecialization.fulfilled,
-        (state, action: PayloadAction<Result>) => {
+        (state, action: PayloadAction<Specialization[]>) => {
           state = action.payload;
           return state;
         }

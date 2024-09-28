@@ -34,11 +34,13 @@ interface Result {
     status: number;
     message: string;
   } | null;
+  loading: boolean;
 }
 
 const initialState: Result = {
   data: [],
   error: null,
+  loading: false,
 };
 
 const AppointmentSlice = createSlice({
@@ -49,6 +51,7 @@ const AppointmentSlice = createSlice({
     builder
       .addCase(setAppointmentsForDoctor.pending, (state) => {
         state.error = null;
+        state.loading = true;
         return state;
       })
       .addCase(
@@ -61,16 +64,19 @@ const AppointmentSlice = createSlice({
               new Date(item.appointmentDate).getTime() + 30 * 60 * 1000
             ).toISOString();
           });
+          state.loading = false;
           return state;
         }
       )
       .addCase(setAppointmentsForDoctor.rejected, (state, action) => {
         state.error = action.payload as { status: number; message: string };
+        state.loading = false;
         return state;
       });
     builder
       .addCase(setAppointmentsForPatient.pending, (state) => {
         state.error = null;
+        state.loading = true;
         return state;
       })
       .addCase(
@@ -83,31 +89,37 @@ const AppointmentSlice = createSlice({
               new Date(item.appointmentDate).getTime() + 30 * 60 * 1000
             ).toISOString();
           });
+          state.loading = false;
           return state;
         }
       )
       .addCase(setAppointmentsForPatient.rejected, (state, action) => {
         state.error = action.payload as { status: number; message: string };
+        state.loading = false;
         return state;
       });
     builder
       .addCase(deleteAppointment.pending, (state) => {
         state.error = null;
+        state.loading = true;
         return state;
       })
       .addCase(deleteAppointment.fulfilled, (state, action) => {
         state.data = state.data.filter(
           (item) => item.id != (action.payload as number)
         );
+        state.loading = false;
         return state;
       })
       .addCase(deleteAppointment.rejected, (state, action) => {
         state.error = action.payload as { status: number; message: string };
+        state.loading = false;
         return state;
       });
     builder
       .addCase(patchAppointment.pending, (state) => {
         state.error = null;
+        state.loading = true;
         return state;
       })
       .addCase(patchAppointment.fulfilled, (state, action) => {
@@ -129,26 +141,31 @@ const AppointmentSlice = createSlice({
             (item) => item.id != action.payload?.deleteId
           );
         }
+        state.loading = false;
         return state;
       })
       .addCase(patchAppointment.rejected, (state, action) => {
         state.error = action.payload as { status: number; message: string };
+        state.loading = false;
         return state;
       });
     builder
       .addCase(createAppointment.pending, (state) => {
         state.error = null;
+        state.loading = true;
         return state;
       })
       .addCase(
         createAppointment.fulfilled,
         (state, action: PayloadAction<AppointmentState>) => {
           state.data.push(action.payload);
+          state.loading = false;
           return state;
         }
       )
       .addCase(createAppointment.rejected, (state, action) => {
         state.error = action.payload as { status: number; message: string };
+        state.loading = false;
         return state;
       });
   },

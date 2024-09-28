@@ -1,32 +1,27 @@
-import { setProfile } from "@/redux/action/profileActions";
-import { AppDispatch, RootState } from "@/redux/store";
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import { useSelector } from "react-redux";
 import { Doctor } from "./Doctor";
 import { Patient } from "./Patient";
 import { ForbiddenPage } from "@/pages/ForbiddenPage";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { UnauthorizedPage } from "@/pages/UnauthorizedPage";
+import { LoadingPage } from "@/pages/LoadingPage";
 
 export const Profile = () => {
-  const { data, error } = useSelector((state: RootState) => state.profile);
-  const dispatch = useDispatch<AppDispatch>();
+  const { data, error, loading } = useSelector(
+    (state: RootState) => state.profile
+  );
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const getProfile = async () => {
-      dispatch(setProfile());
-    };
-
-    getProfile();
-  }, [dispatch]);
   return (
     <>
       {error && error.status == 403 ? (
         <ForbiddenPage />
       ) : error && error.status === 401 ? (
         <UnauthorizedPage message={error.message} />
+      ) : loading ? (
+        <LoadingPage />
       ) : (
         <div className="flex flex-col pt-10 justify-center items-center relative">
           <div className="container">

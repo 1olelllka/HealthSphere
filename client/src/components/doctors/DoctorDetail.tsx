@@ -15,10 +15,12 @@ import {
 } from "react-icons/fa6";
 import female_doctor from "../../assets/female_doctor.png";
 import { ArrowLeft, Info } from "lucide-react";
+import { LoadingPage } from "@/pages/LoadingPage";
 
 export const DoctorDetail = () => {
   const [data, setDoctor] = useState<Profile | null>(null);
   const profile = useSelector((state: RootState) => state.profile);
+  const [loading, setLoading] = useState(true);
   const id = useParams().id;
   const [error, setError] = useState<{
     status: number;
@@ -32,6 +34,7 @@ export const DoctorDetail = () => {
         const response = await SERVER_API.get("/doctors/" + id);
         if (response.status === 200) {
           setDoctor(response.data);
+          setLoading(false);
         }
       } catch (err) {
         const axiosError = err as AxiosError;
@@ -56,6 +59,8 @@ export const DoctorDetail = () => {
     <>
       {error && error.status == 404 ? (
         <NotFoundPage />
+      ) : loading ? (
+        <LoadingPage />
       ) : (
         <>
           <div className="flex flex-col pt-10 justify-center items-center relative">
@@ -80,14 +85,12 @@ export const DoctorDetail = () => {
                         (data.gender === "MALE" ? (
                           <img
                             src="https://cdn-icons-png.flaticon.com/512/3774/3774299.png"
-                            className="rounded-full border border-slate-200"
-                            width={60}
+                            className="rounded-full border border-slate-200 max-w-[60px] max-h-[60px] mt-2"
                           />
                         ) : (
                           <img
                             src={female_doctor}
-                            className="rounded-full border border-slate-200 mt-2"
-                            width={60}
+                            className="rounded-full border border-slate-200 max-w-[60px] max-h-[60px] mt-2"
                           />
                         ))}
 

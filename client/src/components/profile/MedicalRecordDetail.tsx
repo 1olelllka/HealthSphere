@@ -39,6 +39,7 @@ import {
   DialogTrigger,
 } from "../ui/dialog";
 import { UnauthorizedPage } from "@/pages/UnauthorizedPage";
+import { LoadingPage } from "@/pages/LoadingPage";
 
 export const MedicalRecordDetail = () => {
   const id = useParams().id;
@@ -72,6 +73,8 @@ export const MedicalRecordDetail = () => {
         <ForbiddenPage message={record.error.message} />
       ) : record.error && record.error.status === 401 ? (
         <UnauthorizedPage message={record.error.message} />
+      ) : record.loading ? (
+        <LoadingPage />
       ) : (
         <div
           className={`flex flex-col pt-20 justify-center items-center ${

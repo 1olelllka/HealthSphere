@@ -20,6 +20,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { getAllPatients } from "@/redux/action/patientActions";
 import { ForbiddenPage } from "@/pages/ForbiddenPage";
 import { UnauthorizedPage } from "@/pages/UnauthorizedPage";
+import { LoadingPage } from "@/pages/LoadingPage";
 
 const schema = z.object({
   params: z.string().optional(),
@@ -45,8 +46,6 @@ export const PatientList = () => {
     defaultValues: { params: "" },
   });
 
-  console.log(patients);
-
   const onSubmit = async (values: z.infer<typeof schema>) => {
     dispatch(getAllPatients({ params: values.params ?? "", page: page }));
     navigate(`?search=${values.params}`, { replace: true });
@@ -63,6 +62,8 @@ export const PatientList = () => {
         <ForbiddenPage />
       ) : patients.error && patients.error.status === 401 ? (
         <UnauthorizedPage message={patients.error.message} />
+      ) : patients.loading ? (
+        <LoadingPage />
       ) : (
         <div className="flex flex-col pt-28 justify-center items-center">
           <div className="container">

@@ -22,7 +22,6 @@ export const EditSpecializations = (props: {
     };
     getSpecialization();
   }, [dispatch]);
-
   const toggleSelection = (item: Specialization) => {
     const isSelected = selectedSpecializations.some(
       (spec) => spec.id === item.id
@@ -36,7 +35,6 @@ export const EditSpecializations = (props: {
     }
   };
 
-  console.log(data);
   return (
     <>
       <ScrollArea className="h-40 w-48 rounded-md border">
@@ -44,7 +42,7 @@ export const EditSpecializations = (props: {
           <h4 className="mb-4 text-sm font-medium leading-none">
             Medical Specializations
           </h4>
-          {data.content.map((item) => (
+          {data.map((item) => (
             <div
               key={item.id}
               className={`cursor-pointer rounded-sm transition-all ${

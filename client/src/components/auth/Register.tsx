@@ -87,9 +87,6 @@ export const Register = () => {
     } catch (err) {
       const error = err as { response: { data: { message: string } } };
       setError(error?.response?.data?.message);
-      setInterval(() => {
-        setError("");
-      }, 5000);
     }
   };
 
@@ -98,15 +95,24 @@ export const Register = () => {
       <ScrollToTop />
       <div className="w-full flex justify-center">
         <div className="container">
-          {error && (
-            <Alert className="w-1/3 mx-auto" variant={"destructive"}>
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>
-                <p>{error}</p>
-              </AlertDescription>
-            </Alert>
-          )}
-          <h1 className="text-5xl font-semibold text-center pt-10">Register</h1>
+          <Alert
+            className={`w-1/3 mx-auto transition-all transform duration-300 ${
+              error ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"
+            }`}
+            variant={"destructive"}
+          >
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>
+              Invalid email or password. Please try again.
+            </AlertDescription>
+          </Alert>
+          <h1
+            className={`text-5xl font-semibold text-center transition-all ${
+              error && "pt-10"
+            }`}
+          >
+            Register
+          </h1>
           <div className="flex flex-col w-1/3 mx-auto">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)}>

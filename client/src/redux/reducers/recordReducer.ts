@@ -46,6 +46,7 @@ type Result = {
     status: number;
     message: string;
   } | null;
+  loading: boolean;
 };
 
 const initialState: Result = {
@@ -80,6 +81,7 @@ const initialState: Result = {
   totalPages: 0,
   number: 0,
   error: null,
+  loading: false,
 };
 
 const recordSlice = createSlice({
@@ -90,43 +92,55 @@ const recordSlice = createSlice({
     builder
       .addCase(setRecord.pending, (state) => {
         state.error = null;
+        state.loading = true;
+        return state;
       })
       .addCase(setRecord.fulfilled, (state, action: PayloadAction<Result>) => {
         state = action.payload;
+        state.loading = false;
         return state;
       })
       .addCase(setRecord.rejected, (state, aciton) => {
         state.error = aciton.payload as { status: number; message: string };
+        state.loading = false;
         return state;
       });
     builder
       .addCase(searchRecord.pending, (state) => {
         state.error = null;
+        state.loading = true;
+        return state;
       })
       .addCase(
         searchRecord.fulfilled,
         (state, action: PayloadAction<Result>) => {
           state = action.payload;
+          state.loading = false;
           return state;
         }
       )
       .addCase(searchRecord.rejected, (state, action) => {
         state.error = action.payload as { status: number; message: string };
+        state.loading = false;
         return state;
       });
     builder
       .addCase(setDetailedRecord.pending, (state) => {
         state.error = null;
+        state.loading = true;
+        return state;
       })
       .addCase(
         setDetailedRecord.fulfilled,
         (state, action: PayloadAction<MedicalRecord>) => {
           state.content = [action.payload];
+          state.loading = false;
           return state;
         }
       )
       .addCase(setDetailedRecord.rejected, (state, action) => {
         state.error = action.payload as { status: number; message: string };
+        state.loading = false;
         return state;
       });
     builder
@@ -143,10 +157,12 @@ const recordSlice = createSlice({
       )
       .addCase(createPrescriptionForRecord.rejected, (state, action) => {
         state.error = action.payload as { status: number; message: string };
+        return state;
       });
     builder
       .addCase(updateMedicalRecord.pending, (state) => {
         state.error = null;
+        return state;
       })
       .addCase(
         updateMedicalRecord.fulfilled,

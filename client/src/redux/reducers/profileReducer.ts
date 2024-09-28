@@ -44,6 +44,7 @@ export interface ProfileState {
     status: number;
     message: string;
   } | null;
+  loading: boolean;
 }
 
 const initialState: ProfileState = {
@@ -71,6 +72,7 @@ const initialState: ProfileState = {
     updatedAt: 0,
   },
   error: null,
+  loading: false,
 };
 
 const profileSlice = createSlice({
@@ -81,6 +83,8 @@ const profileSlice = createSlice({
     builder
       .addCase(setProfile.pending, (state) => {
         state.error = null;
+        state.loading = true;
+        return state;
       })
       .addCase(
         setProfile.fulfilled,
@@ -100,11 +104,13 @@ const profileSlice = createSlice({
             bloodTypeMap[state.data.bloodType as keyof typeof bloodTypeMap] ||
             "";
           state.error = null;
+          state.loading = false;
           return state;
         }
       )
       .addCase(setProfile.rejected, (state, action) => {
         state.data = initialState.data;
+        state.loading = false;
         localStorage.removeItem("persist:profile");
         console.log(action.payload);
         state.error = action.payload as { status: number; message: string };
@@ -200,7 +206,7 @@ const profileSlice = createSlice({
       });
     builder
       .addCase(logoutProfile.pending, () => {
-        console.log("Logging out...");
+        console.log("Logout pending");
       })
       .addCase(logoutProfile.fulfilled, (state) => {
         state = initialState;

@@ -1,7 +1,9 @@
+import ClimbingBoxLoader from "react-spinners/ClimbingBoxLoader";
+
 export const ServerDownError = () => {
   return (
     <>
-      <div className="h-screen flex items-center justify-center flex-col">
+      <div className="h-[70vh] flex items-center justify-end flex-col">
         <h1 className="text-4xl text-[#040D12]font-light text-center">
           Opps...
         </h1>
@@ -11,6 +13,7 @@ export const ServerDownError = () => {
         <h2 className="text-[#040D12]">
           Server is down. It wants some rest too :)
         </h2>
+        <ClimbingBoxLoader color="#93B1A6" />
       </div>
     </>
   );

@@ -10,11 +10,14 @@ import patient_female from "../../assets/patient_female.png";
 import { FaHouse, FaMessage, FaMobileScreenButton } from "react-icons/fa6";
 import { ArrowLeft } from "lucide-react";
 import { UnauthorizedPage } from "@/pages/UnauthorizedPage";
+import { LoadingPage } from "@/pages/LoadingPage";
+import { ScrollToTop } from "../general/ScrollToTop";
 
 export const PatientDetail = () => {
   const id = useParams().id;
   const [data, setData] = useState<Patient>();
   const [err, setErr] = useState<{ status: number; message: string }>();
+  const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,6 +40,7 @@ export const PatientDetail = () => {
               response.data.bloodType as keyof typeof bloodTypeMap
             ] || "";
           setData(response.data);
+          setLoading(false);
         }
       } catch (err) {
         const error = err as AxiosError;
@@ -56,11 +60,14 @@ export const PatientDetail = () => {
         <NotFoundPage />
       ) : err && err.status === 401 ? (
         <UnauthorizedPage message={err.message} />
+      ) : loading ? (
+        <LoadingPage />
       ) : (
         <div className="flex justify-center">
+          <ScrollToTop />
           <div className="container">
             <div className="w-[3.3%] mt-10 bg-slate-50 p-1 rounded-lg hover:bg-slate-200 transition-color duration-300">
-              <ArrowLeft onClick={() => navigate("/")} size={32} />
+              <ArrowLeft onClick={() => navigate(-1)} size={32} />
             </div>
             <div className="grid grid-cols-3 gap-10 pt-10">
               <div className="col-span-1 bg-slate-50 rounded-2xl drop-shadow-lg pb-10 flex flex-row">
@@ -70,15 +77,12 @@ export const PatientDetail = () => {
                       (data.gender === "MALE" ? (
                         <img
                           src="https://cdn-icons-png.flaticon.com/512/1430/1430453.png"
-                          className="rounded-full border border-slate-200"
-                          width={75}
-                          height={75}
+                          className="rounded-full border border-slate-200 max-w-[60px] max-h-[60px] mt-2"
                         />
                       ) : (
                         <img
                           src={patient_female}
-                          className="rounded-full border border-slate-200 mt-2"
-                          width={60}
+                          className="rounded-full border border-slate-200 max-w-[60px] max-h-[60px] mt-2"
                         />
                       ))}
 
