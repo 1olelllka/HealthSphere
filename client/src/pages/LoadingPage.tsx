@@ -10,13 +10,13 @@ const override: CSSProperties = {
 
 export const LoadingPage = () => {
   return (
-    <>
+    <div className="bg-primary">
       <BeatLoader
         color={"#36D7B7"}
         loading={true}
         size={20}
         cssOverride={override}
       />
-    </>
+    </div>
   );
 };

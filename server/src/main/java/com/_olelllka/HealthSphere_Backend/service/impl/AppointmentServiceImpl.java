@@ -7,12 +7,14 @@ import com._olelllka.HealthSphere_Backend.domain.entity.Status;
 import com._olelllka.HealthSphere_Backend.repositories.AppointmentRepository;
 import com._olelllka.HealthSphere_Backend.repositories.DoctorRepository;
 import com._olelllka.HealthSphere_Backend.repositories.PatientRepository;
+import com._olelllka.HealthSphere_Backend.rest.exceptions.DuplicateException;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.NotFoundException;
 import com._olelllka.HealthSphere_Backend.service.AppointmentService;
 import com._olelllka.HealthSphere_Backend.service.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,6 +62,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         String email = jwtService.extractUsername(jwt);
         DoctorEntity doctor = doctorRepository.findByUserEmail(email)
                 .orElseThrow(() -> new NotFoundException("The doctor with such email was not found."));
+        duplicateDoctor(doctor.getId(), entity.getAppointmentDate());
         entity.setDoctor(doctor);
         entity.setStatus(Status.SCHEDULED);
         return repository.save(entity);
@@ -70,6 +73,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         String email = jwtService.extractUsername(jwt);
         PatientEntity patient = patientRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("The Patient with such email was not found."));
+        duplicatePatient(patient.getId(), entity.getAppointmentDate());
         entity.setPatient(patient);
         entity.setStatus(Status.SCHEDULED);
         return repository.save(entity);
@@ -82,6 +86,18 @@ public class AppointmentServiceImpl implements AppointmentService {
             Optional.ofNullable(entity.getStatus()).ifPresent(appointment::setStatus);
             return repository.save(appointment);
         }).orElseThrow(() -> new NotFoundException("Appointment with such id was not found."));
+    }
+
+    private void duplicatePatient(Long patientId, Date appointmentDate) {
+        if (repository.findUniquePatientAndAppointmentDate(patientId, appointmentDate).isPresent()) {
+            throw new DuplicateException("The appointment with such date already exists");
+        }
+    }
+
+    private void duplicateDoctor(Long doctorId, Date appointmentDate) {
+        if (repository.findUniqueDoctorAndAppointmentDate(doctorId, appointmentDate).isPresent()) {
+            throw new DuplicateException("The appointment with such date already exists");
+        }
     }
 
 }

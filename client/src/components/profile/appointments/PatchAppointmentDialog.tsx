@@ -55,13 +55,13 @@ export const PatchAppointmentDialog = (props: {
       (props.selected?.appointmentDate as Date).toISOString() ===
       values.appointmentDate?.toISOString()
     ) {
-      console.log("yes");
       values.appointmentDate = undefined;
     }
     dispatch(patchAppointment({ id: props.selected?.id as number, ...values }));
+    props.onClose();
     setInterval(() => {
       window.location.reload();
-    }, 1000);
+    }, 2000);
   };
 
   useEffect(() => {
@@ -73,7 +73,7 @@ export const PatchAppointmentDialog = (props: {
   }, [props.selected, form]);
 
   return (
-    <Dialog open={props.patchOpen}>
+    <Dialog open={props.patchOpen} onOpenChange={props.onClose}>
       <DialogContent className="w-[500px]">
         <DialogHeader>
           <DialogTitle>Edit Appointment</DialogTitle>

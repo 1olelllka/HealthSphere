@@ -18,7 +18,7 @@ export const DeleteAppointmentDialog = (props: {
   const dispatch = useDispatch<AppDispatch>();
 
   return (
-    <Dialog open={props.deleteOpen}>
+    <Dialog open={props.deleteOpen} onOpenChange={props.onClose}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
@@ -31,7 +31,8 @@ export const DeleteAppointmentDialog = (props: {
           </Button>
           <Button
             variant={"destructive"}
-            onClick={() => {
+            onClick={(e) => {
+              e.preventDefault();
               dispatch(deleteAppointment(props.selectedId));
               props.onClose();
             }}

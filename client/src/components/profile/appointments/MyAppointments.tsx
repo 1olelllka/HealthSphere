@@ -8,7 +8,7 @@ import {
   setAppointmentsForDoctor,
   setAppointmentsForPatient,
 } from "@/redux/action/appointmentActions";
-import { TimeSlotDialog } from "./TimeSlotDialog";
+import { TimeSlotSheet } from "./TimeSlotSheet";
 import { AppointmentState } from "@/redux/reducers/appointmentsReducer";
 import {
   ContextMenu,
@@ -23,6 +23,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { UnauthorizedPage } from "@/pages/UnauthorizedPage";
 import { LoadingPage } from "@/pages/LoadingPage";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const localizer = momentLocalizer(moment);
 
@@ -75,6 +76,12 @@ export const MyAppointments = () => {
       ) : (
         <div className="flex justify-center">
           <div className="container">
+            {data.success.length > 0 && (
+              <Alert className="w-1/3 mx-auto mt-10">
+                <AlertTitle>Success</AlertTitle>
+                <AlertDescription>{data.success}</AlertDescription>
+              </Alert>
+            )}
             <div className="mt-10 bg-slate-50 p-10 rounded-3xl drop-shadow-lg">
               <div className="flex flex-row gap-4">
                 <div className="bg-slate-200 p-1 rounded-lg hover:bg-slate-400 transition-color duration-300">
@@ -132,6 +139,7 @@ export const MyAppointments = () => {
                                 setSelectedId(event.id);
                                 setDeleteOpen(true);
                               }}
+                              className="text-red-500"
                             >
                               Delete Appointment
                             </ContextMenuItem>
@@ -140,7 +148,7 @@ export const MyAppointments = () => {
                       ),
                     }}
                   />
-                  <TimeSlotDialog
+                  <TimeSlotSheet
                     open={dialogOpen}
                     id={selectedId as number}
                     onClose={closeDialog}

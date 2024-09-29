@@ -99,6 +99,23 @@ public class AppointmentControllerIntegrationTest extends AbstractTestContainers
     }
 
     @Test
+    public void testThatCreateAppointmentForPatientReturnsHttp409ConflictIfAppointmentHasTheSamePatientInTheSameDate() throws Exception {
+        String accessToken = getAccessToken();
+        getDoctorAccessToken();
+        AppointmentDto dto = TestDataUtil.createAppointmentDto(null, DoctorEntity.builder().id(1L).build());
+        String json = objectMapper.writeValueAsString(dto);
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/patients/appointments")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json));
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/patients/appointments")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(MockMvcResultMatchers.status().isConflict());
+    }
+
+    @Test
     public void testThatCreateAppointmentForPatientReturnsHttp201CreatedAndCorrespondingData() throws Exception {
         String accessToken = getAccessToken();
         getDoctorAccessToken();
@@ -110,6 +127,23 @@ public class AppointmentControllerIntegrationTest extends AbstractTestContainers
                         .content(json))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(Status.SCHEDULED.name()));
+    }
+
+    @Test
+    @WithMockUser(roles = "DOCTOR")
+    public void testThatCreateAppointmentForDoctorReturnsHttp409ConflictIfAppointmentHasTheSameDoctorInTheSameDate() throws Exception {
+        String accessToken = getDoctorAccessToken();
+        AppointmentDto dto = TestDataUtil.createAppointmentDto(null, null);
+        String json = objectMapper.writeValueAsString(dto);
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/patients/appointments")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json));
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/patients/appointments")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(MockMvcResultMatchers.status().isConflict());
     }
 
     @Test

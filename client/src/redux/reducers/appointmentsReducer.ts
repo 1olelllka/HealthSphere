@@ -13,6 +13,9 @@ export interface AppointmentState {
     id: number;
     firstName: string;
     lastName: string;
+    user: {
+      email: string;
+    };
   };
   doctor: {
     id: number;
@@ -35,12 +38,14 @@ interface Result {
     message: string;
   } | null;
   loading: boolean;
+  success: string;
 }
 
 const initialState: Result = {
   data: [],
   error: null,
   loading: false,
+  success: "",
 };
 
 const AppointmentSlice = createSlice({
@@ -51,7 +56,6 @@ const AppointmentSlice = createSlice({
     builder
       .addCase(setAppointmentsForDoctor.pending, (state) => {
         state.error = null;
-        state.loading = true;
         return state;
       })
       .addCase(
@@ -64,19 +68,16 @@ const AppointmentSlice = createSlice({
               new Date(item.appointmentDate).getTime() + 30 * 60 * 1000
             ).toISOString();
           });
-          state.loading = false;
           return state;
         }
       )
       .addCase(setAppointmentsForDoctor.rejected, (state, action) => {
         state.error = action.payload as { status: number; message: string };
-        state.loading = false;
         return state;
       });
     builder
       .addCase(setAppointmentsForPatient.pending, (state) => {
         state.error = null;
-        state.loading = true;
         return state;
       })
       .addCase(
@@ -89,13 +90,11 @@ const AppointmentSlice = createSlice({
               new Date(item.appointmentDate).getTime() + 30 * 60 * 1000
             ).toISOString();
           });
-          state.loading = false;
           return state;
         }
       )
       .addCase(setAppointmentsForPatient.rejected, (state, action) => {
         state.error = action.payload as { status: number; message: string };
-        state.loading = false;
         return state;
       });
     builder
@@ -109,6 +108,7 @@ const AppointmentSlice = createSlice({
           (item) => item.id != (action.payload as number)
         );
         state.loading = false;
+        state.success = "Appointment deleted successfully";
         return state;
       })
       .addCase(deleteAppointment.rejected, (state, action) => {
@@ -142,6 +142,7 @@ const AppointmentSlice = createSlice({
           );
         }
         state.loading = false;
+        state.success = "Appointment updated successfully";
         return state;
       })
       .addCase(patchAppointment.rejected, (state, action) => {

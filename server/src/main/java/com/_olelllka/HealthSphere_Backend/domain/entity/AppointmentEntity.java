@@ -18,7 +18,8 @@ import java.util.Date;
 @NoArgsConstructor
 @Data
 @Table(name="appointment",
-uniqueConstraints = {@UniqueConstraint(name="doctor_appointmentDate_constraint", columnNames = {"doctor_id", "appointment_date"})})
+uniqueConstraints = {@UniqueConstraint(name="doctor_appointmentDate_constraint", columnNames = {"doctor_id", "appointment_date"}),
+                     @UniqueConstraint(name="patient_appointmentDate_constraint", columnNames = {"patient_id", "appointment_date"})})
 public class AppointmentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -109,6 +109,11 @@ export const createAppointment = createAsyncThunk(
           status: 401,
           message: (axiosError.response.data as { message: string }).message,
         });
+      } else if (axiosError.response?.status === 409) {
+        return rejectWithValue({
+          status: 409,
+          message: (axiosError.response.data as { message: string }).message,
+        });
       }
     }
   }
@@ -170,7 +175,9 @@ export const deleteAppointment = createAsyncThunk(
   "appointment/deleteAppointment",
   async (id: number, { rejectWithValue }) => {
     try {
-      const response = await SERVER_API.delete(`/patients/appointments/${id}`);
+      const response = await SERVER_API.patch(`/patients/appointments/${id}`, {
+        status: "CANCELED",
+      });
       if (response.status === 202) {
         return id;
       }

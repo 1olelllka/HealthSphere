@@ -62,7 +62,7 @@ export const Appointments = () => {
     );
     setInterval(() => {
       window.location.reload();
-    }, 1000);
+    }, 2000);
   };
 
   const appointments = data.data.map((item) => ({
@@ -86,6 +86,12 @@ export const Appointments = () => {
         <div className="mt-10 bg-slate-50 p-10 rounded-3xl drop-shadow-lg">
           <h1 className="text-4xl">Appointments Availability</h1>
           {data.error && data.error.status === 400 && (
+            <Alert className="w-1/3 mx-auto mt-10" variant={"destructive"}>
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{data.error.message}</AlertDescription>
+            </Alert>
+          )}
+          {data.error && data.error.status === 409 && (
             <Alert className="w-1/3 mx-auto mt-10" variant={"destructive"}>
               <AlertTitle>Error</AlertTitle>
               <AlertDescription>{data.error.message}</AlertDescription>

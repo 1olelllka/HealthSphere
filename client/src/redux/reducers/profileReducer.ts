@@ -119,6 +119,7 @@ const profileSlice = createSlice({
     builder
       .addCase(patchPatientProfile.pending, (state) => {
         state.error = null;
+        state.loading = true;
         return state;
       })
       .addCase(
@@ -144,6 +145,7 @@ const profileSlice = createSlice({
           state.data.lastName = action.payload.lastName;
           state.data.phoneNumber = action.payload.phoneNumber;
           state.data.allergies = action.payload.allergies;
+          state.loading = false;
           return state;
         }
       )
@@ -152,6 +154,7 @@ const profileSlice = createSlice({
         if (state.error.status != 400) {
           state.data = initialState.data;
         }
+        state.loading = false;
         return state;
       });
     builder

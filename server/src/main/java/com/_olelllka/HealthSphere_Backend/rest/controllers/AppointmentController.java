@@ -119,6 +119,9 @@ public class AppointmentController {
                             schema = @Schema(implementation = ErrorMessage.class))}),
             @ApiResponse(responseCode = "404", description = "Patient or Doctor with id specified in json was not found",
                     content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorMessage.class))}),
+            @ApiResponse(responseCode = "409", description = "Duplicate appointment date and patient or doctor",
+                    content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = ErrorMessage.class))})
     })
     @PostMapping("/patients/appointments")
