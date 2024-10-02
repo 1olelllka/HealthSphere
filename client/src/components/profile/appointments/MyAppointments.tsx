@@ -66,6 +66,7 @@ export const MyAppointments = () => {
     deleteOpen,
     profile,
   ]);
+  console.log(data.error);
 
   return (
     <>
@@ -80,6 +81,12 @@ export const MyAppointments = () => {
               <Alert className="w-1/3 mx-auto mt-10">
                 <AlertTitle>Success</AlertTitle>
                 <AlertDescription>{data.success}</AlertDescription>
+              </Alert>
+            )}
+            {data.error && data.error.status === 400 && (
+              <Alert className="w-1/3 mx-auto mt-10" variant={"destructive"}>
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{data.error.message}</AlertDescription>
               </Alert>
             )}
             <div className="mt-10 bg-slate-50 p-10 rounded-3xl drop-shadow-lg">

@@ -60,10 +60,9 @@ export const Appointments = () => {
         appointmentDate: values.appointmentDate?.toISOString(),
       })
     );
-    window.scrollTo({
-      top: 500,
-      behavior: "smooth",
-    });
+    setInterval(() => {
+      window.location.reload();
+    }, 2000);
   };
 
   const appointments = data.data.map((item) => ({
@@ -188,8 +187,8 @@ export const Appointments = () => {
                   <DialogFooter>
                     <Button
                       variant={"outline"}
-                      onClick={(e) => {
-                        e.preventDefault();
+                      type="button"
+                      onClick={() => {
                         setOpenDialog(false);
                       }}
                     >

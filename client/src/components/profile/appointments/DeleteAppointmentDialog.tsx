@@ -39,6 +39,9 @@ export const DeleteAppointmentDialog = (props: {
                 top: 0,
                 behavior: "smooth",
               });
+              setInterval(() => {
+                window.location.reload();
+              }, 2000);
               props.onClose();
             }}
           >

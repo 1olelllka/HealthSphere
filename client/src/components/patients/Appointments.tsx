@@ -181,8 +181,8 @@ export const Appointments = () => {
                   <DialogFooter>
                     <Button
                       variant={"outline"}
-                      onClick={(e) => {
-                        e.preventDefault();
+                      type="button"
+                      onClick={() => {
                         setOpenDialog(false);
                       }}
                     >
@@ -190,9 +190,8 @@ export const Appointments = () => {
                     </Button>
                     <Button
                       variant={"default"}
-                      type="submit"
-                      onClick={(e) => {
-                        e.preventDefault();
+                      type="button"
+                      onClick={() => {
                         onSubmit(form.getValues());
                         setOpenDialog(false);
                       }}

@@ -167,10 +167,10 @@ public class AppointmentController {
                             schema = @Schema(implementation = ErrorMessage.class))})
     })
     @PatchMapping("/appointments/{id}")
-    public ResponseEntity<AppointmentDto> updateAppointment(@RequestBody @Valid UpdateAppointmentDto dto,
-                                                            @PathVariable Long id,
+    public ResponseEntity<AppointmentDto> updateAppointment(@PathVariable Long id,
                                                             HttpServletRequest request,
                                                             @RequestHeader(name = "Authorization") String header,
+                                                            @RequestBody @Valid UpdateAppointmentDto dto,
                                                             BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             String msg = bindingResult.getAllErrors().stream().map(err -> err.getDefaultMessage()).collect(Collectors.joining(" "));

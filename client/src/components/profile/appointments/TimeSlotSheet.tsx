@@ -53,7 +53,7 @@ export const TimeSlotSheet = (props: {
   useEffect(() => {
     const getSpecificAppointment = async (id: number) => {
       try {
-        const response = await SERVER_API.get(`/patients/appointments/${id}`);
+        const response = await SERVER_API.get(`/appointments/${id}`);
         if (response.status === 200) {
           setAppointment(response.data);
         }
@@ -119,13 +119,13 @@ export const TimeSlotSheet = (props: {
                         navigate(`/patients/${appointment?.patient.id}`)
                       }
                     >
-                      {appointment?.patient.firstName}{" "}
-                      {appointment?.patient.lastName}
+                      {appointment?.patient?.firstName}{" "}
+                      {appointment?.patient?.lastName}
                     </h1>
                   ) : (
                     <h1 className="text-sm pr-5 font-light">
-                      {appointment?.patient.firstName}{" "}
-                      {appointment?.patient.lastName}
+                      {appointment?.patient?.firstName}{" "}
+                      {appointment?.patient?.lastName}
                     </h1>
                   )}
                 </div>
@@ -185,13 +185,13 @@ export const TimeSlotSheet = (props: {
                         navigate(`/doctors/${appointment?.doctor.id}`)
                       }
                     >
-                      Dr. {appointment?.doctor.firstName}{" "}
-                      {appointment?.doctor.lastName}
+                      Dr. {appointment?.doctor?.firstName}{" "}
+                      {appointment?.doctor?.lastName}
                     </h1>
                   ) : (
                     <h1 className="text-sm pr-5 font-light">
-                      Dr. {appointment?.doctor.firstName}{" "}
-                      {appointment?.doctor.lastName}
+                      Dr. {appointment?.doctor?.firstName}{" "}
+                      {appointment?.doctor?.lastName}
                     </h1>
                   )}
                 </div>

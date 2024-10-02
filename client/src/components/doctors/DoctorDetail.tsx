@@ -16,6 +16,7 @@ import {
 import female_doctor from "../../assets/female_doctor.png";
 import { ArrowLeft, Info } from "lucide-react";
 import { LoadingPage } from "@/pages/LoadingPage";
+import { ScrollToTop } from "../general/ScrollToTop";
 
 export const DoctorDetail = () => {
   const [data, setDoctor] = useState<Profile | null>(null);
@@ -65,6 +66,7 @@ export const DoctorDetail = () => {
         <>
           <div className="flex flex-col pt-10 justify-center items-center relative">
             <div className="container">
+              <ScrollToTop />
               {profile.error && profile.error.status != 0 && (
                 <Alert className="w-1/3 mx-auto" variant={"destructive"}>
                   <AlertTitle>Error</AlertTitle>

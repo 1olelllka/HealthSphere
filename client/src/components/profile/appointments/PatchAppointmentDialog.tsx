@@ -62,6 +62,7 @@ export const PatchAppointmentDialog = (props: {
     setInterval(() => {
       window.location.reload();
     }, 2000);
+    scrollTo({ top: 0, behavior: "smooth" });
   };
 
   useEffect(() => {
@@ -147,7 +148,7 @@ export const PatchAppointmentDialog = (props: {
           </Button>
           <Button
             variant={"destructive"}
-            type="submit"
+            type="button"
             onClick={() => {
               patch(form.getValues());
             }}
