@@ -7,7 +7,7 @@ export const setAppointmentsForDoctor = createAsyncThunk(
   async (doctorId: number, { rejectWithValue }) => {
     try {
       const response = await SERVER_API.get(
-        `/doctors/${doctorId}/appointments`
+        `/appointments/doctors/${doctorId}`
       );
       if (response.status === 200) {
         return response.data;
@@ -35,7 +35,7 @@ export const setAppointmentsForPatient = createAsyncThunk(
   async (patientId: number, { rejectWithValue }) => {
     try {
       const response = await SERVER_API.get(
-        `/patients/${patientId}/appointments`
+        `/appointments/patients/${patientId}`
       );
       if (response.status === 200) {
         return response.data;
@@ -88,7 +88,7 @@ export const createAppointment = createAsyncThunk(
         };
       }
       console.log(data);
-      const response = await SERVER_API.post("/patients/appointments", data);
+      const response = await SERVER_API.post("/appointments", data);
       if (response.status === 201) {
         return response.data;
       }
@@ -132,7 +132,7 @@ export const patchAppointment = createAsyncThunk(
   ) => {
     try {
       const response = await SERVER_API.patch(
-        `/patients/appointments/${values.id}`,
+        `/appointments/${values.id}`,
         values
       );
       if (response.status === 200) {
@@ -175,7 +175,7 @@ export const deleteAppointment = createAsyncThunk(
   "appointment/deleteAppointment",
   async (id: number, { rejectWithValue }) => {
     try {
-      const response = await SERVER_API.patch(`/patients/appointments/${id}`, {
+      const response = await SERVER_API.patch(`/appointments/${id}`, {
         status: "CANCELED",
       });
       if (response.status === 202) {

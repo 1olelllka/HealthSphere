@@ -381,9 +381,12 @@ public class UserController {
     })
     @GetMapping("/jwt")
     public ResponseEntity<JwtToken> getJwtToken(HttpServletRequest request) {
+        if (request.getCookies() != null && request.getCookies().length > 0) {
         Cookie accessToken = Arrays.stream(request.getCookies())
                 .filter(cookie -> "accessToken".equals(cookie.getName()))
                 .findFirst().orElseThrow(() -> new NotAuthorizedException("You need to log in to proceed."));
         return new ResponseEntity<>(JwtToken.builder().accessToken(accessToken.getValue()).build(), HttpStatus.OK);
+        }
+        throw new NotAuthorizedException("You need to log in to proceed.");
     }
 }

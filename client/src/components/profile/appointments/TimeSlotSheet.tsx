@@ -96,13 +96,13 @@ export const TimeSlotSheet = (props: {
       <Sheet open={props.open} onOpenChange={props.onClose}>
         <SheetContent>
           <SheetHeader>
-            <SheetTitle>Appointment Details</SheetTitle>
+            <SheetTitle className="text-3xl">Appointment Details</SheetTitle>
           </SheetHeader>
           <Card className="mt-5 border-0 bg-primary drop-shadow-lg">
             <CardContent className="p-0">
               <CardHeader className="p-3">
-                <CardTitle className="text-md font-normal">
-                  Appointment
+                <CardTitle className="text-xl font-normal">
+                  Information
                 </CardTitle>
               </CardHeader>
               <div className="space-y-2 pb-3">
@@ -173,7 +173,7 @@ export const TimeSlotSheet = (props: {
           <Card className="mt-5 border-0 bg-primary drop-shadow-lg">
             <CardContent className="p-0">
               <CardHeader className="p-3">
-                <CardTitle className="text-md font-normal">Doctor</CardTitle>
+                <CardTitle className="text-xl font-normal">Doctor</CardTitle>
               </CardHeader>
               <div className="space-y-2 pb-3">
                 <div className="flex flex-row justify-between">

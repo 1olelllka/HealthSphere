@@ -7,31 +7,20 @@ export const setProfile = createAsyncThunk(
   "profile/setProfile",
   async (_, { rejectWithValue }) => {
     try {
-      const doctorResponse = await SERVER_API.get("/doctors/me");
+      const doctorResponse = await SERVER_API.get("/profile");
       if (doctorResponse.status === 200) {
         return doctorResponse.data;
       }
     } catch (err) {
-      console.log("DOCTOR ERROR:", err);
-      try {
-        const patientResponse = await SERVER_API.get("/patients/me");
-        if (patientResponse.status === 200) {
-          return patientResponse.data;
-        }
-      } catch (err) {
-        const error = err as AxiosError;
-        if (error.response?.status === 401) {
-          return rejectWithValue({
-            status: 401,
-            message: (error.response?.data as { message: string }).message,
-          });
-        }
-        console.log(err);
-      }
       const error = err as AxiosError;
       if (error.response?.status === 401) {
         return rejectWithValue({
           status: 401,
+          message: (error.response?.data as { message: string }).message,
+        });
+      } else if (error.response?.status === 403) {
+        return rejectWithValue({
+          status: 403,
           message: (error.response?.data as { message: string }).message,
         });
       }
@@ -53,7 +42,7 @@ export const patchPatientProfile = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const response = await SERVER_API.patch("/patients/me", values, {
+      const response = await SERVER_API.patch("/profile/patient", values, {
         headers: {
           "Content-Type": "application/json",
         },
@@ -94,7 +83,7 @@ export const patchDoctorProfile = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const response = await SERVER_API.patch("/doctors/me", values, {
+      const response = await SERVER_API.patch("/profile/doctor", values, {
         headers: {
           "Content-Type": "application/json",
         },
@@ -150,32 +139,11 @@ export const logoutProfile = createAsyncThunk(
   }
 );
 
-export const deletePatientProfile = createAsyncThunk(
-  "profile/deletePatientProfile",
+export const deleteProfile = createAsyncThunk(
+  "profile/deleteProfile",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await SERVER_API.delete("/patients/me");
-      if (response.status === 202) {
-        return "deleted";
-      }
-    } catch (err) {
-      const error = err as AxiosError;
-      if (error.response?.status === 401) {
-        return rejectWithValue({
-          status: 401,
-          message: (error.response?.data as { message: string }).message,
-        });
-      }
-      console.log(err);
-    }
-  }
-);
-
-export const deleteDoctorProfile = createAsyncThunk(
-  "profile/deleteDoctorProfile",
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await SERVER_API.delete("/doctors/me");
+      const response = await SERVER_API.delete("/profile");
       if (response.status === 202) {
         return "deleted";
       }

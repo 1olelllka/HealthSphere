@@ -60,9 +60,10 @@ export const Appointments = () => {
         appointmentDate: values.appointmentDate?.toISOString(),
       })
     );
-    setInterval(() => {
-      window.location.reload();
-    }, 2000);
+    window.scrollTo({
+      top: 500,
+      behavior: "smooth",
+    });
   };
 
   const appointments = data.data.map((item) => ({
@@ -129,7 +130,7 @@ export const Appointments = () => {
               />
             </div>
           )}
-          <Dialog open={openDialog}>
+          <Dialog open={openDialog} onOpenChange={() => setOpenDialog(false)}>
             <DialogContent className="w-[455px]">
               <DialogHeader>
                 <DialogTitle>Create an appointment</DialogTitle>
@@ -196,8 +197,8 @@ export const Appointments = () => {
                     </Button>
                     <Button
                       variant={"default"}
-                      onClick={(e) => {
-                        e.preventDefault();
+                      type="button"
+                      onClick={() => {
                         if (!form.getFieldState("appointmentDate").invalid) {
                           onSubmit(form.getValues());
                           setOpenDialog(false);

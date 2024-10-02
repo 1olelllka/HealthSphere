@@ -11,10 +11,7 @@ import {
 } from "../ui/dialog";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
-import {
-  deletePatientProfile,
-  logoutProfile,
-} from "@/redux/action/profileActions";
+import { deleteProfile, logoutProfile } from "@/redux/action/profileActions";
 import { useNavigate } from "react-router-dom";
 import { FaMobileScreenButton, FaMessage, FaHouse } from "react-icons/fa6";
 import { BsThreeDots } from "react-icons/bs";
@@ -188,7 +185,7 @@ export const Patient = () => {
             <Button
               variant={"destructive"}
               onClick={() => {
-                dispatch(deletePatientProfile());
+                dispatch(deleteProfile());
                 dispatch(logoutProfile());
                 setDeleteDialogOpen(false);
                 navigate("/login");

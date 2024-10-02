@@ -159,9 +159,11 @@ const AppointmentSlice = createSlice({
       .addCase(
         createAppointment.fulfilled,
         (state, action: PayloadAction<AppointmentState>) => {
-          state.data.push(action.payload);
-          state.loading = false;
-          return state;
+          return {
+            ...state,
+            data: [action.payload, ...state.data],
+            loading: false,
+          };
         }
       )
       .addCase(createAppointment.rejected, (state, action) => {

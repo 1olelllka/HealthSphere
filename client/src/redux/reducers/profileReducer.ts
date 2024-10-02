@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
-  deleteDoctorProfile,
-  deletePatientProfile,
+  deleteProfile,
   logoutProfile,
   patchDoctorProfile,
   patchPatientProfile,
@@ -182,28 +181,15 @@ const profileSlice = createSlice({
         return state;
       });
     builder
-      .addCase(deletePatientProfile.pending, (state) => {
+      .addCase(deleteProfile.pending, (state) => {
         state.error = null;
         return state;
       })
-      .addCase(deletePatientProfile.fulfilled, (state) => {
+      .addCase(deleteProfile.fulfilled, (state) => {
         state = initialState;
         return state;
       })
-      .addCase(deletePatientProfile.rejected, (state, action) => {
-        state.error = action.payload as { status: number; message: string };
-        return state;
-      });
-    builder
-      .addCase(deleteDoctorProfile.pending, (state) => {
-        state.error = null;
-        return state;
-      })
-      .addCase(deleteDoctorProfile.fulfilled, (state) => {
-        state = initialState;
-        return state;
-      })
-      .addCase(deleteDoctorProfile.rejected, (state, action) => {
+      .addCase(deleteProfile.rejected, (state, action) => {
         state.error = action.payload as { status: number; message: string };
         return state;
       });
