@@ -12,7 +12,6 @@ import com._olelllka.HealthSphere_Backend.domain.entity.DoctorEntity;
 import com._olelllka.HealthSphere_Backend.domain.entity.Status;
 import com._olelllka.HealthSphere_Backend.service.AppointmentService;
 import com._olelllka.HealthSphere_Backend.service.UserService;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,8 +29,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.text.SimpleDateFormat;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
@@ -57,14 +54,14 @@ public class AppointmentControllerIntegrationTest extends AbstractTestContainers
 
     @Test
     public void testThatGetAllAppointmentsForPatientReturnsHttp403ForbiddenIfUnauthorized() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/patients/1/appointments"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/appointments/patients/1"))
                 .andExpect(MockMvcResultMatchers.status().isForbidden());
     }
 
     @Test
     public void testThatGetAllAppointmentsForPatientReturnsHttp200Ok() throws Exception {
         String accessToken = getAccessToken();
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/patients/1/appointments")
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/appointments/patients/1")
                 .header("Authorization", "Bearer " + accessToken))
                 .andExpect(MockMvcResultMatchers.status().isOk());
     }
@@ -72,7 +69,7 @@ public class AppointmentControllerIntegrationTest extends AbstractTestContainers
     @Test
     public void testThatGetAllAppointmentsForDoctorReturnsHttp200Ok() throws Exception {
         String accessToken = getDoctorAccessToken();
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/doctors/1/appointments")
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/appointments/doctors/1")
                 .header("Authorization", "Bearer " + accessToken))
                 .andExpect(MockMvcResultMatchers.status().isOk());
     }
@@ -80,7 +77,7 @@ public class AppointmentControllerIntegrationTest extends AbstractTestContainers
     @Test
     public void testThatGetAppointmentByIdReturnsHttp404NotFoundIfSuchAppointmentWasNotFound() throws Exception {
         String accessToken = getAccessToken();
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/patients/appointments/1")
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/appointments/1")
                 .header("Authorization", "Bearer " + accessToken))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
@@ -91,7 +88,7 @@ public class AppointmentControllerIntegrationTest extends AbstractTestContainers
         AppointmentDto dto = TestDataUtil.createAppointmentDto(null, null);
         dto.setAppointmentDate(new SimpleDateFormat("yyyy-MM-dd").parse("2020-02-02"));
         String json = objectMapper.writeValueAsString(dto);
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/patients/appointments")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/appointments")
                 .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
@@ -104,11 +101,11 @@ public class AppointmentControllerIntegrationTest extends AbstractTestContainers
         getDoctorAccessToken();
         AppointmentDto dto = TestDataUtil.createAppointmentDto(null, DoctorEntity.builder().id(1L).build());
         String json = objectMapper.writeValueAsString(dto);
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/patients/appointments")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/appointments")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json));
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/patients/appointments")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/appointments")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
@@ -121,7 +118,7 @@ public class AppointmentControllerIntegrationTest extends AbstractTestContainers
         getDoctorAccessToken();
         AppointmentDto dto = TestDataUtil.createAppointmentDto(null, DoctorEntity.builder().id(1L).build());
         String json = objectMapper.writeValueAsString(dto);
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/patients/appointments")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/appointments")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
@@ -135,11 +132,11 @@ public class AppointmentControllerIntegrationTest extends AbstractTestContainers
         String accessToken = getDoctorAccessToken();
         AppointmentDto dto = TestDataUtil.createAppointmentDto(null, null);
         String json = objectMapper.writeValueAsString(dto);
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/patients/appointments")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/appointments")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json));
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/patients/appointments")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/appointments")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
@@ -152,7 +149,7 @@ public class AppointmentControllerIntegrationTest extends AbstractTestContainers
         String accessToken = getDoctorAccessToken();
         AppointmentDto dto = TestDataUtil.createAppointmentDto(null, null);
         String json = objectMapper.writeValueAsString(dto);
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/patients/appointments")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/appointments")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
@@ -168,7 +165,7 @@ public class AppointmentControllerIntegrationTest extends AbstractTestContainers
                 .appointmentDate(new SimpleDateFormat("yyyy-MM-dd").parse("2024-01-01"))
                 .build();
         String json = objectMapper.writeValueAsString(dto);
-        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patients/appointments/1")
+        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/appointments/1")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
@@ -184,7 +181,7 @@ public class AppointmentControllerIntegrationTest extends AbstractTestContainers
                 .status(Status.SCHEDULED)
                 .build();
         String json = objectMapper.writeValueAsString(dto);
-        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patients/appointments/1")
+        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/appointments/1")
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
@@ -205,7 +202,7 @@ public class AppointmentControllerIntegrationTest extends AbstractTestContainers
                 .status(Status.COMPLETED)
                 .build();
         String json = objectMapper.writeValueAsString(dto);
-        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patients/appointments/1")
+        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/appointments/1")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
@@ -227,7 +224,7 @@ public class AppointmentControllerIntegrationTest extends AbstractTestContainers
                 .status(Status.CANCELED)
                 .build();
         String json = objectMapper.writeValueAsString(dto);
-        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patients/appointments/1")
+        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/appointments/1")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
@@ -248,7 +245,7 @@ public class AppointmentControllerIntegrationTest extends AbstractTestContainers
                 .appointmentDate(new SimpleDateFormat("yyyy-MM-dd").parse("2025-10-01"))
                 .build();
         String json = objectMapper.writeValueAsString(dto);
-        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patients/appointments/1")
+        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/appointments/1")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
@@ -271,7 +268,7 @@ public class AppointmentControllerIntegrationTest extends AbstractTestContainers
                 .appointmentDate(new SimpleDateFormat("yyyy-MM-dd").parse("2025-10-01"))
                 .build();
         String json = objectMapper.writeValueAsString(dto);
-        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patients/appointments/1")
+        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/appointments/1")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
@@ -282,19 +279,19 @@ public class AppointmentControllerIntegrationTest extends AbstractTestContainers
     }
 
     @Test
-    public void testThatCreatingTheAppointmentToTheSameDoctorAtTheSameTimeThrowsException() throws Exception {
+    public void testThatCreatingTheAppointmentToTheSameDoctorAtTheSameTimeReturnsHttp409Conflict() throws Exception {
         String accessToken = getAccessToken();
         getDoctorAccessToken();
         AppointmentDto dto = TestDataUtil.createAppointmentDto(null, DoctorEntity.builder().id(1L).build());
         String json = objectMapper.writeValueAsString(dto);
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/patients/appointments")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/appointments")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(Status.SCHEDULED.name()));
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/patients/appointments")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/appointments")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))

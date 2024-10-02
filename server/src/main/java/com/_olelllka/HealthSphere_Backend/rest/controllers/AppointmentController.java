@@ -56,7 +56,7 @@ public class AppointmentController {
             content = {@Content(mediaType = "application/json",
             schema = @Schema(implementation = ErrorMessage.class))})
     })
-    @GetMapping("/patients/{patientId}/appointments")
+    @GetMapping("/appointments/patients/{patientId}")
     public ResponseEntity<List<AppointmentDto>> getAllAppointmentsForPatient(@PathVariable Long patientId) {
         List<AppointmentEntity> entities =  service.getAllAppointmentsForPatient(patientId);
         List<AppointmentDto> result = entities.stream().map(mapper::toDto).toList();
@@ -77,7 +77,7 @@ public class AppointmentController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = ErrorMessage.class))})
     })
-    @GetMapping("/doctors/{doctorId}/appointments")
+    @GetMapping("/appointments/doctors/{doctorId}")
     public ResponseEntity<List<AppointmentDto>> getAllAppointmentsForDoctor(@PathVariable Long doctorId) {
         List<AppointmentEntity> entities = service.getAllAppointmentsForDoctor(doctorId);
         List<AppointmentDto> result = entities.stream().map(mapper::toDto).toList();
@@ -98,7 +98,7 @@ public class AppointmentController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = ErrorMessage.class))})
     })
-    @GetMapping("/patients/appointments/{id}")
+    @GetMapping("/appointments/{id}")
     public ResponseEntity<AppointmentDto> getAppointmentById(@PathVariable Long id) {
         AppointmentEntity appointment = service.getAppointmentById(id);
         return new ResponseEntity<>(mapper.toDto(appointment), HttpStatus.OK);
@@ -124,7 +124,7 @@ public class AppointmentController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = ErrorMessage.class))})
     })
-    @PostMapping("/patients/appointments")
+    @PostMapping("/appointments")
     public ResponseEntity<AppointmentDto> createAppointment(@Valid @RequestBody AppointmentDto dto,
                                                             BindingResult bindingResult,
                                                              @RequestHeader(name="Authorization") String header,
@@ -166,7 +166,7 @@ public class AppointmentController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = ErrorMessage.class))})
     })
-    @PatchMapping("/patients/appointments/{id}")
+    @PatchMapping("/appointments/{id}")
     public ResponseEntity<AppointmentDto> updateAppointment(@RequestBody @Valid UpdateAppointmentDto dto,
                                                             @PathVariable Long id,
                                                             HttpServletRequest request,
