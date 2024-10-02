@@ -180,7 +180,7 @@ public class AppointmentControllerIntegrationTest extends AbstractTestContainers
         String accessToken = getAccessToken();
         AppointmentDto dto = AppointmentDto
                 .builder()
-                .appointmentDate(new SimpleDateFormat("yyyy-MM-dd").parse("2024-10-01"))
+                .appointmentDate(new SimpleDateFormat("yyyy-MM-dd").parse("2025-10-01"))
                 .status(Status.SCHEDULED)
                 .build();
         String json = objectMapper.writeValueAsString(dto);
@@ -240,12 +240,12 @@ public class AppointmentControllerIntegrationTest extends AbstractTestContainers
         getDoctorAccessToken();
         AppointmentEntity entity = AppointmentEntity.builder()
                 .doctor(DoctorEntity.builder().id(1L).build())
-                .appointmentDate(new SimpleDateFormat("yyyy-MM-dd").parse("2024-09-01"))
+                .appointmentDate(new SimpleDateFormat("yyyy-MM-dd").parse("2025-09-01"))
                 .build();
         service.createNewAppointmentForPatient(entity, accessToken);
         AppointmentDto dto = AppointmentDto
                 .builder()
-                .appointmentDate(new SimpleDateFormat("yyyy-MM-dd").parse("2024-10-01"))
+                .appointmentDate(new SimpleDateFormat("yyyy-MM-dd").parse("2025-10-01"))
                 .build();
         String json = objectMapper.writeValueAsString(dto);
         mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patients/appointments/1")
@@ -263,12 +263,12 @@ public class AppointmentControllerIntegrationTest extends AbstractTestContainers
         String accessToken = getDoctorAccessToken();
         AppointmentEntity entity = AppointmentEntity.builder()
                 .doctor(DoctorEntity.builder().id(1L).build())
-                .appointmentDate(new SimpleDateFormat("yyyy-MM-dd").parse("2024-09-01"))
+                .appointmentDate(new SimpleDateFormat("yyyy-MM-dd").parse("2025-09-01"))
                 .build();
         service.createNewAppointmentForDoctor(entity, accessToken);
         AppointmentDto dto = AppointmentDto
                 .builder()
-                .appointmentDate(new SimpleDateFormat("yyyy-MM-dd").parse("2024-10-01"))
+                .appointmentDate(new SimpleDateFormat("yyyy-MM-dd").parse("2025-10-01"))
                 .build();
         String json = objectMapper.writeValueAsString(dto);
         mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/patients/appointments/1")
@@ -294,11 +294,11 @@ public class AppointmentControllerIntegrationTest extends AbstractTestContainers
                 .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(Status.SCHEDULED.name()));
 
-        assertThrows(ServletException.class, () ->
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/patients/appointments")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(json)));
+                        .content(json))
+                .andExpect(MockMvcResultMatchers.status().isConflict());
     }
 
 

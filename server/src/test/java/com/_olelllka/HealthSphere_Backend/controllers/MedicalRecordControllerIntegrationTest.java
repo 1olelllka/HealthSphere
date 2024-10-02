@@ -133,12 +133,12 @@ public class MedicalRecordControllerIntegrationTest extends AbstractTestContaine
     @Test
     public void testThatGetMedicalRecordsReturnsHttp200OkIfEverythingGood() throws Exception {
         String patientAccessToken = getAccessToken();
-        String patientJson = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/patients/me")
+        String patientJson = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/profile")
                         .header("Authorization", "Bearer " + patientAccessToken))
                 .andReturn().getResponse().getContentAsString();
         PatientEntity patient = objectMapper.readValue(patientJson, PatientEntity.class);
         String doctorAccessToken = getAccessTokenForDoctor();
-        String doctorJson = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/doctors/me")
+        String doctorJson = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/profile")
                         .header("Authorization", "Bearer " + doctorAccessToken))
                 .andReturn().getResponse().getContentAsString();
         MedicalRecordEntity record = MedicalRecordEntity.builder()
@@ -180,13 +180,13 @@ public class MedicalRecordControllerIntegrationTest extends AbstractTestContaine
         assertEquals(0, Objects.requireNonNull(admin.getQueueInfo("medical_record_create_update")).getMessageCount());
         listenerRegistry.getListenerContainer("medical-record.post").start();
         String patientAccessToken = getAccessToken();
-        String patientJson = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/patients/me")
+        String patientJson = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/profile")
                 .header("Authorization", "Bearer " + patientAccessToken))
                 .andReturn().getResponse().getContentAsString();
         PatientEntity patient = objectMapper.readValue(patientJson, PatientEntity.class);
         PatientDto patientDto = PatientDto.builder().id(patient.getId()).build();
         String doctorAccessToken = getAccessTokenForDoctor();
-        String doctorJson = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/doctors/me")
+        String doctorJson = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/profile")
                 .header("Authorization", "Bearer " + doctorAccessToken))
                 .andReturn().getResponse().getContentAsString();
         DoctorEntity doctor = objectMapper.readValue(doctorJson, DoctorEntity.class);
@@ -244,12 +244,12 @@ public class MedicalRecordControllerIntegrationTest extends AbstractTestContaine
         assertEquals(0, Objects.requireNonNull(admin.getQueueInfo("medical_record_create_update")).getMessageCount());
         listenerRegistry.getListenerContainer("medical-record.post").start();
         String patientAccessToken = getAccessToken();
-        String patientJson = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/patients/me")
+        String patientJson = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/profile")
                         .header("Authorization", "Bearer " + patientAccessToken))
                 .andReturn().getResponse().getContentAsString();
         PatientEntity patient = objectMapper.readValue(patientJson, PatientEntity.class);
         String doctorAccessToken = getAccessTokenForDoctor();
-        String doctorJson = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/doctors/me")
+        String doctorJson = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/profile")
                         .header("Authorization", "Bearer " + doctorAccessToken))
                 .andReturn().getResponse().getContentAsString();
         DoctorEntity doctor = objectMapper.readValue(doctorJson, DoctorEntity.class);
@@ -300,7 +300,7 @@ public class MedicalRecordControllerIntegrationTest extends AbstractTestContaine
         listenerRegistry.getListenerContainer("medical-record.delete").start();
 
         String patientAccessToken = getAccessToken();
-        String patientJson = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/patients/me")
+        String patientJson = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/profile")
                         .header("Authorization", "Bearer " + patientAccessToken))
                 .andReturn().getResponse().getContentAsString();
         PatientEntity patient = objectMapper.readValue(patientJson, PatientEntity.class);
@@ -339,7 +339,7 @@ public class MedicalRecordControllerIntegrationTest extends AbstractTestContaine
         listenerRegistry.getListenerContainer("medical-record.delete").start();
 
         String patientAccessToken = getAccessToken();
-        String patientJson = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/patients/me")
+        String patientJson = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/profile")
                         .header("Authorization", "Bearer " + patientAccessToken))
                 .andReturn().getResponse().getContentAsString();
         PatientEntity patient = objectMapper.readValue(patientJson, PatientEntity.class);

@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(path="/api/v1")
-@Tag(name="Doctors", description = "Search for doctors and manage doctor's account. Doctor accounts require authorization")
+@Tag(name="Doctors", description = "Search for doctors and their details.")
 public class DoctorController {
 
     private DoctorService doctorService;
@@ -94,68 +94,5 @@ public class DoctorController {
     public ResponseEntity<DoctorDetailDto> getDoctorById(@PathVariable Long id) {
         DoctorEntity doctor = doctorService.getDoctorById(id);
         return new ResponseEntity<>(detailMapper.toDto(doctor), HttpStatus.OK);
-    }
-
-    @Operation(summary = "Get details about doctor profile (me).")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Got details about profile",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = DoctorDetailDto.class)
-                    )}
-            ),
-            @ApiResponse(responseCode = "403", description = "Access Denied",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class))}),
-    })
-    @GetMapping("/doctors/me")
-    @PreAuthorize("hasRole('DOCTOR')")
-    public ResponseEntity<DoctorDetailDto> getDoctorByMyEmail(@RequestHeader(name="Authorization") String header) {
-        DoctorEntity doctor = doctorService.getDoctorByEmail(header.substring(7));
-        return new ResponseEntity<>(detailMapper.toDto(doctor), HttpStatus.OK);
-    }
-
-    @Operation(summary = "Update doctor's profile")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Updated successfully",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = DoctorDetailDto.class)
-                    )}
-            ),
-            @ApiResponse(responseCode = "403", description = "Access Denied",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class))}),
-            @ApiResponse(responseCode = "400", description = "Validation Error",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class))}),
-            @ApiResponse(responseCode = "404", description = "Doctor was not found.",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class))}),
-    })
-    @PatchMapping("/doctors/me")
-    @PreAuthorize("hasRole('DOCTOR')")
-    public ResponseEntity<DoctorDetailDto> patchDoctorByMyEmail(@RequestBody DoctorDetailDto doctor,
-                                                                @RequestHeader(name="Authorization") String header) {
-        DoctorEntity doctorEntity = detailMapper.toEntity(doctor);
-        DoctorEntity patchedDoctor = doctorService.patchDoctor(header.substring(7), doctorEntity);
-        return new ResponseEntity<>(detailMapper.toDto(patchedDoctor), HttpStatus.OK);
-    }
-
-    @Operation(summary = "Delete doctor's profile")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "202", description = "Deleted successfully"),
-            @ApiResponse(responseCode = "403", description = "Access Denied",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class))}),
-            @ApiResponse(responseCode = "404", description = "Doctor was not found.",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorMessage.class))}),
-    })
-    @DeleteMapping("/doctors/me")
-    @PreAuthorize("hasRole('DOCTOR')")
-    public ResponseEntity deleteDoctorByMyEmail(@RequestHeader(name="Authorization") String header,
-                                                HttpServletRequest request) throws ServletException {
-        doctorService.deleteDoctor(header.substring(7));
-        request.logout();
-        return new ResponseEntity(HttpStatus.ACCEPTED);
     }
 }
