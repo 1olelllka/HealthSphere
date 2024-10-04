@@ -63,7 +63,7 @@ export const DoctorsList = () => {
       {doctors.loading ? (
         <LoadingPage />
       ) : (
-        <div className="flex flex-col pt-10 justify-center items-center">
+        <div className="flex flex-col pt-16 justify-center items-center">
           <div className="container">
             {doctors.error && (
               <Alert className="w-1/3 mx-auto" variant="destructive">
@@ -71,7 +71,7 @@ export const DoctorsList = () => {
                 <AlertDescription>{doctors.error.message}</AlertDescription>
               </Alert>
             )}
-            <h1 className="text-5xl font-semibold">Search</h1>
+            <h1 className="text-6xl font-semibold">Search</h1>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)}>
                 <div className="flex flex-row grid grid-cols-3 gap-4 w-3/4 pt-2">
@@ -131,8 +131,15 @@ export const DoctorsList = () => {
                   </CardHeader>
                 </Card>
               ))}
+              {doctors.content.length === 0 && (
+                <div className="pt-10 flex flex-row gap-4">
+                  <h1 className="text-7xl font-semibold text-slate-500 pl-2">
+                    No doctors found
+                  </h1>
+                </div>
+              )}
             </div>
-            <Pagination className="pt-10">
+            <Pagination className="pt-28">
               <PaginationContent>
                 {!doctors.first && (
                   <PaginationItem>

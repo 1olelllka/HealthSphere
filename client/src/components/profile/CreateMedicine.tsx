@@ -57,7 +57,9 @@ export const CreateMedicine = (props: { id: number }) => {
     <>
       <Dialog>
         <DialogTrigger asChild>
-          <Button variant={"default"}>Add Medicine</Button>
+          <Button className="mt-2.5" variant={"default"}>
+            Add Medicine
+          </Button>
         </DialogTrigger>
         <DialogContent className="w-[450px]">
           <DialogHeader>
@@ -130,9 +132,11 @@ export const CreateMedicine = (props: { id: number }) => {
                   <DialogClose asChild>
                     <Button variant={"destructive"}>Close</Button>
                   </DialogClose>
-                  <Button variant={"default"} type="submit">
-                    Add
-                  </Button>
+                  <DialogClose asChild>
+                    <Button variant={"default"} type="submit">
+                      Add
+                    </Button>
+                  </DialogClose>
                 </DialogFooter>
               </form>
             </Form>

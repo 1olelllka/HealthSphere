@@ -65,9 +65,9 @@ export const PatientList = () => {
       ) : patients.loading ? (
         <LoadingPage />
       ) : (
-        <div className="flex flex-col pt-28 justify-center items-center">
+        <div className="flex flex-col pt-16 justify-center items-center">
           <div className="container">
-            <h1 className="text-5xl font-semibold">Patient Search</h1>
+            <h1 className="text-6xl font-semibold">Patient Search</h1>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)}>
                 <div className="flex flex-row grid grid-cols-3 gap-4 w-3/4 pt-2">
@@ -112,8 +112,15 @@ export const PatientList = () => {
                   </CardHeader>
                 </Card>
               ))}
+              {patients.content.length === 0 && (
+                <div className="pt-10 flex flex-row gap-4">
+                  <h1 className="text-7xl font-semibold text-slate-500 pl-2">
+                    No patients found
+                  </h1>
+                </div>
+              )}
             </div>
-            <Pagination className="pt-10">
+            <Pagination className="pt-28">
               <PaginationContent>
                 {!patients.first && (
                   <PaginationItem>
