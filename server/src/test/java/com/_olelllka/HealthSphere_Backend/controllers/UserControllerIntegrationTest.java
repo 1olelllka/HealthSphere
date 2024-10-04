@@ -50,7 +50,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 @ExtendWith(SpringExtension.class)
 @DirtiesContext(classMode= DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @AutoConfigureMockMvc
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class UserControllerIntegrationTest extends AbstractTestContainers {
 
     private UserService userService;
@@ -167,7 +166,6 @@ public class UserControllerIntegrationTest extends AbstractTestContainers {
     }
 
     @Test
-    @Order(1)
     public void testThatDoctorRegisterReturnsHttp201CreatedAndCorrespondingDataIfEverythingOk() throws Exception {
         listenerRegistry.stop();
         String accessToken = getAccessTokenForAdmin();
