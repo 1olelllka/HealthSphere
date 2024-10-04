@@ -54,7 +54,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: "22"
-          distribution: "temurin"
+          distribution: "corretto"
 
       - name: Cache Maven dependencies
         uses: actions/cache@v3
@@ -63,6 +63,10 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('server/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
+
+      - name: Build server
+        working-directory: ./server
+        run: mvn clean install -DskipTests
 
       - name: Run server tests
         working-directory: ./server
