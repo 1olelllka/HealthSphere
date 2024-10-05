@@ -65,7 +65,7 @@ export const Appointments = () => {
     }, 2000);
   };
 
-  const appointments = data.data.map((item) => ({
+  const appointments = data.content.map((item) => ({
     ...item,
     endDate: new Date(item.endDate),
     appointmentDate: new Date(item.appointmentDate),

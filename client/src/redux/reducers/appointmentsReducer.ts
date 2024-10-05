@@ -32,7 +32,13 @@ export interface AppointmentState {
 }
 
 interface Result {
-  data: AppointmentState[];
+  content: AppointmentState[];
+  last: boolean;
+  first: boolean;
+  totalElements: number;
+  totalPages: number;
+  pageNumber: number;
+  number: number;
   error: {
     status: number;
     message: string;
@@ -42,7 +48,13 @@ interface Result {
 }
 
 const initialState: Result = {
-  data: [],
+  last: false,
+  first: false,
+  totalElements: 0,
+  totalPages: 0,
+  pageNumber: 0,
+  number: 0,
+  content: [],
   error: null,
   loading: false,
   success: "",
@@ -60,9 +72,9 @@ const AppointmentSlice = createSlice({
       })
       .addCase(
         setAppointmentsForDoctor.fulfilled,
-        (state, action: PayloadAction<AppointmentState[]>) => {
-          state.data = action.payload as AppointmentState[];
-          state.data.forEach((item: AppointmentState) => {
+        (state, action: PayloadAction<Result>) => {
+          state = action.payload;
+          state.content.forEach((item: AppointmentState) => {
             item.allDay = false;
             item.endDate = new Date(
               new Date(item.appointmentDate).getTime() + 30 * 60 * 1000
@@ -82,9 +94,9 @@ const AppointmentSlice = createSlice({
       })
       .addCase(
         setAppointmentsForPatient.fulfilled,
-        (state, action: PayloadAction<AppointmentState[]>) => {
-          state.data = action.payload as AppointmentState[];
-          state.data.forEach((item: AppointmentState) => {
+        (state, action: PayloadAction<Result>) => {
+          state = action.payload;
+          state.content.forEach((item: AppointmentState) => {
             item.allDay = false;
             item.endDate = new Date(
               new Date(item.appointmentDate).getTime() + 30 * 60 * 1000
@@ -104,8 +116,8 @@ const AppointmentSlice = createSlice({
         return state;
       })
       .addCase(deleteAppointment.fulfilled, (state, action) => {
-        state.data = state.data.filter(
-          (item) => item.id != (action.payload as number)
+        state.content = state.content.filter(
+          (item) => item.id !== (action.payload as number)
         );
         state.loading = false;
         state.success = "Appointment deleted successfully";
@@ -124,12 +136,12 @@ const AppointmentSlice = createSlice({
       })
       .addCase(patchAppointment.fulfilled, (state, action) => {
         if (action.payload?.action === "POST") {
-          state.data = state.data.filter(
+          state.content = state.content.filter(
             (item) => item.id != action.payload?.lastId
           );
-          state.data.push(action.payload.data);
+          state.content.push(action.payload.data);
         } else if (action.payload?.action === "PATCH") {
-          state.data = state.data.map((item) => {
+          state.content = state.content.map((item) => {
             if (item.id == action.payload?.data.id) {
               return action.payload?.data;
             } else {
@@ -137,7 +149,7 @@ const AppointmentSlice = createSlice({
             }
           }) as AppointmentState[];
         } else if (action.payload?.action === "DELETE") {
-          state.data = state.data.filter(
+          state.content = state.content.filter(
             (item) => item.id != action.payload?.deleteId
           );
         }
@@ -161,7 +173,7 @@ const AppointmentSlice = createSlice({
         (state, action: PayloadAction<AppointmentState>) => {
           return {
             ...state,
-            data: [action.payload, ...state.data],
+            data: [action.payload, ...state.content],
             loading: false,
           };
         }

@@ -45,30 +45,31 @@ public class AppointmentServiceUnitTest {
         Pageable pageable = PageRequest.of(0, 1);
         Long userId = 1L;
         AppointmentEntity entity = AppointmentEntity.builder().id(1L).build();
-        List<AppointmentEntity> expected = List.of(entity);
+        Page<AppointmentEntity> expected = new PageImpl<>(List.of(entity));
         // when
-        when(repository.findByPatientId(userId)).thenReturn(expected);
-        List<AppointmentEntity> result = service.getAllAppointmentsForPatient(userId);
+        when(repository.findByPatientId(userId, pageable)).thenReturn(expected);
+        Page<AppointmentEntity> result = service.getAllAppointmentsForPatient(userId, pageable);
         // then
         assertAll(
                 () -> assertNotNull(result),
-                () -> assertEquals(result.size(), expected.size())
+                () -> assertEquals(result.getContent().size(), expected.getContent().size())
         );
     }
 
     @Test
     public void testThatGetAllAppointmentsForDoctorReturnsPageOfAppointments() {
         // given
+        Pageable pageable = PageRequest.of(0, 1);
         Long doctorId = 1L;
         AppointmentEntity entity = AppointmentEntity.builder().id(1L).build();
-        List<AppointmentEntity> expected = List.of(entity);
+        Page<AppointmentEntity> expected = new PageImpl<>(List.of(entity));
         // when
-        when(repository.findByDoctorId(doctorId)).thenReturn(expected);
-        List<AppointmentEntity> result = service.getAllAppointmentsForDoctor(doctorId);
+        when(repository.findByDoctorId(doctorId, pageable)).thenReturn(expected);
+        Page<AppointmentEntity> result = service.getAllAppointmentsForDoctor(doctorId, pageable);
         // then
         assertAll(
                 () -> assertNotNull(result),
-                () -> assertEquals(result.size(), expected.size())
+                () -> assertEquals(result.getContent().size(), expected.getContent().size())
         );
     }
 

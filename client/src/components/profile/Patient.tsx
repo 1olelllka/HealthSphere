@@ -15,14 +15,13 @@ import { deleteProfile, logoutProfile } from "@/redux/action/profileActions";
 import { useNavigate } from "react-router-dom";
 import { FaMobileScreenButton, FaMessage, FaHouse } from "react-icons/fa6";
 import { BsThreeDots } from "react-icons/bs";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
 import { useState } from "react";
 import patient_female from "../../assets/patient_female.png";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "../ui/hover-card";
 
 export const Patient = () => {
   const data = useSelector((state: RootState) => state.profile.data);
@@ -83,22 +82,25 @@ export const Patient = () => {
             </div>
           </div>
           <div>
-            <DropdownMenu>
-              <DropdownMenuTrigger>
+            <HoverCard>
+              <HoverCardTrigger>
                 <BsThreeDots size={25} className="mt-4 cursor-pointer" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => setEditDialogOpen(true)}>
+              </HoverCardTrigger>
+              <HoverCardContent className="w-40">
+                <div
+                  className="p-1 rounded-lg hover:bg-slate-200 transition-color duration-300 cursor-pointer"
+                  onClick={() => setEditDialogOpen(true)}
+                >
                   Edit profile
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-red-500"
+                </div>
+                <div
+                  className="text-red-500 p-1 rounded-lg hover:bg-slate-200 transition-color duration-300 cursor-pointer"
                   onClick={() => setDeleteDialogOpen(true)}
                 >
                   Delete profile
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                </div>
+              </HoverCardContent>
+            </HoverCard>
           </div>
         </div>
         <div className="col-span-2 bg-slate-50 rounded-2xl drop-shadow-lg pl-16 h-64">
@@ -164,7 +166,7 @@ export const Patient = () => {
         open={editDialogOpen}
         onClose={() => setEditDialogOpen(false)}
       />
-      <Dialog open={deleteDialogOpen}>
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>

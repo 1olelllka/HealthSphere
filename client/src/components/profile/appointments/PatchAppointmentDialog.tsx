@@ -59,9 +59,6 @@ export const PatchAppointmentDialog = (props: {
     }
     dispatch(patchAppointment({ id: props.selected?.id as number, ...values }));
     props.onClose();
-    setInterval(() => {
-      window.location.reload();
-    }, 2000);
     scrollTo({ top: 0, behavior: "smooth" });
   };
 

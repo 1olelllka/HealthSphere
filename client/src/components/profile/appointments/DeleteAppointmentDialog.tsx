@@ -32,16 +32,12 @@ export const DeleteAppointmentDialog = (props: {
           <Button
             variant={"destructive"}
             type="button"
-            onClick={(e) => {
-              e.preventDefault();
+            onClick={() => {
               dispatch(deleteAppointment(props.selectedId));
               window.scrollTo({
                 top: 0,
                 behavior: "smooth",
               });
-              setInterval(() => {
-                window.location.reload();
-              }, 2000);
               props.onClose();
             }}
           >

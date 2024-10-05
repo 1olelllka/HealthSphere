@@ -77,7 +77,7 @@ export const EditDoctor = (props: { open: boolean; onClose: () => void }) => {
   };
 
   return (
-    <Dialog open={props.open}>
+    <Dialog open={props.open} onOpenChange={props.onClose}>
       <DialogContent className="sm:max-w-[700px] max-h-[700px]">
         <DialogHeader>
           <DialogTitle>Edit profile</DialogTitle>

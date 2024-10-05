@@ -12,6 +12,8 @@ import com._olelllka.HealthSphere_Backend.rest.exceptions.NotFoundException;
 import com._olelllka.HealthSphere_Backend.service.AppointmentService;
 import com._olelllka.HealthSphere_Backend.service.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -38,13 +40,13 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public List<AppointmentEntity> getAllAppointmentsForPatient(Long userId) {
-        return repository.findByPatientId(userId);
+    public Page<AppointmentEntity> getAllAppointmentsForPatient(Long userId, Pageable pageable) {
+        return repository.findByPatientId(userId, pageable);
     }
 
     @Override
-    public List<AppointmentEntity> getAllAppointmentsForDoctor(Long doctorId) {
-        return repository.findByDoctorId(doctorId);
+    public Page<AppointmentEntity> getAllAppointmentsForDoctor(Long doctorId, Pageable pageable) {
+        return repository.findByDoctorId(doctorId, pageable);
     }
 
     @Override

@@ -32,10 +32,10 @@ export const setAppointmentsForDoctor = createAsyncThunk(
 
 export const setAppointmentsForPatient = createAsyncThunk(
   "appointment/setAppointmentsForPatient",
-  async (patientId: number, { rejectWithValue }) => {
+  async (values: { patientId: number; page: number }, { rejectWithValue }) => {
     try {
       const response = await SERVER_API.get(
-        `/appointments/patients/${patientId}`
+        `/appointments/patients/${values.patientId}?page=${values.page}`
       );
       if (response.status === 200) {
         return response.data;

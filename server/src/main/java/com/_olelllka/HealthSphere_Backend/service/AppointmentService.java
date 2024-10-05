@@ -2,13 +2,14 @@ package com._olelllka.HealthSphere_Backend.service;
 
 import com._olelllka.HealthSphere_Backend.domain.entity.AppointmentEntity;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 public interface AppointmentService {
-    List<AppointmentEntity> getAllAppointmentsForPatient(Long userId);
+    Page<AppointmentEntity> getAllAppointmentsForPatient(Long userId, Pageable pageable);
 
-    List<AppointmentEntity> getAllAppointmentsForDoctor(Long doctorId);
+    Page<AppointmentEntity> getAllAppointmentsForDoctor(Long doctorId, Pageable pageable);
 
     AppointmentEntity getAppointmentById(Long id);
 

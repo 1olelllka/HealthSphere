@@ -15,10 +15,10 @@ import java.util.Optional;
 public interface AppointmentRepository extends JpaRepository<AppointmentEntity, Long> {
 
     @Query("SELECT a FROM AppointmentEntity a JOIN a.patient p WHERE p.id = :userId")
-    List<AppointmentEntity> findByPatientId(Long userId);
+    Page<AppointmentEntity> findByPatientId(Long userId, Pageable pageable);
 
     @Query("SELECT a FROM AppointmentEntity a JOIN a.doctor d WHERE d.id = :doctorId")
-    List<AppointmentEntity> findByDoctorId(Long doctorId);
+    Page<AppointmentEntity> findByDoctorId(Long doctorId, Pageable pageable);
 
     @Query("SELECT a FROM AppointmentEntity a JOIN a.patient p WHERE p.id = :patientId AND a.appointmentDate = :appointmentDate")
     Optional<AppointmentEntity> findUniquePatientAndAppointmentDate(Long patientId, Date appointmentDate);

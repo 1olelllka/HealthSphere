@@ -18,6 +18,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -57,9 +61,9 @@ public class AppointmentController {
             schema = @Schema(implementation = ErrorMessage.class))})
     })
     @GetMapping("/appointments/patients/{patientId}")
-    public ResponseEntity<List<AppointmentDto>> getAllAppointmentsForPatient(@PathVariable Long patientId) {
-        List<AppointmentEntity> entities =  service.getAllAppointmentsForPatient(patientId);
-        List<AppointmentDto> result = entities.stream().map(mapper::toDto).toList();
+    public ResponseEntity<Page<AppointmentDto>> getAllAppointmentsForPatient(@PageableDefault(sort = {"appointmentDate", "id"}, direction = Sort.Direction.DESC) Pageable pageable, @PathVariable Long patientId) {
+        Page<AppointmentEntity> entities =  service.getAllAppointmentsForPatient(patientId, pageable);
+        Page<AppointmentDto> result = entities.map(mapper::toDto);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
@@ -78,9 +82,9 @@ public class AppointmentController {
                             schema = @Schema(implementation = ErrorMessage.class))})
     })
     @GetMapping("/appointments/doctors/{doctorId}")
-    public ResponseEntity<List<AppointmentDto>> getAllAppointmentsForDoctor(@PathVariable Long doctorId) {
-        List<AppointmentEntity> entities = service.getAllAppointmentsForDoctor(doctorId);
-        List<AppointmentDto> result = entities.stream().map(mapper::toDto).toList();
+    public ResponseEntity<Page<AppointmentDto>> getAllAppointmentsForDoctor(@PageableDefault(sort = {"appointmentDate", "id"}, direction = Sort.Direction.DESC) Pageable pageable, @PathVariable Long doctorId) {
+        Page<AppointmentEntity> entities = service.getAllAppointmentsForDoctor(doctorId, pageable);
+        Page<AppointmentDto> result = entities.map(mapper::toDto);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 

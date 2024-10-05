@@ -17,15 +17,14 @@ import {
   FaMobileScreenButton,
   FaRegHospital,
 } from "react-icons/fa6";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
 import { BsThreeDots } from "react-icons/bs";
 import { useState } from "react";
 import female_doctor from "../../assets/female_doctor.png";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "../ui/hover-card";
 
 export const Doctor = () => {
   const data = useSelector((state: RootState) => state.profile.data);
@@ -86,22 +85,25 @@ export const Doctor = () => {
             </div>
           </div>
           <div>
-            <DropdownMenu>
-              <DropdownMenuTrigger>
+            <HoverCard>
+              <HoverCardTrigger>
                 <BsThreeDots size={25} className="mt-4 cursor-pointer" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => setEditDialogOpen(true)}>
+              </HoverCardTrigger>
+              <HoverCardContent className="w-40">
+                <div
+                  className="p-1 rounded-lg hover:bg-slate-200 transition-color duration-300 cursor-pointer"
+                  onClick={() => setEditDialogOpen(true)}
+                >
                   Edit profile
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-red-500"
+                </div>
+                <div
+                  className="text-red-500 p-1 rounded-lg hover:bg-slate-200 transition-color duration-300 cursor-pointer"
                   onClick={() => setDeleteDialogOpen(true)}
                 >
                   Delete profile
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                </div>
+              </HoverCardContent>
+            </HoverCard>
           </div>
         </div>
         <div className="col-span-2 bg-slate-50 rounded-2xl drop-shadow-lg pl-16 h-64">
@@ -170,7 +172,7 @@ export const Doctor = () => {
         open={editDialogOpen}
         onClose={() => setEditDialogOpen(false)}
       />
-      <Dialog open={deleteDialogOpen}>
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
