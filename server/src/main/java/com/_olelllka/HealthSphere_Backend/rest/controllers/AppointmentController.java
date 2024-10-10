@@ -97,9 +97,9 @@ public class AppointmentController {
                                                          @RequestParam(required = false) LocalDateTime from,
                                                          @RequestParam(required = false) LocalDateTime to) {
         if (from == null || to == null) {
-        Page<AppointmentEntity> entities = service.getAllAppointmentsForDoctor(doctorId, pageable);
-        Page<AppointmentDto> result = entities.map(mapper::toDto);
-        return new ResponseEntity<>(result, HttpStatus.OK);
+            Page<AppointmentEntity> entities = service.getAllAppointmentsForDoctor(doctorId, pageable);
+            Page<AppointmentDto> result = entities.map(mapper::toDto);
+            return new ResponseEntity<>(result, HttpStatus.OK);
         } else {
             List<AppointmentEntity> entities = service.getAllAppointmentsForDoctorByParams(doctorId, from, to);
             List<AppointmentDto> result = entities.stream().map(mapper::toDto).toList();

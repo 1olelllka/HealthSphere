@@ -42,6 +42,9 @@ export const Appointments = () => {
   const data = useSelector((state: RootState) => state.appointment);
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [dateRange, setDateRange] = useState<
+    [Date | undefined, Date | undefined]
+  >([new Date(), new Date(Date.now() + 1000 * 60 * 60 * 24 * 5)]);
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -73,10 +76,16 @@ export const Appointments = () => {
 
   useEffect(() => {
     const getAppointmentsForPatient = async (patientId: number) => {
-      dispatch(setAppointmentsForPatient(patientId));
+      dispatch(
+        setAppointmentsForPatient({
+          patientId: patientId,
+          from: dateRange[0],
+          to: dateRange[1],
+        })
+      );
     };
     getAppointmentsForPatient(id);
-  }, [dispatch, id]);
+  }, [dispatch, id, dateRange]);
 
   return (
     <>
@@ -101,9 +110,19 @@ export const Appointments = () => {
                 views={{ work_week: true }}
                 endAccessor="endDate"
                 selectable={true}
+                onRangeChange={(range: Date[]) => {
+                  setDateRange([
+                    new Date(
+                      Math.max(range[0].getTime(), new Date().getTime())
+                    ),
+                    new Date(
+                      range[4].getTime() + 23 * 60 * 60 * 1000 + 59 * 60 * 1000
+                    ),
+                  ]);
+                }}
                 eventPropGetter={() => {
                   const style: React.CSSProperties = {
-                    backgroundColor: "#5C8374",
+                    backgroundColor: "#eb5763",
                     borderRadius: "5px",
                     color: "white",
                     border: "1px solid #183D3D",

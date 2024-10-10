@@ -1,16 +1,30 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { SERVER_API } from "../api/utils";
 import { AxiosError } from "axios";
-// todo: 404 error handling if doctor/patient doesn't exist
+
 export const setAppointmentsForDoctor = createAsyncThunk(
   "appointment/setAppointmentsForDoctor",
-  async (doctorId: number, { rejectWithValue }) => {
+  async (
+    values: { doctorId: number; from?: Date; to?: Date; page?: number },
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await SERVER_API.get(
-        `/appointments/doctors/${doctorId}`
-      );
-      if (response.status === 200) {
-        return response.data;
+      if (values.from == undefined || values.to == undefined) {
+        const response = await SERVER_API.get(
+          `/appointments/doctors/${values.doctorId}?page=${values.page}`
+        );
+        if (response.status === 200) {
+          return response.data;
+        }
+      } else {
+        const response = await SERVER_API.get(
+          `/appointments/doctors/${values.doctorId}?from=${values.from
+            .toISOString()
+            .slice(0, -5)}&to=${values.to.toISOString().slice(0, -5)}`
+        );
+        if (response.status === 200) {
+          return { content: response.data };
+        }
       }
     } catch (err) {
       const axiosError = err as AxiosError;
@@ -32,13 +46,27 @@ export const setAppointmentsForDoctor = createAsyncThunk(
 
 export const setAppointmentsForPatient = createAsyncThunk(
   "appointment/setAppointmentsForPatient",
-  async (values: { patientId: number; page: number }, { rejectWithValue }) => {
+  async (
+    values: { patientId: number; from?: Date; to?: Date; page?: number },
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await SERVER_API.get(
-        `/appointments/patients/${values.patientId}?page=${values.page}`
-      );
-      if (response.status === 200) {
-        return response.data;
+      if (values.from == undefined || values.to == undefined) {
+        const response = await SERVER_API.get(
+          `/appointments/patients/${values.patientId}?page=${values.page}`
+        );
+        if (response.status === 200) {
+          return response.data;
+        }
+      } else {
+        const response = await SERVER_API.get(
+          `/appointments/patients/${values.patientId}?from=${values.from
+            .toISOString()
+            .slice(0, -5)}&to=${values.to.toISOString().slice(0, -5)}`
+        );
+        if (response.status === 200) {
+          return { content: response.data };
+        }
       }
     } catch (err) {
       const axiosError = err as AxiosError;

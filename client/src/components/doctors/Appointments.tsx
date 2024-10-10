@@ -42,6 +42,9 @@ export const Appointments = () => {
   const data = useSelector((state: RootState) => state.appointment);
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [dateRange, setDateRange] = useState<
+    [Date | undefined, Date | undefined]
+  >([new Date(), new Date(Date.now() + 1000 * 60 * 60 * 24 * 5)]);
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -73,10 +76,18 @@ export const Appointments = () => {
 
   useEffect(() => {
     const getAppointmentsForDoctor = async (doctorId: number) => {
-      dispatch(setAppointmentsForDoctor(doctorId));
+      dispatch(
+        setAppointmentsForDoctor({
+          doctorId: doctorId,
+          from: dateRange[0],
+          to: dateRange[1],
+        })
+      );
     };
     getAppointmentsForDoctor(id);
-  }, [dispatch, id]);
+  }, [dispatch, id, dateRange]);
+
+  console.log(appointments);
 
   return (
     <>
@@ -84,7 +95,7 @@ export const Appointments = () => {
         <UnauthorizedPage message={data.error.message} />
       ) : (
         <div className="mt-10 bg-slate-50 p-10 rounded-3xl drop-shadow-lg">
-          <h1 className="text-4xl">Appointments Availability</h1>
+          <h1 className="text-4xl">Book an Appointment</h1>
           {data.error && data.error.status === 400 && (
             <Alert className="w-1/3 mx-auto mt-10" variant={"destructive"}>
               <AlertTitle>Error</AlertTitle>
@@ -109,7 +120,7 @@ export const Appointments = () => {
                 selectable={true}
                 eventPropGetter={() => {
                   const style: React.CSSProperties = {
-                    backgroundColor: "#5C8374",
+                    backgroundColor: "#eb5763",
                     borderRadius: "5px",
                     color: "white",
                     border: "1px solid #183D3D",
@@ -117,6 +128,16 @@ export const Appointments = () => {
                   return {
                     style: style,
                   };
+                }}
+                onRangeChange={(range: Date[]) => {
+                  setDateRange([
+                    new Date(
+                      Math.max(range[0].getTime(), new Date().getTime())
+                    ),
+                    new Date(
+                      range[4].getTime() + 23 * 60 * 60 * 1000 + 59 * 60 * 1000
+                    ),
+                  ]);
                 }}
                 step={30}
                 min={new Date(1970, 1, 1, 9, 0, 0)}

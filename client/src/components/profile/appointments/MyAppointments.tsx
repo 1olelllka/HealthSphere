@@ -68,7 +68,14 @@ export const MyAppointments = () => {
           setAppointmentsForPatient({ patientId: profileId, page: page })
         );
       } else if (profile.user.role === "ROLE_DOCTOR") {
-        dispatch(setAppointmentsForDoctor(profileId));
+        dispatch(
+          setAppointmentsForDoctor({
+            doctorId: profileId,
+            from: undefined,
+            to: undefined,
+            page: page,
+          })
+        );
       }
     };
     console.log(profile);
