@@ -14,8 +14,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.annotation.DirtiesContext;
 
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -104,6 +107,72 @@ public class AppointmentRepositoryDataJpaTest {
         assertAll(
                 () -> assertNotNull(result),
                 () -> assertEquals(result.getContent().size(), expected.getContent().size())
+        );
+    }
+
+    @Test
+    public void testThatFindByDoctorAndParamsReturnsListOfAppointments() {
+        PatientEntity patient = PatientEntity.builder()
+                .firstName("First Name")
+                .lastName("Last Name")
+                .gender(Gender.MALE)
+                .dateOfBirth(new Date())
+                .build();
+        DoctorEntity doctor = DoctorEntity.builder()
+                .firstName("FIRST NAME")
+                .lastName("LAST NAME")
+                .gender(Gender.MALE)
+                .licenseNumber("12312")
+                .build();
+        DoctorEntity savedDoctor = doctorRepository.save(doctor);
+        PatientEntity savedPatient = patientRepository.save(patient);
+        AppointmentEntity appointment = AppointmentEntity
+                .builder()
+                .id(1L)
+                .appointmentDate(new Date())
+                .patient(savedPatient)
+                .doctor(savedDoctor)
+                .build();
+        appointmentRepository.save(appointment);
+        List<AppointmentEntity> result = appointmentRepository.findByDoctorIdAndParams(savedDoctor.getId(), Timestamp.valueOf(LocalDateTime.of(2020, 1, 1, 0, 0, 0)), Timestamp.valueOf(LocalDateTime.of(2024, 11, 1, 0, 0, 0)));
+        List<AppointmentEntity> expected = List.of(AppointmentEntity.builder().build());
+
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertEquals(result.size(), expected.size())
+        );
+    }
+
+    @Test
+    public void testThatFindByPatientAndParamsReturnsListOfAppointments() {
+        PatientEntity patient = PatientEntity.builder()
+                .firstName("First Name")
+                .lastName("Last Name")
+                .gender(Gender.MALE)
+                .dateOfBirth(new Date())
+                .build();
+        DoctorEntity doctor = DoctorEntity.builder()
+                .firstName("FIRST NAME")
+                .lastName("LAST NAME")
+                .gender(Gender.MALE)
+                .licenseNumber("12312")
+                .build();
+        DoctorEntity savedDoctor = doctorRepository.save(doctor);
+        PatientEntity savedPatient = patientRepository.save(patient);
+        AppointmentEntity appointment = AppointmentEntity
+                .builder()
+                .id(1L)
+                .appointmentDate(new Date())
+                .patient(savedPatient)
+                .doctor(savedDoctor)
+                .build();
+        appointmentRepository.save(appointment);
+        List<AppointmentEntity> result = appointmentRepository.findByPatientIdAndParams(savedPatient.getId(), Timestamp.valueOf(LocalDateTime.of(2020, 1, 1, 0, 0, 0)), Timestamp.valueOf(LocalDateTime.of(2024, 11, 1, 0, 0, 0)));
+        List<AppointmentEntity> expected = List.of(AppointmentEntity.builder().build());
+
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertEquals(result.size(), expected.size())
         );
     }
 

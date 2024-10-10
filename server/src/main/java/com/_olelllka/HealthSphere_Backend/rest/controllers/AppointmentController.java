@@ -27,6 +27,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,10 +62,19 @@ public class AppointmentController {
             schema = @Schema(implementation = ErrorMessage.class))})
     })
     @GetMapping("/appointments/patients/{patientId}")
-    public ResponseEntity<Page<AppointmentDto>> getAllAppointmentsForPatient(@PageableDefault(sort = {"appointmentDate", "id"}, direction = Sort.Direction.DESC) Pageable pageable, @PathVariable Long patientId) {
-        Page<AppointmentEntity> entities =  service.getAllAppointmentsForPatient(patientId, pageable);
-        Page<AppointmentDto> result = entities.map(mapper::toDto);
-        return new ResponseEntity<>(result, HttpStatus.OK);
+    public ResponseEntity<?> getAllAppointmentsForPatient(@PageableDefault(sort = {"appointmentDate", "id"}, direction = Sort.Direction.DESC) Pageable pageable,
+                                                                             @PathVariable Long patientId,
+                                                                             @RequestParam(required = false) LocalDateTime from,
+                                                                             @RequestParam(required = false) LocalDateTime to) {
+        if (from == null || to == null) {
+            Page<AppointmentEntity> entities =  service.getAllAppointmentsForPatient(patientId, pageable);
+            Page<AppointmentDto> result = entities.map(mapper::toDto);
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        } else {
+            List<AppointmentEntity> entities = service.getAllAppointmentsForPatientByParams(patientId, from, to);
+            List<AppointmentDto> result = entities.stream().map(mapper::toDto).toList();
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        }
     }
 
     @Operation(summary = "Get all appointments for specific doctor.")
@@ -82,10 +92,19 @@ public class AppointmentController {
                             schema = @Schema(implementation = ErrorMessage.class))})
     })
     @GetMapping("/appointments/doctors/{doctorId}")
-    public ResponseEntity<Page<AppointmentDto>> getAllAppointmentsForDoctor(@PageableDefault(sort = {"appointmentDate", "id"}, direction = Sort.Direction.DESC) Pageable pageable, @PathVariable Long doctorId) {
+    public ResponseEntity<?> getAllAppointmentsForDoctor(@PageableDefault(sort = {"appointmentDate", "id"}, direction = Sort.Direction.DESC) Pageable pageable,
+                                                         @PathVariable Long doctorId,
+                                                         @RequestParam(required = false) LocalDateTime from,
+                                                         @RequestParam(required = false) LocalDateTime to) {
+        if (from == null || to == null) {
         Page<AppointmentEntity> entities = service.getAllAppointmentsForDoctor(doctorId, pageable);
         Page<AppointmentDto> result = entities.map(mapper::toDto);
         return new ResponseEntity<>(result, HttpStatus.OK);
+        } else {
+            List<AppointmentEntity> entities = service.getAllAppointmentsForDoctorByParams(doctorId, from, to);
+            List<AppointmentDto> result = entities.stream().map(mapper::toDto).toList();
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        }
     }
 
     @Operation(summary = "Get details about specific appointment")

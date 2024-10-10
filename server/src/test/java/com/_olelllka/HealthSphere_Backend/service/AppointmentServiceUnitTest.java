@@ -19,6 +19,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -70,6 +72,40 @@ public class AppointmentServiceUnitTest {
         assertAll(
                 () -> assertNotNull(result),
                 () -> assertEquals(result.getContent().size(), expected.getContent().size())
+        );
+    }
+
+    @Test
+    public void testThatGetAppointmentsForDoctorByParamsReturnsTheListOfAppointments() {
+        // given
+        Long doctorId = 1L;
+        LocalDateTime from = LocalDateTime.of(2020, 1, 1, 0, 0, 0);
+        LocalDateTime to = LocalDateTime.of(2022, 1, 1, 0, 0, 0);
+        List<AppointmentEntity> expected = List.of(AppointmentEntity.builder().build());
+        // when
+        when(repository.findByDoctorIdAndParams(doctorId, Timestamp.valueOf(from), Timestamp.valueOf(to))).thenReturn(expected);
+        List<AppointmentEntity> result = service.getAllAppointmentsForDoctorByParams(doctorId, from, to);
+        // then
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertEquals(result.size(), expected.size())
+        );
+    }
+
+    @Test
+    public void testThatGetAppointmentsForPatientByParamsReturnsTheListOfAppointments() {
+        // given
+        Long patientId = 1L;
+        LocalDateTime from = LocalDateTime.of(2020, 1, 1, 0, 0, 0);
+        LocalDateTime to = LocalDateTime.of(2022, 1, 1, 0, 0, 0);
+        List<AppointmentEntity> expected = List.of(AppointmentEntity.builder().build());
+        // when
+        when(repository.findByPatientIdAndParams(patientId, Timestamp.valueOf(from), Timestamp.valueOf(to))).thenReturn(expected);
+        List<AppointmentEntity> result = service.getAllAppointmentsForPatientByParams(patientId, from, to);
+        // then
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertEquals(result.size(), expected.size())
         );
     }
 

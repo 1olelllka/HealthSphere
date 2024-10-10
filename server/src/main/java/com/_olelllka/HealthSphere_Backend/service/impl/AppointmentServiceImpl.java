@@ -16,6 +16,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -88,6 +90,16 @@ public class AppointmentServiceImpl implements AppointmentService {
             Optional.ofNullable(entity.getStatus()).ifPresent(appointment::setStatus);
             return repository.save(appointment);
         }).orElseThrow(() -> new NotFoundException("Appointment with such id was not found."));
+    }
+
+    @Override
+    public List<AppointmentEntity> getAllAppointmentsForDoctorByParams(Long doctorId, LocalDateTime from, LocalDateTime to) {
+        return repository.findByDoctorIdAndParams(doctorId, Timestamp.valueOf(from), Timestamp.valueOf(to));
+    }
+
+    @Override
+    public List<AppointmentEntity> getAllAppointmentsForPatientByParams(Long patientId, LocalDateTime from, LocalDateTime to) {
+        return repository.findByPatientIdAndParams(patientId, Timestamp.valueOf(from), Timestamp.valueOf(to));
     }
 
     private void duplicatePatient(Long patientId, Date appointmentDate) {

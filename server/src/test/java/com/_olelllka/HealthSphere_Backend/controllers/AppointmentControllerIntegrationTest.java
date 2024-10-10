@@ -29,6 +29,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
@@ -71,6 +72,22 @@ public class AppointmentControllerIntegrationTest extends AbstractTestContainers
         String accessToken = getDoctorAccessToken();
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/appointments/doctors/1")
                 .header("Authorization", "Bearer " + accessToken))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+    }
+
+    @Test
+    public void testThatGetAppointmentsForDoctorByDateRangeReturnsHttp200Ok() throws Exception {
+        String accessToken = getAccessToken();
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/appointments/doctors/1?from=" + LocalDateTime.of(2020, 1, 1, 0, 0, 0) + "&to=" + LocalDateTime.of(2022, 1, 1, 0, 0, 0))
+                .header("Authorization", "Bearer " + accessToken))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+    }
+
+    @Test
+    public void testThatGetAppointmentsForPatientByDateRangeReturnsHttp200Ok() throws Exception {
+        String accessToken = getAccessToken();
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/appointments/patients/1?from=" + LocalDateTime.of(2020, 1, 1, 0, 0, 0) + "&to=" + LocalDateTime.of(2022, 1, 1, 0, 0, 0))
+                        .header("Authorization", "Bearer " + accessToken))
                 .andExpect(MockMvcResultMatchers.status().isOk());
     }
 
