@@ -120,7 +120,7 @@ export const Patient = () => {
                   Date of Birth:
                 </h1>
                 <h1 className="text-xl font-semibold">
-                  {new Date(data.dateOfBirth).toISOString().substring(0, 10)}
+                  {new Date(data.dateOfBirth).toLocaleDateString()}
                 </h1>
               </div>
               <div className="col-span-1">
@@ -146,7 +146,7 @@ export const Patient = () => {
                   Registered since:
                 </h1>
                 <h1 className="text-xl font-semibold">
-                  {new Date(data.createdAt).toISOString().substring(0, 10)}
+                  {new Date(data.createdAt).toLocaleDateString("en-GB")}
                 </h1>
               </div>
               <div className="cols-span-1">
@@ -154,7 +154,7 @@ export const Patient = () => {
                   Last Updated:
                 </h1>
                 <h1 className="text-xl font-semibold">
-                  {new Date(data.updatedAt).toISOString().substring(0, 10)}
+                  {new Date(data.updatedAt).toLocaleDateString("en-GB")}
                 </h1>
               </div>
             </div>

@@ -42,6 +42,7 @@ export const patchPatientProfile = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
+      values.dateOfBirth = new Date(values.dateOfBirth).toISOString();
       const response = await SERVER_API.patch("/profile/patient", values, {
         headers: {
           "Content-Type": "application/json",

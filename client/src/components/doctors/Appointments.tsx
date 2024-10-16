@@ -168,10 +168,10 @@ export const Appointments = () => {
                               <FormLabel className="text-right">Date</FormLabel>
                               <Label className="col-span-3 border-2 border-slate-300 rounded-lg p-2 font-normal w-[335px]">
                                 {selectedDate
-                                  ? `${selectedDate.getFullYear()}/${String(
+                                  ? `${selectedDate.getDate()}/${String(
                                       selectedDate.getMonth() + 1
                                     ).padStart(2, "0")}/${String(
-                                      selectedDate.getDate()
+                                      selectedDate.getFullYear()
                                     ).padStart(2, "0")} ${String(
                                       selectedDate.getHours()
                                     ).padStart(2, "0")}:${String(

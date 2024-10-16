@@ -243,7 +243,9 @@ export const MedicalRecords = (props: { id: number }) => {
                 >
                   <CardHeader>
                     <CardTitle>{record.diagnosis}</CardTitle>
-                    <CardDescription>{record.recordDate}</CardDescription>
+                    <CardDescription>
+                      {new Date(record.recordDate).toLocaleDateString("en-GB")}
+                    </CardDescription>
                   </CardHeader>
                 </Card>
               ))}

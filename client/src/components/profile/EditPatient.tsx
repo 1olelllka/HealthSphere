@@ -85,7 +85,7 @@ export const EditPatient = (props: { open: boolean; onClose: () => void }) => {
       lastName: data.lastName,
       address: data.address,
       phoneNumber: data.phoneNumber,
-      dateOfBirth: new Date(data.dateOfBirth).toISOString().substring(0, 10),
+      dateOfBirth: new Date(data.dateOfBirth).toLocaleDateString("en-GB"),
       allergies: data.allergies || "",
       bloodType: data.bloodType || "",
     },
@@ -292,7 +292,7 @@ export const EditPatient = (props: { open: boolean; onClose: () => void }) => {
                     </div>
                     <div className="flex flex-col justify-center space-y-2">
                       <FormMessage />
-                      <FormDescription>Year-Month-Day Format</FormDescription>
+                      <FormDescription>Day/Month/Year Format</FormDescription>
                     </div>
                   </FormItem>
                 )}

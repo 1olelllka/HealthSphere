@@ -114,12 +114,13 @@ export const MedicalRecordDetail = () => {
                   <CardHeader>
                     <CardTitle className="text-3xl">{data.diagnosis}</CardTitle>
                     <CardDescription>
-                      Record Date: {data.recordDate}
+                      Record Date:{" "}
+                      {new Date(data.recordDate).toLocaleDateString("en-GB")}
                     </CardDescription>
                     <CardDescription>
                       Last Updated:{" "}
                       {data.updatedAt &&
-                        new Date(data.updatedAt).toISOString().substring(0, 10)}
+                        new Date(data.updatedAt).toLocaleDateString("en-GB")}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -143,9 +144,9 @@ export const MedicalRecordDetail = () => {
                       <CardDescription>
                         Issued at:{" "}
                         {data.prescription.issuedDate &&
-                          new Date(data.prescription?.issuedDate)
-                            .toISOString()
-                            .substring(0, 10)}
+                          new Date(
+                            data.prescription?.issuedDate
+                          ).toLocaleDateString("en-GB")}
                       </CardDescription>
                     </CardHeader>
                     <CardContent>

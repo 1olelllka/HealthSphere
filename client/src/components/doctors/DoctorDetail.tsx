@@ -184,9 +184,7 @@ export const DoctorDetail = () => {
                         </h1>
                         <h1 className="text-xl font-semibold">
                           {data?.createdAt &&
-                            new Date(data.createdAt)
-                              .toISOString()
-                              .substring(0, 10)}
+                            new Date(data.createdAt).toLocaleDateString()}
                         </h1>
                       </div>
                       <div className="cols-span-1">
@@ -195,9 +193,9 @@ export const DoctorDetail = () => {
                         </h1>
                         <h1 className="text-xl font-semibold">
                           {data?.updatedAt &&
-                            new Date(data.updatedAt)
-                              .toISOString()
-                              .substring(0, 10)}
+                            new Date(data.updatedAt).toLocaleDateString(
+                              "en-GB"
+                            )}
                         </h1>
                       </div>
                     </div>

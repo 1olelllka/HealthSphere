@@ -12,6 +12,7 @@ import { DoctorDetailPage } from "./pages/DoctorDetailPage";
 import { PatientListPage } from "./pages/PatientListPage";
 import { PatientDetailPage } from "./pages/PatientDetailPage";
 import { AppointmentsPage } from "./pages/AppointmentsPage";
+import { FaqPage } from "./pages/FaqPage";
 // import { LoadingPage } from "./pages/LoadingPage";
 
 const router = createBrowserRouter([
@@ -32,10 +33,10 @@ const router = createBrowserRouter([
     path: "/profile",
     element: <Layout children={<ProfilePage />} />,
   },
-  // {
-  //   path: "/loading",
-  //   element: <LoadingPage />,
-  // },
+  {
+    path: "/faq",
+    element: <Layout children={<FaqPage />} />,
+  },
   {
     path: "/appointments",
     element: <Layout children={<AppointmentsPage />} />,

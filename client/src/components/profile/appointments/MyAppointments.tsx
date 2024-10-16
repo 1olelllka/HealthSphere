@@ -32,10 +32,11 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
+import { ForbiddenPage } from "@/pages/ForbiddenPage";
 
 export const MyAppointments = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const profile = useSelector((state: RootState) => state.profile.data);
+  const profile = useSelector((state: RootState) => state.profile);
   const data = useSelector((state: RootState) => state.appointment);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [selectedId, setSelectedId] = useState<number>(0);
@@ -63,11 +64,11 @@ export const MyAppointments = () => {
 
   useEffect(() => {
     const getAppointmentsForPatient = async (profileId: number) => {
-      if (profile.user.role === "ROLE_PATIENT") {
+      if (profile.data.user.role === "ROLE_PATIENT") {
         dispatch(
           setAppointmentsForPatient({ patientId: profileId, page: page })
         );
-      } else if (profile.user.role === "ROLE_DOCTOR") {
+      } else if (profile.data.user.role === "ROLE_DOCTOR") {
         dispatch(
           setAppointmentsForDoctor({
             doctorId: profileId,
@@ -79,14 +80,16 @@ export const MyAppointments = () => {
       }
     };
     console.log(profile);
-    getAppointmentsForPatient(profile.id);
-  }, [dispatch, profile.id, profile.user.role, profile, page]);
-  console.log(data.error);
+    getAppointmentsForPatient(profile.data.id);
+  }, [dispatch, profile.data.id, profile.data.user.role, profile, page]);
+  console.log(data.error?.status);
 
   return (
     <>
       {data.error && data.error.status === 401 ? (
         <UnauthorizedPage message={data.error.message} />
+      ) : profile.error && profile.error.status === 403 ? (
+        <ForbiddenPage />
       ) : data.loading ? (
         <LoadingPage />
       ) : (

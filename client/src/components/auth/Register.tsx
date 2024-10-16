@@ -17,12 +17,12 @@ import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Popover } from "../ui/popover";
 import { PopoverContent, PopoverTrigger } from "@radix-ui/react-popover";
-import { CalendarIcon, EyeIcon, UserIcon } from "lucide-react";
-import { Calendar } from "../ui/calendar";
+import { EyeIcon, UserIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Command, CommandGroup, CommandList } from "../ui/command";
 import { CommandItem } from "cmdk";
 import { ScrollToTop } from "../general/ScrollToTop";
+import DatePicker from "react-datepicker";
 
 const schema = z.object({
   email: z.string().email({ message: "Email is invalid" }),
@@ -102,9 +102,7 @@ export const Register = () => {
             variant={"destructive"}
           >
             <AlertTitle>Error</AlertTitle>
-            <AlertDescription>
-              Invalid email or password. Please try again.
-            </AlertDescription>
+            <AlertDescription>{error}</AlertDescription>
           </Alert>
           <h1
             className={`text-5xl font-semibold text-center transition-all ${
@@ -205,13 +203,13 @@ export const Register = () => {
                               <UserIcon className="ml-2 h-4 w-4" />
                             </Button>
                           </PopoverTrigger>
-                          <PopoverContent className="w-[200px] p-0">
+                          <PopoverContent className="w-[200px] p-0 z-50">
                             <Command>
                               <CommandList>
                                 <CommandGroup>
                                   {genders.map((item) => (
                                     <CommandItem
-                                      className={`flex justify-start p-2 ${
+                                      className={`flex cursor-pointer justify-start p-2 ${
                                         field.value == item.name
                                           ? "bg-slate-200"
                                           : ""
@@ -239,38 +237,16 @@ export const Register = () => {
                   control={form.control}
                   name="dateOfBirth"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="flex flex-col mt-2">
                       <FormLabel>Date Of Birth</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value
-                                ? field.value.toLocaleDateString()
-                                : "Select Date"}
-                              <CalendarIcon className="ml-2 h-4 w-4" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 mb-3">
-                          <Calendar
-                            mode="single"
-                            className="bg-white dark:bg-slate-800 border border-slate-200 rounded-md"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) =>
-                              date > new Date() || date < new Date("1900-01-01")
-                            }
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
+                      <FormControl>
+                        <DatePicker
+                          selected={field.value}
+                          onChange={field.onChange}
+                          dateFormat={"dd/MM/yyyy"}
+                          className="bg-white dark:bg-slate-800 border border-slate-200 rounded-md p-1.5 w-full"
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
