@@ -118,6 +118,18 @@ export const Appointments = () => {
                 views={{ work_week: true }}
                 endAccessor="endDate"
                 selectable={true}
+                slotPropGetter={(date) => {
+                  const today = moment().startOf("day");
+                  if (moment(date).isBefore(today)) {
+                    return {
+                      style: {
+                        backgroundColor: "#f0f0f0",
+                        opacity: 0.5,
+                        transition: "background-color 0.3s, opacity 0.3s",
+                      },
+                    };
+                  }
+                }}
                 eventPropGetter={() => {
                   const style: React.CSSProperties = {
                     backgroundColor: "#eb5763",
@@ -144,6 +156,10 @@ export const Appointments = () => {
                 max={new Date(1970, 1, 1, 18, 0, 0)}
                 style={{ width: "80%", height: 600, textAlign: "center" }}
                 onSelectSlot={(slotInfo) => {
+                  if (moment(slotInfo.start).isBefore(moment())) {
+                    alert("You cannot book an appointment in the past");
+                    return;
+                  }
                   setOpenDialog(true);
                   setSelectedDate(slotInfo.start);
                 }}
