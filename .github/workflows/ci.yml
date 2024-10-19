@@ -31,15 +31,15 @@ jobs:
         working-directory: ./client
         run: yarn install
 
-      # - name: Build client
-      #   working-directory: ./client
-      #   run: yarn build
+      - name: Build client
+        working-directory: ./client
+        run: yarn run build
 
-      # - name: Upload client build artifact
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: client-build
-      #     path: ./client/dist
+      - name: Upload client build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: client-build
+          path: ./client/dist
 
   build-server:
     name: Build Server
