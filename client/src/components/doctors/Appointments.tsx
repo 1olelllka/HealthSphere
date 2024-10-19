@@ -118,7 +118,9 @@ export const Appointments = () => {
                 views={{ work_week: true }}
                 endAccessor="endDate"
                 selectable={true}
-                slotPropGetter={(date) => {
+                slotPropGetter={(
+                  date: Date
+                ): { style: React.CSSProperties } => {
                   const today = moment().startOf("day");
                   if (moment(date).isBefore(today)) {
                     return {
@@ -129,6 +131,7 @@ export const Appointments = () => {
                       },
                     };
                   }
+                  return { style: {} };
                 }}
                 eventPropGetter={() => {
                   const style: React.CSSProperties = {
@@ -141,15 +144,19 @@ export const Appointments = () => {
                     style: style,
                   };
                 }}
-                onRangeChange={(range: Date[]) => {
-                  setDateRange([
-                    new Date(
-                      Math.max(range[0].getTime(), new Date().getTime())
-                    ),
-                    new Date(
-                      range[4].getTime() + 23 * 60 * 60 * 1000 + 59 * 60 * 1000
-                    ),
-                  ]);
+                onRangeChange={(range: Date[] | { start: Date; end: Date }) => {
+                  if (Array.isArray(range)) {
+                    setDateRange([
+                      new Date(
+                        Math.max(range[0].getTime(), new Date().getTime())
+                      ),
+                      new Date(
+                        range[4].getTime() +
+                          23 * 60 * 60 * 1000 +
+                          59 * 60 * 1000
+                      ),
+                    ]);
+                  }
                 }}
                 step={30}
                 min={new Date(1970, 1, 1, 9, 0, 0)}
