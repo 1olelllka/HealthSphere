@@ -118,11 +118,14 @@ export const logoutProfile = createAsyncThunk(
   "profile/logoutProfile",
   async () => {
     try {
-      const jwtResponse = await axios.get("http://localhost:8000/api/v1/jwt", {
-        withCredentials: true,
-      });
+      const jwtResponse = await axios.get(
+        `${import.meta.env.VITE_SERVER_URL}/api/v1/jwt`,
+        {
+          withCredentials: true,
+        }
+      );
       const response = await axios.post(
-        "http://localhost:8000/api/v1/logout",
+        `${import.meta.env.VITE_SERVER_URL}/api/v1/logout`,
         {},
         {
           withCredentials: true,

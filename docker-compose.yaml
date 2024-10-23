@@ -1,0 +1,104 @@
+name: "health-sphere"
+
+services:
+  healthsphere-frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    networks:
+      - healthsphere-network
+    depends_on:
+      - healthsphere-backend
+
+  healthsphere-backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    env_file:
+      - ./server/.env
+    ports:
+      - "8000:8000"
+    networks:
+      - healthsphere-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  elasticsearch:
+    image: "elasticsearch:7.17.23"
+    env_file:
+      - ./server/.env.elasticsearch
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - "elasticsearch_data:/var/lib/elasticsearch/"
+    networks:
+      - healthsphere-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres:
+    image: "postgres:16.4"
+    env_file:
+      - ./server/.env.postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - "postgres_data:/var/lib/postgresql/data"
+    networks:
+      - healthsphere-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U <username> -d <database_name>"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: "rabbitmq:3.13-management"
+    env_file:
+      - ./server/.env.rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - healthsphere-network
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmqctl status || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: "redis:7.2.6"
+    ports:
+      - "6379:6379"
+    volumes:
+      - "redis_data:/data"
+    networks:
+      - healthsphere-network
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  healthsphere-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  elasticsearch_data:

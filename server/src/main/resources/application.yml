@@ -1,45 +1,49 @@
 spring:
   application:
-    name: HealthSphere_Backend
+    name: ${SPRING_APPLICATION_NAME}
   datasource:
-    driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/healthsphere
-    username: 1olelllka
-    password: secret
+    driverClassName: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO}
+    show-sql: ${SPRING_JPA_SHOW_SQL}
     properties:
       hibernate:
-        format_sql: true
+        format_sql: ${SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL}
   elasticsearch:
-    uris: http://localhost:9200
+    uris: ${SPRING_ELASTICSEARCH_URIS}
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: myuser
-    password: secret
+    host: ${SPRING_RABBITMQ_HOST}
+    port: ${SPRING_RABBITMQ_PORT}
+    username: ${SPRING_RABBITMQ_USERNAME}
+    password: ${SPRING_RABBITMQ_PASSWORD}
   redis:
-    host: localhost
-    port: 6379
+    host: ${SPRING_REDIS_HOST}
+    port: ${SPRING_REDIS_PORT}
   cache:
-    type: redis
+    type: ${SPRING_CACHE_TYPE}
   api-docs:
-    enabled: true
+    enabled: ${SPRING_API_DOCS_ENABLED}
 
 server:
-  port: 8000
+  port: ${SERVER_PORT}
+  address: ${SERVER_ADDRESS}
 
 management:
   endpoints:
-      web:
-        cors:
-          allowed-origins: http://localhost:5173
-          allowed-methods: GET,POST,PUT,PATCH,DELETE,OPTIONS
-          allow-credentials: true
+    web:
+      cors:
+        allowed-origins: ${MANAGEMENT_ENDPOINTS_WEB_CORS_ALLOWED_ORIGINS}
+        allowed-methods: ${MANAGEMENT_ENDPOINTS_WEB_CORS_ALLOWED_METHODS}
+        allow-credentials: ${MANAGEMENT_ENDPOINTS_WEB_CORS_ALLOW_CREDENTIALS}
+
 springdoc:
-  show-actuator: true
+  show-actuator: ${SPRINGDOC_SHOW_ACTUATOR}
   swagger-ui:
-    disable-swagger-default-url: true
-    path: /apiDocs
+    disable-swagger-default-url: ${SPRINGDOC_SWAGGER_UI_DISABLE_SWAGGER_DEFAULT_URL}
+    path: ${SPRINGDOC_SWAGGER_UI_PATH}
+
+jwt_secret: ${JWT_SECRET}

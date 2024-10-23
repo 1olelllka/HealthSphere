@@ -10,7 +10,6 @@ import com._olelllka.HealthSphere_Backend.repositories.DoctorRepository;
 import com._olelllka.HealthSphere_Backend.repositories.MedicalRecordElasticRepository;
 import com._olelllka.HealthSphere_Backend.repositories.MedicalRecordRepository;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.AccessDeniedException;
-import com._olelllka.HealthSphere_Backend.rest.exceptions.NotAuthorizedException;
 import com._olelllka.HealthSphere_Backend.rest.exceptions.NotFoundException;
 import com._olelllka.HealthSphere_Backend.service.impl.MedicalRecordServiceImpl;
 import com._olelllka.HealthSphere_Backend.service.rabbitmq.MedicalRecordMessageProducer;

@@ -13,7 +13,6 @@ import { PatientListPage } from "./pages/PatientListPage";
 import { PatientDetailPage } from "./pages/PatientDetailPage";
 import { AppointmentsPage } from "./pages/AppointmentsPage";
 import { FaqPage } from "./pages/FaqPage";
-// import { LoadingPage } from "./pages/LoadingPage";
 
 const router = createBrowserRouter([
   {

@@ -26,3 +26,4 @@ logging:
               redis: DEBUG
         data:
           redis: DEBUG
+jwt_secret: e/haYvPN3qcXJqK8YRwSzWyV2zwbw2nDPBF4HkExs5s=

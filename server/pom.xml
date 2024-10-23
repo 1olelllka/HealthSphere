@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com._olelllka</groupId>
 	<artifactId>HealthSphere_Backend</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>HealthSphere_Backend</name>
 	<description>Backend for HealthSphere Project</description>
 	<url/>
@@ -70,13 +70,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-docker-compose</artifactId>
-			<scope>runtime</scope>
-			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.postgresql</groupId>

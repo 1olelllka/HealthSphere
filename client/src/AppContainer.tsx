@@ -12,7 +12,7 @@ export const AppContainer = () => {
   const checkServerHealth = async () => {
     try {
       console.log("Checking server health...");
-      await axios.get("http://localhost:8000/actuator/health", {
+      await axios.get(`${import.meta.env.VITE_SERVER_URL}/actuator/health`, {
         withCredentials: true,
         headers: {
           "Content-Type": "application/json",

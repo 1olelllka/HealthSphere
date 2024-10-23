@@ -3,6 +3,8 @@ package com._olelllka.HealthSphere_Backend.service;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.Setter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -13,7 +15,9 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    private final String key = "b094a31884e4652f292f6298102b526a4db3168aa8284c7b12dfe808b5553633";
+    @Value("${jwt_secret}")
+    @Setter
+    private String key;
 
     public String generateJwt(String username) {
         return Jwts

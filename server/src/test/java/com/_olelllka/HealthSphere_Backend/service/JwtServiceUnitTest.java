@@ -1,5 +1,5 @@
 package com._olelllka.HealthSphere_Backend.service;
-
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -10,8 +10,15 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(MockitoExtension.class)
 public class JwtServiceUnitTest {
 
+    private String jwtSecret;
     @InjectMocks
     private JwtService jwtService;
+
+    @BeforeEach
+    void setUp() {
+        String key = "e/haYvPN3qcXJqK8YRwSzWyV2zwbw2nDPBF4HkExs5s=";
+        jwtService.setKey(key);
+    }
 
     @Test
     public void testThatGenerateJwtWorksAsIntended() {

@@ -17,7 +17,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 @Configuration
 @EnableWebSecurity
@@ -45,7 +44,6 @@ public class WebSecurityConfig {
                             });
                 })
                 .csrf(AbstractHttpConfigurer::disable)
-//                csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
                 .authorizeHttpRequests((authorize) -> {
                     authorize
                             .requestMatchers(HttpMethod.POST, "/api/v1/login", "/api/v1/register/patient")

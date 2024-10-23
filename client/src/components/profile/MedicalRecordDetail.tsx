@@ -171,7 +171,7 @@ export const MedicalRecordDetail = () => {
                             <EditMedicine key={item.id} medicine={item} />
                           </div>
                         ))}
-                      <CreateMedicine id={data.prescription.id} />
+                      <CreateMedicine id={data.prescription?.id} />
                     </CardContent>
                   </div>
                 )}
