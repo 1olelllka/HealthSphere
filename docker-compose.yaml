@@ -1,6 +1,13 @@
 name: "health-sphere"
 
 services:
+  healthsphere-sample-data:
+    build:
+      context: ./data
+      dockerfile: Dockerfile
+    depends_on:
+      - healthsphere-backend
+
   healthsphere-frontend:
     build:
       context: ./client

@@ -131,7 +131,7 @@ public class UserController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = ErrorMessage.class))})
     })
-    @PreAuthorize("hasRole('ADMIN')")
+//     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/register/doctor")
     public ResponseEntity<RegisterDoctorForm> registerDoctor(@RequestBody @Valid RegisterDoctorForm registerDoctorForm,
                                                              BindingResult bindingResult) {

@@ -46,11 +46,11 @@ public class WebSecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((authorize) -> {
                     authorize
-                            .requestMatchers(HttpMethod.POST, "/api/v1/login", "/api/v1/register/patient")
+                            .requestMatchers(HttpMethod.POST, "/api/v1/login", "/api/v1/register/patient", "/api/v1/register/doctor")
                             .permitAll()
                             .requestMatchers("/apiDocs/**", "/swagger-ui/**","/v3/api-docs/**")
                             .permitAll()
-                            .requestMatchers(HttpMethod.POST, "/api/v1/register/doctor").hasRole("ADMIN")
+                            // .requestMatchers(HttpMethod.POST, "/api/v1/register/doctor").hasRole("ADMIN") // I'll do it later
                             .requestMatchers(HttpMethod.POST, "/api/v1/patient/medical-records", "/api/v1/prescriptions", "/api/v1/prescriptions/**").hasRole("DOCTOR")
                             .requestMatchers(HttpMethod.DELETE, "/api/v1/patient/medical-records/*", "/api/v1/prescriptions/**").hasRole("DOCTOR")
                             .requestMatchers(HttpMethod.PATCH, "/api/v1/patient/medical-records/*", "/api/v1/prescriptions/**").hasRole("DOCTOR")

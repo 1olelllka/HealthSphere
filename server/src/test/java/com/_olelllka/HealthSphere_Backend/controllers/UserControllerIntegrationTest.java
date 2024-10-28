@@ -129,15 +129,15 @@ public class UserControllerIntegrationTest extends AbstractTestContainers {
         assertTrue(StreamSupport.stream(patientElasticRepository.findAll().spliterator(), false).toList().size() == 1);
     }
 
-    @Test
-    public void testThatDoctorRegisterReturnsHttp403ForbiddenIfUserHasWrongRole() throws Exception {
-        RegisterDoctorForm registerDoctorForm = TestDataUtil.createRegisterDoctorForm();
-        String registerFromJson = objectMapper.writeValueAsString(registerDoctorForm);
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/register/doctor")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(registerFromJson))
-                .andExpect(MockMvcResultMatchers.status().isForbidden());
-    }
+//     @Test
+//     public void testThatDoctorRegisterReturnsHttp403ForbiddenIfUserHasWrongRole() throws Exception {
+//         RegisterDoctorForm registerDoctorForm = TestDataUtil.createRegisterDoctorForm();
+//         String registerFromJson = objectMapper.writeValueAsString(registerDoctorForm);
+//         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/register/doctor")
+//                         .contentType(MediaType.APPLICATION_JSON)
+//                         .content(registerFromJson))
+//                 .andExpect(MockMvcResultMatchers.status().isForbidden());
+//     }
 
     @Test
     public void testThatDoctorRegisterReturnsHttp409ConflictIfAlreadyExists() throws Exception {
