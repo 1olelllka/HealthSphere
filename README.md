@@ -7,7 +7,7 @@ an appointment for specific patients. This application is
 open-source and is not intended to be used in a real-world
 environment for personal medical records.
 
-## Table of Content
+## Table of Contents
  - [Tech Stack](#tech-stack)
  - [Installation](#installation)
  - [Documentation](#documentation)
