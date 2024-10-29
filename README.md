@@ -7,6 +7,14 @@ an appointment for specific patients. This application is
 open-source and is not intended to be used in a real-world
 environment for personal medical records.
 
+## Table of Content
+ - [Tech Stack](#tech-stack)
+ - [Installation](#installation)
+ - [Documentation](#documentation)
+ - [Screenshots](#screenshots)
+ - [Disclaimer](#disclaimer)
+ - [License](#license)
+
 ## Tech Stack
 
 **Client:** React, Redux, TailwindCSS
@@ -141,6 +149,12 @@ http://localhost:8000/apiDocs
 ```
 
 You will find all of the API endpoints there.
+
+## Screenshots
+<img width="1440" alt="Screenshot 2024-10-29 at 07 46 39" src="https://github.com/user-attachments/assets/ed52c29a-19ee-4e98-a73e-1ecd3bb1206f">
+<img width="1440" alt="Screenshot 2024-10-29 at 07 46 59" src="https://github.com/user-attachments/assets/54185f8d-4192-40af-ac67-aac16f2175d7">
+<img width="1440" alt="Screenshot 2024-10-29 at 07 53 45" src="https://github.com/user-attachments/assets/6c303a57-3696-416a-825c-7a57baee3810">
+<img width="1440" alt="Screenshot 2024-10-29 at 07 48 08" src="https://github.com/user-attachments/assets/b93d14b7-f4f0-44be-8d12-1f34be074bc6">
 
 ## Disclaimer
 
