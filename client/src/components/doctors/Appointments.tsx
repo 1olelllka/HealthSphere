@@ -38,6 +38,7 @@ const schema = z.object({
 
 export const Appointments = () => {
   const id = parseInt(useParams().id ?? "0", 10);
+  const profile = useSelector((state: RootState) => state.profile);
   const dispatch = useDispatch<AppDispatch>();
   const data = useSelector((state: RootState) => state.appointment);
   const [openDialog, setOpenDialog] = useState<boolean>(false);
@@ -163,6 +164,9 @@ export const Appointments = () => {
                 max={new Date(1970, 1, 1, 18, 0, 0)}
                 style={{ width: "80%", height: 600, textAlign: "center" }}
                 onSelectSlot={(slotInfo) => {
+                  if (profile.data.user.role == "ROLE_DOCTOR") {
+                    return;
+                  }
                   if (moment(slotInfo.start).isBefore(moment())) {
                     alert("You cannot book an appointment in the past");
                     return;

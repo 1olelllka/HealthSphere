@@ -24,10 +24,17 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { patchPatientProfile } from "@/redux/action/profileActions";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { MdOutlineBloodtype } from "react-icons/md";
-import { Command, CommandGroup, CommandItem, CommandList } from "../ui/command";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
 const schema = z.object({
   firstName: z.string().min(1, { message: "First name is required" }),
@@ -230,8 +237,8 @@ export const EditPatient = (props: { open: boolean; onClose: () => void }) => {
                     <div className="grid grid-cols-4 items-center gap-4">
                       <FormLabel>Blood Type</FormLabel>
                       <FormControl>
-                        <Popover>
-                          <PopoverTrigger asChild>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
                             <Button
                               variant="outline"
                               className={cn(
@@ -245,32 +252,32 @@ export const EditPatient = (props: { open: boolean; onClose: () => void }) => {
                                 <MdOutlineBloodtype className="h-4 w-4" />
                               )}
                             </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-[200px] p-0">
-                            <Command>
-                              <CommandList>
-                                <CommandGroup>
-                                  {bloodTypes.map((item) => (
-                                    <CommandItem
-                                      className={`flex justify-start p-2 ${
-                                        field.value == item.name
-                                          ? "bg-slate-200"
-                                          : ""
-                                      }`}
-                                      key={item.id}
-                                      value={item.name}
-                                      onSelect={(currentValue) => {
-                                        field.onChange(currentValue);
-                                      }}
-                                    >
-                                      {item.name}
-                                    </CommandItem>
-                                  ))}
-                                </CommandGroup>
-                              </CommandList>
-                            </Command>
-                          </PopoverContent>
-                        </Popover>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuLabel>
+                              Choose your blood type
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuRadioGroup
+                              value={field.value}
+                              onValueChange={field.onChange}
+                            >
+                              {bloodTypes.map((item) => (
+                                <DropdownMenuRadioItem
+                                  className={`flex justify-center p-2  ${
+                                    field.value == item.name
+                                      ? "bg-slate-200"
+                                      : ""
+                                  }`}
+                                  key={item.id}
+                                  value={item.name}
+                                >
+                                  {item.name}
+                                </DropdownMenuRadioItem>
+                              ))}
+                            </DropdownMenuRadioGroup>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </FormControl>
                     </div>
                     <FormMessage />
