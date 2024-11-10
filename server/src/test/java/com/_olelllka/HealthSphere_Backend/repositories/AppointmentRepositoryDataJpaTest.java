@@ -17,7 +17,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -134,7 +133,7 @@ public class AppointmentRepositoryDataJpaTest {
                 .doctor(savedDoctor)
                 .build();
         appointmentRepository.save(appointment);
-        List<AppointmentEntity> result = appointmentRepository.findByDoctorIdAndParams(savedDoctor.getId(), Timestamp.valueOf(LocalDateTime.of(2020, 1, 1, 0, 0, 0)), Timestamp.valueOf(LocalDateTime.of(2024, 11, 1, 0, 0, 0)));
+        List<AppointmentEntity> result = appointmentRepository.findByDoctorIdAndParams(savedDoctor.getId(), Timestamp.valueOf(LocalDateTime.of(2020, 1, 1, 0, 0, 0)), Timestamp.valueOf(LocalDateTime.of(2100, 11, 1, 0, 0, 0)));
         List<AppointmentEntity> expected = List.of(AppointmentEntity.builder().build());
 
         assertAll(
@@ -167,7 +166,7 @@ public class AppointmentRepositoryDataJpaTest {
                 .doctor(savedDoctor)
                 .build();
         appointmentRepository.save(appointment);
-        List<AppointmentEntity> result = appointmentRepository.findByPatientIdAndParams(savedPatient.getId(), Timestamp.valueOf(LocalDateTime.of(2020, 1, 1, 0, 0, 0)), Timestamp.valueOf(LocalDateTime.of(2024, 11, 1, 0, 0, 0)));
+        List<AppointmentEntity> result = appointmentRepository.findByPatientIdAndParams(savedPatient.getId(), Timestamp.valueOf(LocalDateTime.of(2020, 1, 1, 0, 0, 0)), Timestamp.valueOf(LocalDateTime.of(2100, 11, 1, 0, 0, 0)));
         List<AppointmentEntity> expected = List.of(AppointmentEntity.builder().build());
 
         assertAll(
